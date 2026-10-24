@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML 2 · Listas, links e imagens — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#F97316}
+  .nav.on{color:#FDBA74}
+  .work{grid-template-columns:1fr 1.1fr}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#FDBA74}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#F97316">H2</div>
+      <div class="t">HTML: listas, links e imagens</div>
+      <div class="s">Escreva o HTML e veja a página ao lado</div>
+      <a href="/html-02/apostila-html-02.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F97316;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#html" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#F97316"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#F97316;border-color:#F97316">▶ Visualizar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>index.html · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> visualiza</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código HTML"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="Listas" data-title="Lista com marcadores: ul">
+  <div class="desc"><code>&lt;ul&gt;</code> (unordered list) é uma lista com <b>bolinhas</b>; cada item é um <code>&lt;li&gt;</code>. Os <code>&lt;li&gt;</code> só podem ficar dentro de uma lista.</div>
+  <div class="try"><b>Experimente:</b> adicione mais dois itens.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista</title>
+</head>
+<body>
+  <h2>Lista de compras</h2>
+  <ul>
+    <li>Arroz</li>
+    <li>Feijão</li>
+    <li>Café</li>
+  </ul>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Listas" data-title="Lista numerada: ol">
+  <div class="desc"><code>&lt;ol&gt;</code> (ordered list) numera os itens sozinha: se você trocar a ordem, os números se ajustam. Com <code>start="5"</code> ela começa de outro número e com <code>type="a"</code> usa letras.</div>
+  <div class="try"><b>Experimente:</b> troque para <code>type="A"</code> e depois <code>type="I"</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Passos</title>
+</head>
+<body>
+  <h2>Como fazer café</h2>
+  <ol>
+    <li>Ferva a água</li>
+    <li>Coloque o pó no filtro</li>
+    <li>Despeje a água devagar</li>
+  </ol>
+  <ol start="10">
+    <li>Décimo item</li>
+  </ol>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Listas" data-title="Listas dentro de listas">
+  <div class="desc">Uma lista pode ficar <b>dentro</b> de um <code>&lt;li&gt;</code>: é assim que se faz menus com submenus e sumários. Cuidado com a indentação para não se perder nas tags.</div>
+  <div class="try"><b>Experimente:</b> adicione um sub-item em CSS.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Aninhadas</title>
+</head>
+<body>
+  <ul>
+    <li>Front-end
+      <ul>
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>JavaScript</li>
+      </ul>
+    </li>
+    <li>Back-end
+      <ul>
+        <li>PHP e Laravel</li>
+      </ul>
+    </li>
+  </ul>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Atributos" data-title="Atributos: informação extra na tag">
+  <div class="desc">Um <b>atributo</b> fica dentro da tag de abertura, no formato <code>nome="valor"</code>. Ele configura o elemento: para onde o link vai, qual imagem mostrar, qual o idioma. Já usamos <code>lang</code> e <code>charset</code> no esqueleto.</div>
+  <div class="try"><b>Experimente:</b> mude o <code>title</code> e passe o mouse em cima do texto.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Atributos</title>
+</head>
+<body>
+  <p title="Isso é um atributo title: aparece ao passar o mouse">Passe o mouse aqui.</p>
+  <p lang="en">This paragraph is in English.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Links" data-title="Links: a tag a e o href">
+  <div class="desc"><code>&lt;a&gt;</code> (âncora) cria um link. O atributo <code>href</code> diz <b>para onde</b> ir. O texto entre as tags é o que a pessoa clica. Na prévia os links não navegam de verdade, mas o navegador real vai.</div>
+  <div class="try"><b>Experimente:</b> aponte o link para o site da sua escola.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Links</title>
+</head>
+<body>
+  <p>Aprenda mais na <a href="https://developer.mozilla.org/pt-BR/">documentação do MDN</a>.</p>
+  <p><a href="https://www.google.com">Pesquisar no Google</a></p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Links" data-title="target, mailto e links internos">
+  <div class="desc"><code>target="_blank"</code> abre em nova aba. <code>href="mailto:..."</code> abre o e-mail. E um <code>href="#id"</code> rola a página até o elemento com aquele <code>id</code> (o sumário de uma página longa).</div>
+  <div class="try"><b>Experimente:</b> clique em "Ir para o fim" na prévia.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mais links</title>
+</head>
+<body>
+  <p><a href="https://www.greenn.com.br" target="_blank">Greenn (nova aba)</a></p>
+  <p><a href="mailto:contato@greenn.com.br">Mandar e-mail</a></p>
+  <p><a href="#fim">Ir para o fim da página</a></p>
+  <p>texto...<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>texto...</p>
+  <h2 id="fim">Fim da página</h2>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Imagens" data-title="Imagens: src e alt">
+  <div class="desc"><code>&lt;img&gt;</code> é uma tag vazia (não fecha). <code>src</code> é o <b>caminho</b> da imagem e <code>alt</code> é o texto alternativo: aparece se a imagem não carregar e é lido pelos leitores de tela. <b>Sempre</b> escreva o alt.</div>
+  <div class="try"><b>Experimente:</b> erre o nome do arquivo no src e veja o alt aparecer.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Imagens</title>
+</head>
+<body>
+  <h2>Nosso logo</h2>
+  <img src="/img/greenn.svg" alt="Logo da Greenn School">
+  <p>A imagem acima está na pasta img do site.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Imagens" data-title="Tamanho, caminhos e imagem com link">
+  <div class="desc"><code>width</code> e <code>height</code> definem o tamanho (em pixels). O caminho pode ser <b>relativo</b> (<code>img/foto.jpg</code>, a partir da pasta da página) ou <b>absoluto</b> (<code>https://...</code>). Uma imagem dentro de um <code>&lt;a&gt;</code> vira um link clicável.</div>
+  <div class="try"><b>Experimente:</b> mude o width para 300 e tire o height.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Tamanho</title>
+</head>
+<body>
+  <img src="/img/greenn.svg" alt="Logo pequeno" width="80">
+  <img src="/img/greenn.svg" alt="Logo médio" width="160">
+  <p>
+    <a href="https://www.greenn.com.br">
+      <img src="/img/greenn.svg" alt="Ir para o site da Greenn" width="120">
+    </a>
+  </p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Imagens" data-title="Figura com legenda">
+  <div class="desc"><code>&lt;figure&gt;</code> agrupa uma imagem com a sua legenda em <code>&lt;figcaption&gt;</code>. É o jeito certo de colocar fotos em artigos.</div>
+  <div class="try"><b>Experimente:</b> coloque a legenda acima da imagem (o figcaption pode ser o primeiro filho).</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Figura</title>
+</head>
+<body>
+  <figure>
+    <img src="/img/greenn.svg" alt="Logo da Greenn School" width="150">
+    <figcaption>Figura 1: o logo da escola.</figcaption>
+  </figure>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Uma página com lista, link e imagem para testar.</div>
+  <div class="try"><b>Dica:</b> o logo está em <code>/img/greenn.svg</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Área livre</title>
+</head>
+<body>
+  <h1>Testes</h1>
+  <ul>
+    <li><a href="https://www.google.com">Google</a></li>
+  </ul>
+  <img src="/img/greenn.svg" alt="Logo" width="100">
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Lista de compras">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma lista com marcadores com três itens.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;h2&gt;</code> <code>Compras</code>.</li><li>Uma <code>&lt;ul&gt;</code> com os itens <code>Pão</code>, <code>Leite</code> e <code>Ovos</code>, cada um num <code>&lt;li&gt;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>• Pão<br>• Leite<br>• Ovos</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Transforme em lista numerada trocando só duas tags.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Compras</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const ul = doc.querySelector("ul"); if (!ul) return "Falta a lista <ul>.";
+const li = [...ul.querySelectorAll(":scope > li")].map(l => l.textContent.trim());
+if (doc.querySelector("body > li")) return "Os <li> precisam ficar DENTRO do <ul>.";
+return (li.join() === "Pão,Leite,Ovos") || ("A lista deveria ter Pão, Leite e Ovos (nessa ordem). Achei: " + li.join(", "));
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Passo a passo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma lista numerada começando do 1.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Uma <code>&lt;ol&gt;</code> com <code>Abrir o editor</code>, <code>Escrever o HTML</code> e <code>Salvar como index.html</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>1. Abrir o editor<br>2. Escrever o HTML<br>3. Salvar como index.html</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça começar do 3 com <code>start</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Passos</title>
+</head>
+<body>
+  <h2>Como criar uma página</h2>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const ol = doc.querySelector("ol"); if (!ol) return "Falta a lista numerada <ol>.";
+const li = [...ol.querySelectorAll(":scope > li")].map(l => l.textContent.trim());
+return li.length === 3 && li[0] === "Abrir o editor" && li[2] === "Salvar como index.html" || "A <ol> precisa dos 3 passos na ordem: Abrir o editor, Escrever o HTML, Salvar como index.html.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Menu com submenu">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar um menu em lista com um sub-item.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Uma <code>&lt;ul&gt;</code> com <code>Início</code>, <code>Cursos</code> e <code>Contato</code>.</li><li>Dentro do <code>&lt;li&gt;</code> de Cursos, outra <code>&lt;ul&gt;</code> com <code>HTML</code> e <code>JavaScript</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>• Início<br>• Cursos<br>    ◦ HTML<br>    ◦ JavaScript<br>• Contato</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione "CSS" entre HTML e JavaScript.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const top = [...doc.querySelectorAll("body > ul > li")];
+if (top.length !== 3) return "A lista principal precisa de 3 itens: Início, Cursos e Contato.";
+const cursos = top.find(l => l.firstChild && l.textContent.trim().startsWith("Cursos"));
+if (!cursos) return "Não achei o item \"Cursos\" na lista principal.";
+const sub = [...cursos.querySelectorAll("ul > li")].map(l => l.textContent.trim());
+return sub.includes("HTML") && sub.includes("JavaScript") || "Dentro do <li> de Cursos precisa ter uma <ul> com HTML e JavaScript.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Link externo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar um link que abre o site do MDN em nova aba.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Num <code>&lt;p&gt;</code>, um <code>&lt;a&gt;</code> com o texto <code>Documentação</code>.</li><li><code>href="https://developer.mozilla.org"</code> e <code>target="_blank"</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Link &quot;Documentação&quot; para o MDN, em nova aba</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um <code>title</code> ao link e passe o mouse.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Link</title>
+</head>
+<body>
+  <p>Leia a <!-- link aqui --></p>
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const a = doc.querySelector("a"); if (!a) return "Falta a tag <a>.";
+if (a.textContent.trim() !== "Documentação") return "O texto do link deveria ser \"Documentação\".";
+if (!(a.getAttribute("href") || "").startsWith("https://developer.mozilla.org")) return "O href deveria ser https://developer.mozilla.org.";
+return a.getAttribute("target") === "_blank" || "Falta target=\"_blank\" para abrir em nova aba.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Sumário com links internos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer links que rolam até seções da mesma página.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No topo, uma <code>&lt;ul&gt;</code> com dois links: <code>Sobre</code> (href <code>#sobre</code>) e <code>Contato</code> (href <code>#contato</code>).</li><li>Abaixo, um <code>&lt;h2 id="sobre"&gt;</code> e um <code>&lt;h2 id="contato"&gt;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Clicar em &quot;Contato&quot; rola até o h2 Contato</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um link "Voltar ao topo" no fim, apontando para um id no h1.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Sumário</title>
+</head>
+<body>
+  <h1>Minha página</h1>
+  <!-- sumário aqui -->
+
+  <!-- seções aqui (use <br> para dar altura) -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const links = [...doc.querySelectorAll("a")].map(a => a.getAttribute("href"));
+if (!links.includes("#sobre") || !links.includes("#contato")) return "Precisa de dois links com href=\"#sobre\" e href=\"#contato\".";
+if (!doc.querySelector("ul a")) return "Os links devem ficar dentro de uma <ul>.";
+return !!(doc.getElementById("sobre") && doc.getElementById("contato")) || "Faltam os <h2> com id=\"sobre\" e id=\"contato\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Imagem com alt">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar o logo com texto alternativo e largura definida.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Uma <code>&lt;img&gt;</code> com <code>src="/img/greenn.svg"</code>.</li><li><code>alt="Logo da Greenn"</code> e <code>width="120"</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Logo com 120px de largura</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Erre o src de propósito e veja o alt aparecer.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Logo</title>
+</head>
+<body>
+  <h2>Nossa escola</h2>
+  <!-- imagem aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const i = doc.querySelector("img"); if (!i) return "Falta a tag <img>.";
+if (i.getAttribute("src") !== "/img/greenn.svg") return "O src deveria ser /img/greenn.svg.";
+if (i.getAttribute("alt") !== "Logo da Greenn") return "Falta alt=\"Logo da Greenn\" (o alt é obrigatório!).";
+return i.getAttribute("width") === "120" || "Defina width=\"120\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Imagem que é link">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer o logo levar ao site ao ser clicado.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;a href="https://www.greenn.com.br"&gt;</code>.</li><li>Dentro dele, a <code>&lt;img&gt;</code> do logo com alt <code>Site da Greenn</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Logo clicável que abre o site</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque uma <code>&lt;figure&gt;</code> com legenda em volta.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Logo link</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const a = doc.querySelector("a"); if (!a) return "Falta o <a>.";
+const i = a.querySelector("img"); if (!i) return "A <img> precisa ficar DENTRO do <a>.";
+if (!(a.getAttribute("href") || "").includes("greenn.com.br")) return "O href do link deveria ser https://www.greenn.com.br.";
+return i.getAttribute("alt") === "Site da Greenn" || "O alt da imagem deveria ser \"Site da Greenn\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Desafio: página de receita">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Juntar lista, links e figura numa página completa.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>&lt;h1&gt;</code> <code>Bolo de cenoura</code>.</li><li>Uma <code>&lt;figure&gt;</code> com a <code>&lt;img&gt;</code> do logo (alt <code>Foto do bolo</code>) e <code>&lt;figcaption&gt;</code>.</li><li><code>&lt;h2&gt;</code> <code>Ingredientes</code> com uma <code>&lt;ul&gt;</code> de pelo menos 3 itens.</li><li><code>&lt;h2&gt;</code> <code>Preparo</code> com uma <code>&lt;ol&gt;</code> de pelo menos 3 passos.</li><li>Um link <code>Fonte</code> para qualquer site, em nova aba.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Título, figura com legenda, lista de ingredientes, passos numerados e link da fonte</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça o sumário com links internos para Ingredientes e Preparo.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Receita</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+if (!doc.querySelector("h1") || doc.querySelector("h1").textContent.trim() !== "Bolo de cenoura") return "Falta o <h1> \"Bolo de cenoura\".";
+const f = doc.querySelector("figure"); if (!f || !f.querySelector("img") || !f.querySelector("figcaption")) return "Falta a <figure> com <img> e <figcaption> dentro.";
+if (f.querySelector("img").getAttribute("alt") !== "Foto do bolo") return "O alt da imagem deveria ser \"Foto do bolo\".";
+if (doc.querySelectorAll("ul > li").length < 3) return "A <ul> de ingredientes precisa de pelo menos 3 <li>.";
+if (doc.querySelectorAll("ol > li").length < 3) return "A <ol> de preparo precisa de pelo menos 3 <li>.";
+const a = [...doc.querySelectorAll("a")].find(x => x.textContent.trim() === "Fonte");
+if (!a) return "Falta o link com o texto \"Fonte\".";
+return a.getAttribute("target") === "_blank" || "O link Fonte precisa de target=\"_blank\".";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de HTML ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<!DOCTYPE[^>]*>)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="c">${esc(m[2])}</span>`;
+      else {
+        const attrs = m[5].replace(/([\w-]+)(=)("[^"]*"|'[^']*'|[^\s>]+)?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>${eq ? '=' : ''}${v ? `<span class="s">${esc(v)}</span>` : ''}`);
+        h += `<span class="k">${esc(m[3])}${esc(m[4])}</span>${attrs}<span class="k">${esc(m[6])}</span>`;
+      }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Visualizar para renderizar o HTML na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  // diagnóstico simples de tags não fechadas
+  const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr','!doctype']);
+  function lint(src) {
+    const stack = [], msgs = [];
+    const re = /<\/?([a-zA-Z][\w-]*)[^>]*?(\/?)>/g; let m;
+    const clean = src.replace(/<!--[\s\S]*?-->/g, '');
+    while ((m = re.exec(clean))) {
+      const tag = m[1].toLowerCase(), closing = m[0][1] === '/', self = m[2] === '/';
+      if (VOID.has(tag) || self) continue;
+      if (!closing) stack.push(tag);
+      else { const i = stack.lastIndexOf(tag); if (i === -1) msgs.push(`Tem um </${tag}> fechando sem a abertura <${tag}>.`); else { if (i !== stack.length - 1) msgs.push(`A tag <${stack[stack.length - 1]}> foi aberta depois de <${tag}>, então precisa fechar antes dela.`); stack.splice(i); } }
+    }
+    for (const t of stack) if (!['html','head','body','li','p','td','th','tr','option'].includes(t)) msgs.push(`A tag <${t}> foi aberta e não foi fechada com </${t}>.`);
+    return msgs.slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(src) { return src; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Renderizando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">Página renderizada acima. Mude o HTML e visualize de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Renderizado, mas tem tag sem fechar' : '✓ Renderizado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o conteúdo está certo, mas feche as tags apontadas acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Feche as tags'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-html') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-html', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

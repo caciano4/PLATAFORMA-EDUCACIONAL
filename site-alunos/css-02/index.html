@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS 2 · Box model — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#38BDF8}
+  .nav.on{color:#7DD3FC}
+  .work{grid-template-columns:1fr 1.1fr}
+  .work>*{min-width:0}
+  .left .card,.right .card{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .left{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .left .card.ed{flex:1.5}
+  .left .card.hh{flex:1;max-height:280px}
+  pre.stagehtml{margin:0;white-space:pre-wrap;word-break:break-word;padding:14px 20px;overflow:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .85);line-height:1.5;color:#C4C8D2;flex:1;min-height:0}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#7DD3FC}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#38BDF8">C2</div>
+      <div class="t">CSS: box model, margin, padding e border</div>
+      <div class="s">Escreva o CSS e veja a página mudar ao lado</div>
+      <a href="/css-02/apostila-css-02.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#38BDF8;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#css" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#38BDF8"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#38BDF8;border-color:#38BDF8">▶ Aplicar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="left">
+        <div class="card ed">
+          <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>style.css · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> aplica</span></div>
+          <div class="editor">
+            <pre id="hl" aria-hidden="true"></pre>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código CSS"></textarea>
+          </div>
+        </div>
+        <div class="card hh">
+          <div class="hd"><span>index.html · só leitura</span><span class="hint2">o HTML que o CSS vai estilizar</span></div>
+          <pre class="stagehtml" id="stagehtml"></pre>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="A caixa" data-title="Todo elemento é uma caixa">
+  <div class="desc">Para o CSS, cada elemento é um <b>retângulo</b>: tem <code>width</code> (largura), <code>height</code> (altura) e um fundo. Um <code>div</code> sem conteúdo tem altura zero, por isso some; dê um tamanho e um <code>background-color</code> e ele aparece. A unidade mais comum é o <code>px</code>; <code>%</code> é relativo ao elemento pai.</div>
+  <div class="try"><b>Experimente:</b> troque <code>width: 200px</code> por <code>width: 50%</code> e aumente a prévia.</div>
+<template class="stage"><div class="caixa"></div>
+<p>Um parágrafo também é uma caixa (passe o mouse).</p></template>
+<script type="text/x-code">
+.caixa {
+  width: 200px;
+  height: 100px;
+  background-color: #38BDF8;
+}
+
+p:hover {
+  background-color: #FEF08A;
+}
+</script>
+</section>
+
+<section class="ex" data-group="A caixa" data-title="Padding: o respiro por dentro">
+  <div class="desc"><code>padding</code> é o espaço entre o <b>conteúdo</b> e a <b>borda</b> da caixa, por dentro: o fundo pinta o padding também. Pode dar os quatro lados de uma vez: <code>padding: 20px</code> (todos), <code>padding: 10px 20px</code> (cima/baixo, esquerda/direita) ou <code>padding: 10px 20px 30px 40px</code> (cima, direita, baixo, esquerda: sentido horário). Ou um só: <code>padding-left</code>.</div>
+  <div class="try"><b>Experimente:</b> deixe o <code>.sem</code> com <code>padding: 10px 30px</code>.</div>
+<template class="stage"><div class="sem">Sem padding: o texto gruda na borda.</div>
+<div class="com">Com padding: o texto respira.</div></template>
+<script type="text/x-code">
+.sem, .com {
+  background-color: #BAE6FD;
+  width: 260px;
+  margin-bottom: 10px;
+}
+
+.com {
+  padding: 20px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="A caixa" data-title="Border: a borda">
+  <div class="desc"><code>border</code> junta três coisas: <b>espessura</b>, <b>estilo</b> e <b>cor</b>: <code>border: 2px solid #0EA5E9</code>. Estilos: <code>solid</code>, <code>dashed</code>, <code>dotted</code>, <code>double</code>. Dá para fazer um lado só (<code>border-bottom</code>), e <code>border-radius</code> arredonda os cantos (com <code>50%</code> vira um círculo).</div>
+  <div class="try"><b>Experimente:</b> coloque <code>border-radius: 50%</code> na <code>.redonda</code> e veja virar um círculo.</div>
+<template class="stage"><div class="caixa solida">solid</div>
+<div class="caixa tracejada">dashed</div>
+<div class="caixa embaixo">só embaixo</div>
+<div class="caixa redonda">radius</div></template>
+<script type="text/x-code">
+.caixa {
+  width: 120px;
+  padding: 12px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.solida   { border: 2px solid #0EA5E9; }
+.tracejada { border: 3px dashed #F97316; }
+.embaixo  { border-bottom: 4px solid #16A34A; }
+.redonda  {
+  border: 2px solid #0EA5E9;
+  border-radius: 12px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="A caixa" data-title="Margin: o espaço por fora">
+  <div class="desc"><code>margin</code> é o espaço entre a caixa e as <b>vizinhas</b>, por fora da borda: o fundo <b>não</b> pinta a margem. Mesmos atalhos do padding. O truque mais usado do CSS: <code>margin: 0 auto</code> numa caixa com largura definida <b>centraliza</b> ela na horizontal.</div>
+  <div class="try"><b>Experimente:</b> troque <code>margin: 0 auto</code> por <code>margin-left: auto</code> para empurrar a caixa para a direita.</div>
+<template class="stage"><div class="item">Item 1</div>
+<div class="item">Item 2</div>
+<div class="item">Item 3</div>
+<div class="centro">Centralizada com margin: 0 auto</div></template>
+<script type="text/x-code">
+.item {
+  background-color: #BAE6FD;
+  padding: 10px;
+  margin-bottom: 16px;
+}
+
+.centro {
+  width: 240px;
+  padding: 10px;
+  background-color: #FDE68A;
+  margin: 0 auto;
+}
+</script>
+</section>
+
+<section class="ex" data-group="A caixa" data-title="box-sizing: a conta da largura">
+  <div class="desc">Por padrão, <code>width</code> é só o <b>conteúdo</b>: padding e borda são <b>somados</b> por fora. Uma caixa de <code>width: 200px</code> com <code>padding: 20px</code> e borda de 5px ocupa 250px. Com <code>box-sizing: border-box</code> a largura passa a <b>incluir</b> padding e borda, e 200px são 200px. Quase todo projeto começa com <code>* { box-sizing: border-box; }</code>.</div>
+  <div class="try"><b>Experimente:</b> apague a regra <code>*</code> e veja a segunda caixa crescer.</div>
+<template class="stage"><div class="caixa a">content-box: 200 + 20 + 20 + 5 + 5 = 250px</div>
+<div class="caixa b">border-box: 200px e pronto</div></template>
+<script type="text/x-code">
+.caixa {
+  width: 200px;
+  padding: 20px;
+  border: 5px solid #0EA5E9;
+  margin-bottom: 10px;
+  background-color: #E0F2FE;
+}
+
+.a { box-sizing: content-box; }  /* o padrão */
+.b { box-sizing: border-box; }
+
+/* o jeito moderno: tudo border-box */
+* {
+  box-sizing: border-box;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Display" data-title="block, inline e inline-block">
+  <div class="desc"><code>display: block</code> (div, p, h1) ocupa a linha inteira e aceita width/height. <code>display: inline</code> (span, a, strong) fica <b>dentro</b> da linha e <b>ignora</b> width, height e margem vertical. <code>inline-block</code> fica na linha <b>e</b> aceita tamanho: é assim que se faz um link virar botão.</div>
+  <div class="try"><b>Experimente:</b> troque o <code>inline-block</code> do <code>.botao</code> por <code>block</code> e por <code>inline</code>.</div>
+<template class="stage"><p>Um <span class="tag">span</span> fica na linha. Já uma <div class="bloco">div</div> quebra.</p>
+<a href="#" class="botao">Inscrever-se</a>
+<a href="#" class="botao">Saber mais</a></template>
+<script type="text/x-code">
+.tag {
+  background-color: #FDE68A;
+  padding: 2px 8px;
+}
+
+.bloco {
+  background-color: #BAE6FD;
+}
+
+.botao {
+  display: inline-block;
+  width: 150px;
+  padding: 12px;
+  background-color: #0EA5E9;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Display" data-title="Escondendo elementos">
+  <div class="desc"><code>display: none</code> <b>tira</b> o elemento da página: não ocupa espaço. <code>visibility: hidden</code> esconde, mas o espaço continua lá. <code>opacity: 0.5</code> deixa transparente. Na aula de DOM você trocou classes com JavaScript: uma classe <code>.escondido</code> com <code>display: none</code> é o jeito clássico de abrir e fechar coisas.</div>
+  <div class="try"><b>Experimente:</b> troque <code>display: none</code> por <code>visibility: hidden</code> e veja o buraco.</div>
+<template class="stage"><p>Antes</p>
+<p class="escondido">Você não deveria me ver.</p>
+<p class="meio">Meio transparente.</p>
+<p>Depois</p></template>
+<script type="text/x-code">
+.escondido {
+  display: none;
+}
+
+.meio {
+  opacity: 0.4;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Acabamento" data-title="Fundo, sombra e cantos">
+  <div class="desc"><code>background</code> aceita cor, imagem (<code>url(...)</code>) ou um <b>gradiente</b>: <code>linear-gradient(para onde, cor1, cor2)</code>. <code>box-shadow: x y desfoque cor</code> dá a sombra que faz o cartão parecer flutuar. Junte com <code>border-radius</code> e você tem o visual de qualquer app moderno.</div>
+  <div class="try"><b>Experimente:</b> mude o desfoque da sombra de <code>12px</code> para <code>0</code> e para <code>40px</code>.</div>
+<template class="stage"><div class="card">
+  <h3>Cartão</h3>
+  <p>Fundo, sombra e cantos arredondados.</p>
+</div>
+<div class="banner">Gradiente</div></template>
+<script type="text/x-code">
+body {
+  background-color: #F1F5F9;
+  font-family: Arial, sans-serif;
+}
+
+.card {
+  width: 240px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 20px;
+}
+
+.banner {
+  padding: 30px;
+  color: white;
+  font-weight: bold;
+  border-radius: 16px;
+  background: linear-gradient(to right, #0EA5E9, #F97316);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Acabamento" data-title="O container da página">
+  <div class="desc">Receita que está em quase todo site: zerar a margem que o navegador dá no <code>body</code>, e um <code>.container</code> com <code>max-width</code> (largura <b>máxima</b>: encolhe no celular) centralizado com <code>margin: 0 auto</code> e um <code>padding</code> para o texto não encostar na borda da tela.</div>
+  <div class="try"><b>Experimente:</b> apague <code>margin: 0 auto</code> e veja o conteúdo grudar na esquerda.</div>
+<template class="stage"><header class="topo">Greenn School</header>
+<main class="container">
+  <h1>Bem-vindo</h1>
+  <p>Este conteúdo tem largura máxima e fica centralizado, com respiro nas laterais.</p>
+</main></template>
+<script type="text/x-code">
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #F8FAFC;
+}
+
+.topo {
+  background-color: #15171E;
+  color: #F0C23B;
+  padding: 16px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Algumas caixas para você brincar com o box model.</div>
+  <div class="try"><b>Dica:</b> dê um <code>background-color</code> para cada caixa: fica muito mais fácil enxergar padding e margin.</div>
+<template class="stage"><div class="container">
+  <div class="caixa">A</div>
+  <div class="caixa">B</div>
+  <span class="chip">chip</span> <span class="chip">chip</span>
+</div></template>
+<script type="text/x-code">
+* {
+  box-sizing: border-box;
+}
+
+.caixa {
+  background-color: #BAE6FD;
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Uma caixa colorida">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Dar tamanho e cor a um div vazio.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Regra <code>.caixa</code> com <code>width: 200px;</code>, <code>height: 120px;</code> e <code>background-color: #38BDF8;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Um retângulo azul de 200 × 120</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque a altura por <code>height: 50px</code>.</div>
+<template class="stage"><div class="caixa"></div></template>
+<script type="text/x-code">
+.caixa {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".caixa"));
+if (c.width !== "200px") return "A .caixa deveria ter width: 200px, mas está com " + c.width + ".";
+if (c.height !== "120px") return "A altura deveria ser 120px, mas está " + c.height + ".";
+return c.backgroundColor === "rgb(56, 189, 248)" || "O fundo deveria ser #38BDF8.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Respiro por dentro">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar padding para o texto não grudar na borda.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.card</code>: <code>background-color: #E0F2FE;</code> e <code>padding: 24px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Caixa azul-clara com 24px de espaço em volta do texto</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use <code>padding: 8px 40px</code> e repare na diferença entre vertical e horizontal.</div>
+<template class="stage"><div class="card">
+  <h3>Aula de sábado</h3>
+  <p>Tragam o notebook carregado.</p>
+</div></template>
+<script type="text/x-code">
+.card {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".card"));
+if (c.backgroundColor !== "rgb(224, 242, 254)") return "O fundo da .card deveria ser #E0F2FE.";
+if (c.paddingTop !== "24px" || c.paddingLeft !== "24px" || c.paddingBottom !== "24px" || c.paddingRight !== "24px") return "O padding deveria ser 24px nos quatro lados (padding: 24px).";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Borda e cantos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Desenhar a borda de um cartão e arredondar os cantos.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.card</code>: <code>border: 2px solid #38BDF8;</code></li><li>e <code>border-radius: 12px;</code></li><li>mantenha o <code>padding: 16px</code> que já está lá.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Cartão com borda azul fina e cantos arredondados</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque <code>solid</code> por <code>dashed</code>.</div>
+<template class="stage"><div class="card">
+  <h3>JavaScript</h3>
+  <p>Da lógica ao DOM.</p>
+</div></template>
+<script type="text/x-code">
+.card {
+  padding: 16px;
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".card"));
+if (c.borderTopWidth !== "2px") return "A borda deveria ter 2px, mas está com " + c.borderTopWidth + ".";
+if (c.borderTopStyle !== "solid") return "O estilo da borda deveria ser solid.";
+if (c.borderTopColor !== "rgb(56, 189, 248)") return "A cor da borda deveria ser #38BDF8.";
+return c.borderTopLeftRadius === "12px" || "Falta border-radius: 12px.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Espaço entre os itens">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Separar caixas com margin.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.item</code>: <code>background-color: #BAE6FD;</code>, <code>padding: 10px;</code> e <code>margin-bottom: 16px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Três faixas azuis com 16px de espaço branco entre elas</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque por <code>margin: 16px 40px</code> e veja as laterais.</div>
+<template class="stage"><div class="item">Item 1</div>
+<div class="item">Item 2</div>
+<div class="item">Item 3</div></template>
+<script type="text/x-code">
+.item {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".item"));
+if (c.backgroundColor !== "rgb(186, 230, 253)") return "O fundo do .item deveria ser #BAE6FD.";
+if (c.paddingTop !== "10px") return "Falta padding: 10px.";
+return c.marginBottom === "16px" || "O margin-bottom deveria ser 16px, mas está " + c.marginBottom + ".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Conteúdo centralizado">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar o container clássico de um site.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>body { margin: 0; }</code> para tirar a margem padrão do navegador.</li><li><code>.container</code> com <code>max-width: 400px;</code>, <code>margin: 0 auto;</code>, <code>padding: 20px;</code> e <code>background-color: #FEF9C3;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Uma coluna amarela de no máximo 400px, centralizada na prévia</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude o <code>max-width</code> para <code>200px</code> e depois para <code>100%</code>.</div>
+<template class="stage"><div class="container">
+  <h1>Meu site</h1>
+  <p>Conteúdo centralizado com largura máxima.</p>
+</div></template>
+<script type="text/x-code">
+body {
+  
+}
+
+.container {
+  
+}
+
+</script>
+<script type="text/x-check">
+const b = win.getComputedStyle(doc.body), c = win.getComputedStyle(doc.querySelector(".container"));
+if (b.marginTop !== "0px") return "O body deveria ter margin: 0.";
+if (c.maxWidth !== "400px") return "O .container deveria ter max-width: 400px.";
+if (c.paddingTop !== "20px") return "Falta padding: 20px no .container.";
+if (c.backgroundColor !== "rgb(254, 249, 195)") return "O fundo do .container deveria ser #FEF9C3.";
+if (parseFloat(c.marginLeft) < 10 || c.marginLeft !== c.marginRight) return "O .container não está centralizado: use margin: 0 auto.";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Link que vira botão">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar inline-block para dar tamanho a um link.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.botao</code>: <code>display: inline-block;</code>, <code>padding: 12px 24px;</code>,</li><li><code>background-color: #F97316;</code>, <code>color: white;</code>, <code>text-decoration: none;</code> e <code>border-radius: 8px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Dois botões laranja, lado a lado, com texto branco</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque <code>inline-block</code> por <code>block</code>: cada botão ocupa uma linha.</div>
+<template class="stage"><p>Gostou do curso?</p>
+<a href="#" class="botao">Inscrever-se</a>
+<a href="#" class="botao">Saber mais</a></template>
+<script type="text/x-code">
+.botao {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".botao"));
+if (c.display !== "inline-block") return "Falta display: inline-block no .botao.";
+if (c.paddingTop !== "12px" || c.paddingLeft !== "24px") return "O padding deveria ser 12px 24px.";
+if (c.backgroundColor !== "rgb(249, 115, 22)") return "O fundo deveria ser #F97316.";
+if (c.color !== "rgb(255, 255, 255)") return "O texto deveria ser white.";
+if (c.textDecorationLine !== "none") return "Falta text-decoration: none.";
+return c.borderTopLeftRadius === "8px" || "Falta border-radius: 8px.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Escondendo o rascunho">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Tirar um elemento da página com display: none.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Regra <code>.rascunho</code> com <code>display: none;</code>.</li><li>Regra <code>.aviso</code> com <code>opacity: 0.5;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>O parágrafo &quot;RASCUNHO&quot; some; o aviso fica meio transparente</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque <code>display: none</code> por <code>visibility: hidden</code>.</div>
+<template class="stage"><h2>Post publicado</h2>
+<p class="rascunho">RASCUNHO: não mostrar ainda.</p>
+<p>O texto do post.</p>
+<p class="aviso">Aviso: comentários fechados.</p></template>
+<script type="text/x-code">
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (cs(".rascunho").display !== "none") return "O .rascunho deveria ter display: none.";
+return cs(".aviso").opacity === "0.5" || "O .aviso deveria ter opacity: 0.5.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Cartão de produto">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Juntar tudo num cartão de produto bonito.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>* { box-sizing: border-box; }</code> e <code>body</code> com <code>margin: 0;</code>, <code>background-color: #F1F5F9;</code> e <code>font-family: Arial, sans-serif;</code>.</li><li><code>.card</code>: <code>width: 280px;</code>, <code>margin: 40px auto;</code>, <code>padding: 20px;</code>, <code>background-color: white;</code>, <code>border-radius: 16px;</code> e <code>box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);</code>.</li><li><code>.preco</code>: <code>color: #16A34A;</code>, <code>font-size: 28px;</code> e <code>font-weight: bold;</code>.</li><li><code>.botao</code>: <code>display: block;</code>, <code>padding: 12px;</code>, <code>background-color: #F97316;</code>, <code>color: white;</code>, <code>text-align: center;</code>, <code>text-decoration: none;</code> e <code>border-radius: 8px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Cartão branco de 280px flutuando no centro, preço verde grande e botão laranja ocupando a largura toda</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Dê uma <code>border: 1px solid #E2E8F0</code> ao cartão e veja se a largura muda (não muda: border-box!).</div>
+<template class="stage"><div class="card">
+  <h2>Curso de JavaScript</h2>
+  <p>Da lógica ao DOM, aos sábados.</p>
+  <p class="preco">R$ 99</p>
+  <a href="#" class="botao">Matricular</a>
+</div></template>
+<script type="text/x-code">
+* {
+  
+}
+
+body {
+  
+}
+
+.card {
+  
+}
+
+.preco {
+  
+}
+
+.botao {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+const b = cs("body");
+if (b.marginTop !== "0px") return "O body deveria ter margin: 0.";
+if (b.backgroundColor !== "rgb(241, 245, 249)") return "O fundo do body deveria ser #F1F5F9.";
+const c = cs(".card");
+if (c.boxSizing !== "border-box") return "Falta a regra * { box-sizing: border-box; }.";
+if (c.width !== "280px") return "O .card deveria ter width: 280px.";
+if (c.marginTop !== "40px" || parseFloat(c.marginLeft) < 10 || c.marginLeft !== c.marginRight) return "O .card precisa de margin: 40px auto (centralizado).";
+if (c.paddingTop !== "20px") return "Falta padding: 20px no .card.";
+if (c.backgroundColor !== "rgb(255, 255, 255)") return "O .card deveria ser white.";
+if (c.borderTopLeftRadius !== "16px") return "Falta border-radius: 16px no .card.";
+if (c.boxShadow === "none") return "Falta a box-shadow no .card.";
+const p = cs(".preco");
+if (p.color !== "rgb(22, 163, 74)" || p.fontSize !== "28px" || +p.fontWeight < 700) return "O .preco precisa de color #16A34A, font-size 28px e font-weight bold.";
+const t = cs(".botao");
+if (t.display !== "block") return "O .botao precisa de display: block.";
+if (t.backgroundColor !== "rgb(249, 115, 22)" || t.color !== "rgb(255, 255, 255)") return "O .botao deveria ser laranja #F97316 com texto white.";
+if (t.textAlign !== "center" || t.textDecorationLine !== "none") return "O .botao precisa de text-align: center e text-decoration: none.";
+return t.borderTopLeftRadius === "8px" || "Falta border-radius: 8px no .botao.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    stage: s.querySelector('template.stage').innerHTML.replace(/^\n/, '').replace(/\s+$/, ''),
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de CSS ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function highlightHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last));
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Aplicar para ver o CSS na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function lint(src) {
+    const clean = src.replace(/\/\*[\s\S]*?\*\//g, ''); const msgs = [];
+    const open = (clean.match(/\{/g) || []).length, close = (clean.match(/\}/g) || []).length;
+    if (open > close) msgs.push(`Tem ${open - close} chave { aberta sem a } correspondente.`);
+    if (close > open) msgs.push(`Tem ${close - open} chave } a mais.`);
+    const blocks = clean.match(/\{[^{}]*\}/g) || [];
+    for (const b of blocks) {
+      const decls = b.slice(1, -1).split(';').map(d => d.trim()).filter(Boolean);
+      for (const d of decls) {
+        const dd = d.replace(/\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '');
+        if (!dd.includes(':')) { msgs.push(`"${d.slice(0, 30)}" está sem os dois-pontos: o formato é propriedade: valor;`); break; }
+        if (dd.split(':').length > 2) { msgs.push(`Falta um ponto e vírgula depois de "${d.split(/\n/)[0].trim().slice(0, 30)}".`); break; }
+      }
+    }
+    return [...new Set(msgs)].slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(css) { return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><style>${css.replace(/<\/style/gi, '<\\/style')}</style></head><body>${exs[cur].stage}</body></html>`; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Aplicando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">CSS aplicado na prévia acima. Mude um valor e aplique de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Aplicado, mas tem erro de sintaxe' : '✓ CSS aplicado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o resultado está certo, mas corrija a sintaxe apontada acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Corrija a sintaxe'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    $('stagehtml').innerHTML = highlightHtml(e.stage);
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-css') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-css', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

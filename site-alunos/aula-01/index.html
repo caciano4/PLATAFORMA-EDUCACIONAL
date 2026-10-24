@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 1 · Objetos e arrays — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">01</div>
+      <div class="t">Variáveis, objetos e métodos de array</div>
+      <div class="s">Playground — rode os exemplos e treine nos exercícios</div><a href="/aula-01/apostila-aula-01.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a><a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><span>Saída (console)</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+        <div class="out" id="out"><div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EXEMPLOS =====================
+  Para criar um novo exemplo, copie um bloco <section class="ex"> abaixo.
+  data-group = grupo no menu | data-title = título | .desc = explicação | .try = desafio
+====================================================== -->
+<div id="examples" hidden>
+<section class="ex" data-group="Variáveis" data-title="O que é uma variável">
+  <div class="desc">Uma variável é uma <b>caixa com etiqueta</b>: a etiqueta é o <b>nome</b> e dentro fica um <b>valor</b>. Você cria a caixa uma vez e depois usa o nome para ler ou trocar o que tem dentro. <code>let</code> deixa trocar o valor; <code>const</code> não deixa.</div>
+  <div class="try"><b>Experimente:</b> tente fazer <code>escola = "Outra"</code> e veja o erro.</div>
+<script type="text/x-code">
+let idade = 20;            // let: o valor pode mudar
+const escola = "Greenn";   // const: o valor fica fixo
+
+console.log(idade, escola);
+
+idade = 21;                // trocou o conteúdo da caixa
+idade++;                   // 22
+console.log("Agora:", idade);
+</script>
+</section>
+
+<section class="ex" data-group="Variáveis" data-title="let, const e var">
+  <div class="desc">Regra da casa: use <b>const</b> por padrão e <b>let</b> quando o valor precisar mudar. O <b>var</b> é a forma antiga: ele ignora os blocos <code>{ }</code> e causa bugs. Você vai ver em código antigo, mas não use.</div>
+  <div class="try"><b>Experimente:</b> troque o <code>var</code> por <code>let</code> e veja a última linha dar erro (o certo!).</div>
+<script type="text/x-code">
+if (true) {
+  let dentroLet = "só existe aqui";
+  var dentroVar = "vaza do bloco";
+}
+
+console.log(dentroVar);           // var escapou do bloco!
+console.log(typeof dentroLet);    // "undefined": let respeitou o bloco
+</script>
+</section>
+
+<section class="ex" data-group="Variáveis" data-title="Tipos de dados e typeof">
+  <div class="desc">Os tipos básicos (primitivos) são <code>string</code>, <code>number</code>, <code>boolean</code>, <code>undefined</code> e <code>null</code>. Além deles, <code>object</code> (objetos e arrays). <code>typeof</code> diz o tipo de um valor. Pegadinhas: <code>typeof null</code> é "object" e array também é "object" (use <code>Array.isArray</code>).</div>
+  <div class="try"><b>Experimente:</b> descubra o tipo de <code>"10"</code> e de <code>10</code>.</div>
+<script type="text/x-code">
+console.log(typeof "Ana");          // string
+console.log(typeof 42);             // number
+console.log(typeof true);           // boolean
+console.log(typeof undefined);      // undefined
+console.log(typeof null);           // object (bug histórico!)
+console.log(typeof [1, 2]);         // object
+console.log(Array.isArray([1, 2])); // true
+
+let semValor;
+console.log(semValor);              // undefined: criada, mas vazia
+</script>
+</section>
+
+<section class="ex" data-group="Variáveis" data-title="Nomes de variáveis e o const que muda">
+  <div class="desc">Nomes: em <b>camelCase</b> (<code>notaFinal</code>), sem espaço, sem começar com número, sem acento. Atenção: <code>const</code> impede <b>trocar a caixa</b>, mas não impede <b>mexer no que tem dentro</b> de um array ou objeto.</div>
+  <div class="try"><b>Experimente:</b> tente <code>frutas = []</code>. Por que dá erro, se o push funcionou?</div>
+<script type="text/x-code">
+const nomeCompleto = "Ana Souza";   // camelCase
+const idade2 = 30;                  // número no fim pode
+
+const frutas = ["maçã"];
+frutas.push("uva");                 // pode: mexeu DENTRO da caixa
+console.log(frutas);
+
+const aluno = { nome: "Ana" };
+aluno.nome = "Bia";                 // pode: alterou uma propriedade
+console.log(aluno);
+</script>
+</section>
+
+<section class="ex" data-group="Objetos" data-title="Criando um objeto">
+  <div class="desc">Um objeto agrupa informações sobre <b>uma coisa</b> em pares <b>chave: valor</b>. Array é uma lista em ordem (acessa por índice); objeto é uma ficha com campos nomeados (acessa pelo nome). Acesse com <b>ponto</b> (<code>aluno.nome</code>) ou <b>colchetes</b> (<code>aluno["nome"]</code>).</div>
+  <div class="try"><b>Experimente:</b> acesse uma propriedade que não existe, como <code>aluno.email</code>.</div>
+<script type="text/x-code">
+const aluno = {
+  nome: "Ana",
+  idade: 20,
+  aprovado: true,
+  notas: [8, 9, 10],
+};
+
+console.log(aluno.nome);
+console.log(aluno["idade"]);
+console.log(aluno.notas[1]);
+console.log(`${aluno.nome} tem ${aluno.idade} anos`);
+</script>
+</section>
+
+<section class="ex" data-group="Objetos" data-title="Alterar, adicionar e remover">
+  <div class="desc">Atribuir numa chave que existe <b>altera</b>; numa chave nova <b>adiciona</b>; <code>delete</code> <b>remove</b>. Colchetes servem quando o nome da chave está numa variável.</div>
+  <div class="try"><b>Experimente:</b> troque <code>campo</code> para <code>"cidade"</code>.</div>
+<script type="text/x-code">
+const produto = { nome: "Caderno", preco: 15 };
+
+produto.preco = 18;          // altera
+produto.estoque = 3;         // adiciona
+delete produto.estoque;      // remove
+console.log(produto);
+
+const campo = "nome";
+console.log(produto[campo]); // colchetes com variável
+
+console.log("preco" in produto);  // true: a chave existe?
+</script>
+</section>
+
+<section class="ex" data-group="Objetos" data-title="Métodos: funções dentro do objeto">
+  <div class="desc">Uma propriedade pode guardar uma <b>função</b>: aí ela vira um <b>método</b> (como o <code>console.log</code> e o <code>frutas.push</code> que você já usa!). Dentro do método, <code>this</code> é o próprio objeto.</div>
+  <div class="try"><b>Experimente:</b> crie um método <code>sacar(valor)</code> que não deixa o saldo ficar negativo.</div>
+<script type="text/x-code">
+const conta = {
+  titular: "Ana",
+  saldo: 100,
+  depositar(valor) {
+    this.saldo += valor;
+  },
+  extrato() {
+    return `${this.titular}: R$ ${this.saldo}`;
+  },
+};
+
+conta.depositar(50);
+console.log(conta.extrato());
+</script>
+</section>
+
+<section class="ex" data-group="Objetos" data-title="Percorrendo um objeto">
+  <div class="desc"><code>Object.keys</code> devolve as chaves, <code>Object.values</code> os valores e <code>Object.entries</code> os pares. Com <code>for...in</code> você passa por cada chave.</div>
+  <div class="try"><b>Experimente:</b> use <code>Object.values</code> com um for...of.</div>
+<script type="text/x-code">
+const pessoa = { nome: "Ana", idade: 20, cidade: "Recife" };
+
+console.log(Object.keys(pessoa));
+console.log(Object.values(pessoa));
+
+for (const chave in pessoa) {
+  console.log(`${chave}: ${pessoa[chave]}`);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Arrays de objetos" data-title="Lista de objetos">
+  <div class="desc">Na vida real os dados chegam assim: um <b>array</b> onde cada item é um <b>objeto</b> (uma lista de alunos, de produtos, de pedidos). Juntamos tudo o que já vimos: índice, laço e ponto.</div>
+  <div class="try"><b>Experimente:</b> adicione um aluno com <code>push</code> e mostre a lista de novo.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+console.log(alunos[0].nome);
+console.log(alunos.length);
+
+for (const aluno of alunos) {
+  console.log(`${aluno.nome}: ${aluno.nota}`);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Métodos de array" data-title="map: transformar cada item">
+  <div class="desc"><code>map</code> passa por todos os itens e devolve um <b>array novo</b> com o resultado de cada um. O original não muda. Mesmo tamanho na entrada e na saída.</div>
+  <div class="try"><b>Experimente:</b> faça um map que devolve <code>`${a.nome} (${a.nota})`</code>.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+const nomes = alunos.map((aluno) => aluno.nome);
+console.log(nomes);
+
+const dobro = [1, 2, 3].map((n) => n * 2);
+console.log(dobro);
+</script>
+</section>
+
+<section class="ex" data-group="Métodos de array" data-title="filter: escolher alguns itens">
+  <div class="desc"><code>filter</code> devolve um array novo só com os itens em que a função devolve <b>true</b>. Pode sair menor que o original.</div>
+  <div class="try"><b>Experimente:</b> filtre os reprovados (nota menor que 7).</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+const aprovados = alunos.filter((aluno) => aluno.nota >= 7);
+console.log(aprovados);
+console.log(aprovados.length);
+</script>
+</section>
+
+<section class="ex" data-group="Métodos de array" data-title="find, some e every">
+  <div class="desc"><code>find</code> devolve o <b>primeiro</b> item que combina (ou <code>undefined</code>). <code>some</code> responde "<b>algum</b> combina?" e <code>every</code>, "<b>todos</b> combinam?". Os dois devolvem true ou false.</div>
+  <div class="try"><b>Experimente:</b> procure um aluno que não existe com find.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+const caio = alunos.find((a) => a.nome === "Caio");
+console.log(caio);
+
+console.log(alunos.some((a) => a.nota < 6));   // alguém abaixo de 6?
+console.log(alunos.every((a) => a.nota > 4));  // todos acima de 4?
+</script>
+</section>
+
+<section class="ex" data-group="Métodos de array" data-title="reduce: juntar tudo num valor só">
+  <div class="desc"><code>reduce</code> percorre a lista acumulando um resultado: uma soma, um total, um maior valor. Recebe a função <code>(acumulador, item) =&gt; ...</code> e o <b>valor inicial</b> do acumulador.</div>
+  <div class="try"><b>Experimente:</b> calcule a média das notas (soma / length).</div>
+<script type="text/x-code">
+const carrinho = [
+  { produto: "Caderno", preco: 20, qtd: 2 },
+  { produto: "Caneta", preco: 3.5, qtd: 3 },
+];
+
+const total = carrinho.reduce((soma, item) => soma + item.preco * item.qtd, 0);
+console.log(`Total: R$ ${total}`);
+
+// o mesmo com for...of, para comparar:
+let total2 = 0;
+for (const item of carrinho) total2 += item.preco * item.qtd;
+console.log(total2);
+</script>
+</section>
+
+<section class="ex" data-group="Métodos de array" data-title="includes, join, sort e encadeamento">
+  <div class="desc"><code>includes</code> diz se um valor está na lista; <code>join</code> junta os itens num texto; <code>sort</code> ordena (cuidado: ele <b>muda</b> o array original). Como map e filter devolvem arrays, dá para <b>encadear</b>.</div>
+  <div class="try"><b>Experimente:</b> ordene do maior para o menor trocando <code>a.nota - b.nota</code> por <code>b.nota - a.nota</code>.</div>
+<script type="text/x-code">
+const cores = ["azul", "verde"];
+console.log(cores.includes("verde"));
+console.log(cores.join(" e "));
+
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+const ranking = [...alunos].sort((a, b) => a.nota - b.nota);
+console.log(ranking.map((a) => a.nome).join(", "));
+
+const texto = alunos
+  .filter((a) => a.nota >= 7)
+  .map((a) => a.nome)
+  .join(", ");
+console.log("Aprovados:", texto);
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Desestruturação">
+  <div class="desc">Um jeito curto de tirar valores de dentro de um objeto ou array e colocar em variáveis. No objeto vale o <b>nome</b> da chave; no array vale a <b>posição</b>.</div>
+  <div class="try"><b>Experimente:</b> desestruture também a <code>cidade</code>.</div>
+<script type="text/x-code">
+const aluno = { nome: "Ana", nota: 9, cidade: "Recife" };
+
+const { nome, nota } = aluno;
+console.log(nome, nota);
+
+const [primeiro, segundo] = ["ouro", "prata", "bronze"];
+console.log(primeiro, segundo);
+
+// também nos parâmetros de uma função:
+function apresentar({ nome, cidade }) {
+  return `${nome} mora em ${cidade}`;
+}
+console.log(apresentar(aluno));
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Spread: copiar e juntar">
+  <div class="desc">Os <code>...</code> "espalham" os itens. Servem para <b>copiar</b> um array ou objeto (sem mexer no original), <b>juntar</b> listas e criar uma cópia trocando só alguns campos.</div>
+  <div class="try"><b>Experimente:</b> faça <code>const mesmo = lista</code> (sem spread), dê push e veja o original mudar também.</div>
+<script type="text/x-code">
+const lista = [1, 2, 3];
+const copia = [...lista, 4];
+console.log(lista, copia);
+
+const juntos = [...["a", "b"], ...["c"]];
+console.log(juntos);
+
+const aluno = { nome: "Ana", nota: 9 };
+const atualizado = { ...aluno, nota: 10 };
+console.log(aluno.nota, atualizado.nota);
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="JSON: objetos viram texto">
+  <div class="desc"><b>JSON</b> é o formato de texto usado para guardar e enviar dados (é assim que uma API responde). <code>JSON.stringify</code> transforma objeto em texto; <code>JSON.parse</code> faz o caminho de volta. Vamos usar muito na aula de assíncrono.</div>
+  <div class="try"><b>Experimente:</b> use <code>JSON.stringify(aluno, null, 2)</code> para um texto mais legível.</div>
+<script type="text/x-code">
+const aluno = { nome: "Ana", notas: [8, 9] };
+
+const texto = JSON.stringify(aluno);
+console.log(texto);
+console.log(typeof texto);
+
+const deVolta = JSON.parse(texto);
+console.log(deVolta.notas[1]);
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="?. e ??: evitando erros com dados que faltam">
+  <div class="desc"><code>?.</code> (encadeamento opcional) lê uma propriedade só se o que vem antes existir; se não, devolve <code>undefined</code> em vez de dar erro. <code>??</code> dá um <b>valor padrão</b> quando o valor é <code>null</code> ou <code>undefined</code>.</div>
+  <div class="try"><b>Experimente:</b> troque <code>?.</code> por <code>.</code> na primeira linha e veja o erro.</div>
+<script type="text/x-code">
+const aluno = { nome: "Ana", endereco: null };
+
+console.log(aluno.endereco?.cidade);              // undefined, sem erro
+console.log(aluno.endereco?.cidade ?? "Sem cidade"); // valor padrão
+
+const config = { volume: 0 };
+console.log(config.volume ?? 50);   // 0 (?? só troca null/undefined)
+console.log(config.volume || 50);   // 50 (|| troca qualquer falsy!)
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Espaço para testar o que a turma quiser.</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para mostrar qualquer valor aqui na saída.</div>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Variáveis" data-expect='["Ana tem 21 anos"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar variáveis com let e const e atualizar uma delas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>const nome = "Ana"</code> e <code>let idade = 20</code>.</li><li>Aumente a idade em 1 com <code>idade++</code>.</li><li>Mostre <code>`${nome} tem ${idade} anos`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Ana tem 21 anos</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Tente fazer <code>nome = "Bia"</code>. Qual erro aparece e por quê?</div>
+<script type="text/x-code">
+// const nome = ...
+// let idade = ...
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Tipos de dados" data-expect='["string", "number", "boolean", "undefined", "true"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Descobrir o tipo de cada valor com typeof.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Mostre <code>typeof</code> de cada valor da lista abaixo, um por linha.</li><li>Use <code>Array.isArray(lista)</code> para mostrar se <code>lista</code> é um array.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>string<br>number<br>boolean<br>undefined<br>true</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Descubra o tipo de <code>null</code> e de <code>{}</code>.</div>
+<script type="text/x-code">
+const texto = "10";
+const numero = 10;
+const ativo = false;
+let vazio;
+const lista = [1, 2];
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Primeiro objeto" data-expect='["Caderno custa R$ 15", "Estoque: 3"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar um objeto de produto e mostrar seus dados.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>const produto</code> com <code>nome: "Caderno"</code>, <code>preco: 15</code> e <code>estoque: 3</code>.</li><li>Mostre <code>`${produto.nome} custa R$ ${produto.preco}`</code>.</li><li>Mostre <code>`Estoque: ${produto.estoque}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Caderno custa R$ 15<br>Estoque: 3</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Acesse o preço com colchetes: <code>produto["preco"]</code>.</div>
+<script type="text/x-code">
+// const produto = {
+//   ...
+// };
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Alterando o objeto" data-expect='["Preço: 16.50", "Categoria: papelaria", "false"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mudar o preço, adicionar uma categoria e remover o estoque.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Aumente o preço em 10%: <code>produto.preco = produto.preco * 1.1</code>.</li><li>Adicione <code>produto.categoria = "papelaria"</code>.</li><li>Remova o estoque com <code>delete</code>.</li><li>Mostre <code>`Preço: ${produto.preco.toFixed(2)}`</code>, a categoria e <code>"estoque" in produto</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Preço: 16.50<br>Categoria: papelaria<br>false</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre <code>Object.keys(produto)</code> no final.</div>
+<script type="text/x-code">
+const produto = { nome: "Caderno", preco: 15, estoque: 3 };
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Método e this" data-expect='["Saldo insuficiente", "Saldo: 120"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma conta bancária com métodos de depósito e saque.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No objeto <code>conta</code>, crie o método <code>depositar(valor)</code> que soma em <code>this.saldo</code>.</li><li>Crie <code>sacar(valor)</code>: se tiver saldo, subtrai; senão mostra <code>"Saldo insuficiente"</code>.</li><li>Deposite 50, tente sacar 500, saque 30 e mostre <code>`Saldo: ${conta.saldo}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Saldo insuficiente<br>Saldo: 120</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Crie um método <code>extrato()</code> que devolve o texto do saldo.</div>
+<script type="text/x-code">
+const conta = {
+  saldo: 100,
+  // depositar(valor) { ... },
+  // sacar(valor) { ... },
+};
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Percorrendo o objeto" data-expect='["nome: Ana", "idade: 20", "cidade: Recife"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar cada campo de um objeto no formato chave: valor.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>for (const chave in pessoa)</code>.</li><li>Mostre <code>`${chave}: ${pessoa[chave]}`</code> (colchetes, porque o nome está numa variável).</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>nome: Ana<br>idade: 20<br>cidade: Recife</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça o mesmo com <code>Object.entries(pessoa)</code> e for...of.</div>
+<script type="text/x-code">
+const pessoa = { nome: "Ana", idade: 20, cidade: "Recife" };
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · map" data-expect='["ANA, CAIO, BIA"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma lista só com os nomes, em maiúsculas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>alunos.map((aluno) =&gt; ...)</code> devolvendo <code>aluno.nome.toUpperCase()</code>.</li><li>Mostre o resultado com <code>.join(", ")</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>ANA, CAIO, BIA</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça outro map que devolve <code>`${a.nome}: ${a.nota}`</code>.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+// const nomes = alunos.map(...)
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · filter" data-expect='["Ana", "Bia", "Total: 2"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar só os alunos aprovados (nota 7 ou mais).</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>alunos.filter((aluno) =&gt; aluno.nota &gt;= 7)</code>.</li><li>Percorra o resultado com <code>forEach</code> e mostre o nome de cada um.</li><li>No fim, mostre <code>`Total: ${aprovados.length}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Ana<br>Bia<br>Total: 2</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Filtre os reprovados.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+// const aprovados = ...
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · find" data-expect='["Caio tirou 5", "Não encontrado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Achar um aluno pelo nome.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>alunos.find((a) =&gt; a.nome === "Caio")</code>.</li><li>Mostre <code>`${caio.nome} tirou ${caio.nota}`</code>.</li><li>Procure <code>"Léo"</code> e mostre o resultado com <code>?? "Não encontrado"</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Caio tirou 5<br>Não encontrado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use <code>some</code> para saber se alguém tirou 10.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · reduce" data-expect='["Total: R$ 140.40"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Calcular o total de um carrinho de compras.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>carrinho.reduce((soma, item) =&gt; soma + item.preco * item.qtd, 0)</code>.</li><li>Mostre <code>`Total: R$ ${total.toFixed(2)}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Total: R$ 140.40</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Calcule também quantos itens tem no carrinho (soma das quantidades).</div>
+<script type="text/x-code">
+const carrinho = [
+  { produto: "Caderno", preco: 20, qtd: 2 },
+  { produto: "Caneta", preco: 3.5, qtd: 3 },
+  { produto: "Mochila", preco: 89.9, qtd: 1 },
+];
+
+// const total = ...
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 11 · Desestruturação e spread" data-expect='["Ana mora em Recife", "Original: Recife", "Cópia: Salvador"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Tirar dados de um objeto e criar uma cópia alterada sem mexer no original.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Desestruture: <code>const { nome, cidade } = pessoa;</code></li><li>Mostre <code>`${nome} mora em ${cidade}`</code>.</li><li>Crie <code>const mudou = { ...pessoa, cidade: "Salvador" }</code>.</li><li>Mostre <code>`Original: ${pessoa.cidade}`</code> e <code>`Cópia: ${mudou.cidade}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Ana mora em Recife<br>Original: Recife<br>Cópia: Salvador</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça <code>const outra = pessoa</code> (sem spread), mude a cidade e veja o original mudar junto.</div>
+<script type="text/x-code">
+const pessoa = { nome: "Ana", cidade: "Recife" };
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 12 · Desafio: relatório da turma" data-expect='["Média: 7.0", "Aprovados: Ana (9), Bia (7)", "Todos aprovados? false"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar um relatório encadeando os métodos de array.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Calcule a média da turma com <code>reduce</code> e mostre <code>`Média: ${media.toFixed(1)}`</code>.</li><li>Encadeie <code>filter</code> (nota &gt;= 7), <code>map</code> (<code>`${a.nome} (${a.nota})`</code>) e <code>join(", ")</code>.</li><li>Mostre <code>`Aprovados: ...`</code>.</li><li>Use <code>every</code> para mostrar <code>`Todos aprovados? ${...}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Média: 7.0<br>Aprovados: Ana (9), Bia (7)<br>Todos aprovados? false</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Ordene os aprovados da maior para a menor nota antes do map.</div>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+// seu código aqui
+</script>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Carrega exemplos ----------
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group,
+    title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML,
+    tryit: s.querySelector('.try') ? s.querySelector('.try').innerHTML : '',
+    expect: s.dataset.expect ? JSON.parse(s.dataset.expect) : null,
+    code: s.querySelector('script').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n'
+  }));
+  const edits = exs.map(e => e.code);   // guarda o que foi editado em cada exemplo
+  let cur = 0;
+
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status');
+
+  // ---------- Menu ----------
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title));
+    b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- Destaque de sintaxe ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src){
+    let h = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint(){ hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart, en = code.selectionEnd;
+      code.setRangeText('  ', s, en, 'end'); code.dispatchEvent(new Event('input'));
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- Mostrar exemplo ----------
+  function show(i){
+    cur = Math.max(0, Math.min(exs.length - 1, i));
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title;
+    $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur;
+    $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); try { history.replaceState(null, '', '#' + (cur + 1)); } catch(_){}
+  }
+
+  // ---------- Saída ----------
+  const MAX_LINES = 300; let lines = 0, hidden = 0, got = [];
+  function clearOut(){ out.innerHTML = '<div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; hidden = 0; got = []; }
+  function addLine(text, cls){
+    if (lines === 0) out.innerHTML = '';
+    if (!cls) got.push(String(text).trim());
+    if (lines >= MAX_LINES && !cls) { hidden++; return; }
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+
+  // Dicas em português para erros comuns
+  function dica(msg){
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/Illegal break|Illegal continue|continue statement/.test(msg)) return 'Dica: break e continue só funcionam dentro de for, for...of e while. No forEach eles não funcionam: ele sempre percorre a lista inteira.';
+    if (/before initialization/.test(msg)) return 'Dica: a variável foi usada antes de ser criada. Mova a declaração para cima.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+
+  // ---------- Execução em Worker (protege contra loop infinito) ----------
+  const workerSrc = `
+    const fmt = v => typeof v === 'string' ? v
+      : v === undefined ? 'undefined'
+      : typeof v === 'function' ? '[função]'
+      : (typeof v === 'object' && v !== null) ? (()=>{ try { return JSON.stringify(v, null, 1).replace(/\\n\\s*/g,' '); } catch(e){ return String(v); } })()
+      : String(v);
+    self.onmessage = e => {
+      const send = (t, a) => postMessage({ t, x: a.map(fmt).join(' ') });
+      const console = { log:(...a)=>send('log',a), info:(...a)=>send('log',a), warn:(...a)=>send('log',a), error:(...a)=>send('err',a) };
+      try { const r = new Function('console', e.data)(console); postMessage({ t:'done', r: r === undefined ? null : fmt(r) }); }
+      catch (err) { postMessage({ t:'error', x: err.name + ': ' + err.message }); postMessage({ t:'done' }); }
+    };`;
+  let workerURL = null;
+  try { workerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })); } catch(_) {}
+  let worker = null, timer = null, t0 = 0, lastRet = null;
+
+  function finish(ok, msg){
+    clearTimeout(timer); timer = null;
+    if (worker) { worker.terminate(); worker = null; }
+    if (hidden) addLine(`… mais ${hidden} linha(s) não mostrada(s)`, 'tip');
+    if (lines === 0 && ok) out.innerHTML = '<div class="empty">(O código rodou, mas não mostrou nada. Faltou um console.log?)</div>';
+    const retHint = ok && lastRet !== null && got.length === 0;
+    if (retHint) addLine(`Seu código calculou "${lastRet}", mas o return não mostra nada na tela. Para aparecer aqui na saída, troque o return por console.log(...).`, 'tip');
+    const exp = exs[cur].expect;
+    if (ok && exp) {
+      let k = 0; for (const g of got) { if (k < exp.length && g === exp[k]) k++; }
+      if (k === exp.length) { addLine('🎉 Correto! A saída bate com a esperada. Agora faça o "teste também" lá em cima.', 'win'); msg = '✓ Exercício resolvido!'; }
+      else if (retHint) { ok = false; msg = '✗ Quase! Use console.log em vez de return'; }
+      else if (got.length === 0) { addLine('Nada apareceu na saída. Se você usou return, falta mostrar o resultado: por exemplo console.log(dobro(7)) em vez de só dobro(7).', 'tip'); ok = false; msg = '✗ Nada foi mostrado: faltou um console.log?'; }
+      else { addLine('Ainda não bateu. Compare com a "Saída esperada" lá em cima: cada letra, espaço e acento conta. Esperado: ' + exp.slice(0, 4).join(' | ') + (exp.length > 4 ? ' …' : ''), 'tip'); ok = false; msg = '✗ Ainda não: confira a saída esperada'; }
+    }
+    status.className = 'status ' + (ok ? 'ok' : 'bad'); status.textContent = msg;
+  }
+
+  function run(){
+    if (worker) worker.terminate();
+    clearOut(); out.innerHTML = ''; lines = 0; lastRet = null;
+    status.className = 'status'; status.textContent = 'Executando…';
+    t0 = performance.now();
+    const src = code.value;
+    let w = null;
+    try { if (workerURL) w = new Worker(workerURL); } catch(_) { w = null; }
+    if (!w) return runInline(src);
+    worker = w;
+    worker.onmessage = ({ data }) => {
+      if (data.t === 'log') addLine(data.x);
+      else if (data.t === 'err') addLine(data.x, 'err');
+      else if (data.t === 'error') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+      else if (data.t === 'done' && timer) { lastRet = data.r; } if (data.t === 'done' && timer) finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`);
+    };
+    worker.onerror = ev => { ev.preventDefault(); addLine(ev.message || 'Erro', 'err'); const d = dica(ev.message || ''); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); };
+    timer = setTimeout(() => {
+      addLine('⏱ Execução interrompida depois de 2 segundos: parece um loop infinito! A condição do while nunca ficou false.', 'tip');
+      finish(false, '✗ Loop infinito interrompido');
+    }, 2000);
+    worker.postMessage(src);
+  }
+
+  // Plano B (navegadores que bloqueiam Worker em arquivo local): roda direto, com limite de linhas
+  function runInline(src){
+    let count = 0;
+    const fmt = v => typeof v === 'string' ? v : (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v);
+    const fake = { log: (...a) => { if (++count > 2000) throw new Error('LOOP'); addLine(a.map(fmt).join(' ')); } };
+    fake.info = fake.warn = fake.log; fake.error = (...a) => addLine(a.map(fmt).join(' '), 'err');
+    timer = 1;
+    try { const r = new Function('console', src)(fake); lastRet = r === undefined ? null : fmt(r); finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`); }
+    catch (err) {
+      if (err.message === 'LOOP') { addLine('⏱ Execução interrompida: parece um loop infinito!', 'tip'); finish(false, '✗ Loop infinito interrompido'); }
+      else { addLine(err.name + ': ' + err.message, 'err'); const d = dica(err.message); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+    }
+  }
+
+  // ---------- Botões ----------
+  $('run').onclick = run;
+  $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; code.value = edits[cur]; paint(); clearOut(); };
+  $('prev').onclick = () => show(cur - 1);
+  $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement;
+  const defFs = window.innerWidth < 1000 ? 16 : 22;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs') || defFs; } catch(_){}
+  const setFs = v => { fs = Math.max(14, Math.min(40, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs', fs); } catch(_){} };
+  setFs(fs);
+  $('bigger').onclick = () => setFs(fs + 2);
+  $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === code) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  const start = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

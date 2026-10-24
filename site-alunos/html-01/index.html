@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML 1 · Estrutura e texto — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#F97316}
+  .nav.on{color:#FDBA74}
+  .work{grid-template-columns:1fr 1.1fr}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#FDBA74}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#F97316">H1</div>
+      <div class="t">HTML: a estrutura de uma página</div>
+      <div class="s">Escreva o HTML e veja a página ao lado</div>
+      <a href="/html-01/apostila-html-01.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F97316;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#html" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#F97316"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#F97316;border-color:#F97316">▶ Visualizar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>index.html · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> visualiza</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código HTML"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="O básico" data-title="O que é HTML">
+  <div class="desc">HTML é a linguagem que descreve <b>o que tem</b> numa página: títulos, textos, listas, imagens, botões. Ela não é programação (não tem if nem laço): é <b>marcação</b>. Cada pedaço é marcado com uma <b>tag</b>, que abre <code>&lt;p&gt;</code> e fecha <code>&lt;/p&gt;</code>. O navegador lê o HTML e desenha a página.</div>
+  <div class="try"><b>Experimente:</b> troque o texto dentro do <code>&lt;h1&gt;</code> e visualize de novo.</div>
+<script type="text/x-code">
+<h1>Minha primeira página</h1>
+<p>Olá, mundo! Isso é um parágrafo.</p>
+</script>
+</section>
+
+<section class="ex" data-group="O básico" data-title="A estrutura de um arquivo HTML">
+  <div class="desc">Todo arquivo HTML tem o mesmo esqueleto: o <code>&lt;!DOCTYPE html&gt;</code> avisa que é HTML moderno; <code>&lt;html&gt;</code> envolve tudo; <code>&lt;head&gt;</code> guarda informações <b>sobre</b> a página (título da aba, codificação); <code>&lt;body&gt;</code> guarda o que <b>aparece</b>. Repare que o título da aba não aparece dentro da página.</div>
+  <div class="try"><b>Experimente:</b> mude o <code>&lt;title&gt;</code>. Dica: ele aparece na aba do navegador e no Google.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Greenn School</title>
+</head>
+<body>
+  <h1>Bem-vindo à Greenn School</h1>
+  <p>Aqui você aprende a programar.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="O básico" data-title="Tags, conteúdo e aninhamento">
+  <div class="desc">Uma tag <b>abre</b>, tem o <b>conteúdo</b> e <b>fecha</b> com a barra. Tags podem ficar <b>dentro</b> de outras (aninhadas): quem abre por último fecha primeiro. Espaços e quebras de linha no código <b>não</b> aparecem na página: o navegador junta tudo.</div>
+  <div class="try"><b>Experimente:</b> feche o <code>&lt;p&gt;</code> antes do <code>&lt;/strong&gt;</code> e veja o aviso da verificação.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Tags</title>
+</head>
+<body>
+  <p>Este texto tem uma palavra em <strong>negrito</strong> e outra em <em>itálico</em>.</p>
+  <p>
+    Várias
+    linhas
+    no código viram uma só linha na página.
+  </p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Títulos: de h1 a h6">
+  <div class="desc"><code>&lt;h1&gt;</code> é o título principal (só <b>um</b> por página) e os outros vão diminuindo até o <code>&lt;h6&gt;</code>. Use pela <b>hierarquia</b> (capítulo, seção, subseção), não pelo tamanho: o tamanho a gente muda depois com CSS.</div>
+  <div class="try"><b>Experimente:</b> adicione um <code>&lt;h4&gt;</code> e um <code>&lt;h6&gt;</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Títulos</title>
+</head>
+<body>
+  <h1>Curso de Programação</h1>
+  <h2>Módulo 1: HTML</h2>
+  <h3>Aula 1: Estrutura</h3>
+  <h2>Módulo 2: CSS</h2>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Parágrafos, quebras e linha horizontal">
+  <div class="desc"><code>&lt;p&gt;</code> é um parágrafo (o navegador separa com espaço). <code>&lt;br&gt;</code> quebra a linha dentro do mesmo parágrafo e <code>&lt;hr&gt;</code> desenha uma linha horizontal. As duas são tags <b>vazias</b>: não têm conteúdo nem fechamento.</div>
+  <div class="try"><b>Experimente:</b> tire o <code>&lt;br&gt;</code> e veja o endereço virar uma linha só.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Parágrafos</title>
+</head>
+<body>
+  <p>Primeiro parágrafo.</p>
+  <p>Segundo parágrafo, separado do primeiro.</p>
+  <hr>
+  <p>Rua das Flores, 123<br>Centro<br>Recife - PE</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Negrito, itálico e outras marcações">
+  <div class="desc"><code>&lt;strong&gt;</code> dá <b>importância</b> (fica em negrito) e <code>&lt;em&gt;</code> dá <b>ênfase</b> (itálico). Também existem <code>&lt;small&gt;</code>, <code>&lt;mark&gt;</code> (marca-texto), <code>&lt;del&gt;</code> (riscado) e <code>&lt;code&gt;</code> (código).</div>
+  <div class="try"><b>Experimente:</b> marque o preço antigo com <code>&lt;del&gt;</code> e o novo com <code>&lt;mark&gt;</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Marcações</title>
+</head>
+<body>
+  <p><strong>Atenção:</strong> a aula começa às <em>7h</em>.</p>
+  <p>De <del>R$ 199</del> por <mark>R$ 99</mark> <small>(até sexta)</small></p>
+  <p>Para mostrar algo use <code>console.log()</code>.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Comentários e caracteres especiais">
+  <div class="desc">Comentários <code>&lt;!-- assim --&gt;</code> não aparecem na página: servem para você e seus colegas. Como <code>&lt;</code> e <code>&amp;</code> têm significado no HTML, para mostrá-los use as <b>entidades</b>: <code>&amp;lt;</code>, <code>&amp;gt;</code>, <code>&amp;amp;</code>, <code>&amp;copy;</code>.</div>
+  <div class="try"><b>Experimente:</b> escreva <code>&lt;p&gt;</code> dentro de um parágrafo sem a entidade. O que acontece?</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Especiais</title>
+</head>
+<body>
+  <!-- Este comentário não aparece -->
+  <p>Em HTML, um parágrafo é a tag &lt;p&gt;.</p>
+  <p>Greenn &amp; Kore &copy; 2026</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Caixa vs linha: div e span">
+  <div class="desc"><code>&lt;div&gt;</code> é uma <b>caixa</b> genérica: ocupa a linha inteira e serve para agrupar. <code>&lt;span&gt;</code> é um pedaço <b>dentro</b> de uma linha. Os dois não têm visual próprio; ganham vida com CSS, no próximo módulo.</div>
+  <div class="try"><b>Experimente:</b> troque os <code>&lt;div&gt;</code> por <code>&lt;span&gt;</code> e veja ficarem lado a lado.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>div e span</title>
+</head>
+<body>
+  <div>Primeira caixa</div>
+  <div>Segunda caixa (em outra linha)</div>
+  <p>Uma <span>palavra</span> dentro da linha.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Um arquivo HTML completo para testar o que quiser.</div>
+  <div class="try"><b>Dica:</b> comece sempre pelo esqueleto: doctype, html, head e body.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Área livre</title>
+</head>
+<body>
+  <h1>Testes</h1>
+  <p>Escreva aqui.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Primeiro título">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma página com um título e um parágrafo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Dentro do <code>&lt;body&gt;</code>, escreva um <code>&lt;h1&gt;</code> com o texto <code>Meu site</code>.</li><li>Abaixo, um <code>&lt;p&gt;</code> com <code>Feito na Greenn School</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Título grande &quot;Meu site&quot;<br>Parágrafo &quot;Feito na Greenn School&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque o h1 por h3 e compare o tamanho.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercício 1</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const h = doc.querySelector("h1"); if (!h) return "Não achei nenhum <h1>. Lembre: abre com <h1> e fecha com </h1>.";
+if (h.textContent.trim() !== "Meu site") return "O h1 deveria ter o texto \"Meu site\", mas tem \"" + h.textContent.trim() + "\".";
+const p = doc.querySelector("p"); if (!p) return "Falta o parágrafo <p>.";
+return p.textContent.trim() === "Feito na Greenn School" || "O <p> deveria ter \"Feito na Greenn School\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Título da aba">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Dar um título para a aba do navegador.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No <code>&lt;head&gt;</code>, coloque <code>&lt;title&gt;Portfólio da Ana&lt;/title&gt;</code>.</li><li>Repare: ele aparece na aba, não dentro da página.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Aba: &quot;Portfólio da Ana&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque o <code>&lt;title&gt;</code> dentro do body e veja o que acontece.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- o title vai aqui -->
+</head>
+<body>
+  <h1>Ana Souza</h1>
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const t = doc.querySelector("head > title"); if (!t) return "O <title> precisa ficar dentro do <head>.";
+return t.textContent.trim() === "Portfólio da Ana" || "O title deveria ser \"Portfólio da Ana\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Hierarquia de títulos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar a estrutura de um artigo com três níveis de título.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;h1&gt;</code> com <code>Receita de bolo</code>.</li><li>Um <code>&lt;h2&gt;</code> com <code>Ingredientes</code> e outro <code>&lt;h2&gt;</code> com <code>Preparo</code>.</li><li>Dentro de Preparo, um <code>&lt;h3&gt;</code> com <code>Massa</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>h1 Receita de bolo<br>  h2 Ingredientes<br>  h2 Preparo<br>    h3 Massa</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um h3 "Cobertura" também em Preparo.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Receita</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const g = s => [...doc.querySelectorAll(s)].map(e => e.textContent.trim());
+if (g("h1").join() !== "Receita de bolo") return "Precisa de exatamente um <h1> com \"Receita de bolo\".";
+const h2 = g("h2"); if (h2.length !== 2 || h2[0] !== "Ingredientes" || h2[1] !== "Preparo") return "Precisa de dois <h2>: \"Ingredientes\" e depois \"Preparo\".";
+return g("h3").includes("Massa") || "Falta o <h3> \"Massa\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Endereço com quebras">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Escrever um endereço em três linhas dentro de um único parágrafo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um só <code>&lt;p&gt;</code> com <code>Av. Brasil, 500</code>, <code>Boa Viagem</code> e <code>Recife - PE</code>.</li><li>Separe as três linhas com <code>&lt;br&gt;</code> (sem fechamento!).</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Av. Brasil, 500<br>Boa Viagem<br>Recife - PE (um parágrafo, 3 linhas)</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque um <code>&lt;hr&gt;</code> antes do endereço.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Endereço</title>
+</head>
+<body>
+  <h2>Onde estamos</h2>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const ps = [...doc.querySelectorAll("p")]; const p = ps.find(x => /Av\. Brasil/.test(x.textContent));
+if (!p) return "Não achei um <p> com \"Av. Brasil, 500\".";
+if (p.querySelectorAll("br").length < 2) return "Use dois <br> para separar as três linhas dentro do mesmo <p>.";
+return /Boa Viagem/.test(p.textContent) && /Recife - PE/.test(p.textContent) || "O parágrafo precisa ter as três linhas: Av. Brasil, 500 / Boa Viagem / Recife - PE.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Destaques no texto">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Marcar partes de um parágrafo com strong, em e mark.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Num <code>&lt;p&gt;</code>, escreva <code>A prova é sexta às 8h. Não esqueça!</code></li><li>Coloque <code>sexta</code> em <code>&lt;strong&gt;</code>, <code>8h</code> em <code>&lt;em&gt;</code> e <code>Não esqueça!</code> em <code>&lt;mark&gt;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>A prova é **sexta** às *8h*. [Não esqueça!]</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Risque a palavra "sexta" com <code>&lt;del&gt;</code> e escreva "quinta" depois.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Destaques</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const q = s => (doc.querySelector(s) || {}).textContent;
+if ((q("strong") || "").trim() !== "sexta") return "A palavra \"sexta\" deveria estar dentro de <strong>.";
+if ((q("em") || "").trim() !== "8h") return "\"8h\" deveria estar dentro de <em>.";
+return (q("mark") || "").trim() === "Não esqueça!" || "\"Não esqueça!\" deveria estar dentro de <mark>.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Mostrando tags como texto">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Explicar HTML dentro de uma página HTML, sem o navegador interpretar as tags.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Num <code>&lt;p&gt;</code>, escreva: <code>Para um título use &lt;h1&gt;</code>, mas trocando <code>&lt;</code> por <code>&amp;lt;</code> e <code>&gt;</code> por <code>&amp;gt;</code>.</li><li>Em outro <code>&lt;p&gt;</code>, escreva <code>Greenn &amp;amp; Kore</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Para um título use &lt;h1&gt;<br>Greenn &amp; Kore</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um © com <code>&amp;copy;</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Entidades</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const txt = [...doc.querySelectorAll("p")].map(p => p.textContent.trim());
+if (!txt.some(t => t === "Para um título use <h1>")) return doc.querySelector("p h1, body > h1") ? "O navegador interpretou o <h1> como título. Use &lt;h1&gt; para mostrar as tags como texto." : "Falta um <p> com exatamente: Para um título use <h1> (usando &lt; e &gt;).";
+return txt.includes("Greenn & Kore") || "Falta um <p> com \"Greenn & Kore\" (use &amp;amp; para o &).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Fechando as tags">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Consertar um HTML com tags fora de ordem e sem fechar.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>O código abaixo tem 3 problemas. Visualize e leia os avisos da verificação.</li><li>Conserte: cada tag fechada, e na ordem certa (quem abre por último fecha primeiro).</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Verificação sem avisos<br>Título, parágrafo em negrito parcial e itálico</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque o strong por em e veja se continua tudo fechado.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Conserte</title>
+</head>
+<body>
+  <h1>Aula de HTML
+  <p>Hoje vamos <strong>fechar tags.</p></strong>
+  <p>Agora <em>entendi.</p>
+</body>
+</html>
+</script>
+<script type="text/x-check">
+if (src.includes("</p></strong>")) return "O <strong> foi aberto depois do <p>, então precisa fechar antes: </strong></p>.";
+const h = doc.querySelector("h1"); if (!h || !src.includes("</h1>")) return "Falta fechar o <h1> com </h1>.";
+if (!src.includes("</em>")) return "Falta fechar o <em> com </em>.";
+const s = doc.querySelector("p strong"); const e = doc.querySelector("p em");
+return (s && e && s.textContent.trim() === "fechar tags." && e.textContent.trim() === "entendi.") || "Confira se <strong> envolve só \"fechar tags.\" e <em> só \"entendi.\", ambos dentro dos seus <p>.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Desafio: página pessoal">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar uma mini página pessoal com tudo o que aprendemos.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Título da aba com o seu nome.</li><li>Um <code>&lt;h1&gt;</code> com o seu nome e um <code>&lt;h2&gt;</code> <code>Sobre mim</code>.</li><li>Um parágrafo de apresentação com pelo menos uma palavra em <code>&lt;strong&gt;</code>.</li><li>Um <code>&lt;hr&gt;</code> e depois um <code>&lt;h2&gt;</code> <code>Contato</code> com um parágrafo de endereço usando <code>&lt;br&gt;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Aba com seu nome<br>h1 nome, h2 Sobre mim, parágrafo com negrito<br>linha, h2 Contato, endereço em 2+ linhas</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um comentário HTML no topo do body com a data de hoje.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const t = doc.querySelector("head > title"); if (!t || !t.textContent.trim()) return "Preencha o <title> no head com o seu nome.";
+if (!doc.querySelector("h1") || !doc.querySelector("h1").textContent.trim()) return "Falta o <h1> com o seu nome.";
+const h2 = [...doc.querySelectorAll("h2")].map(e => e.textContent.trim());
+if (!h2.includes("Sobre mim")) return "Falta o <h2> \"Sobre mim\".";
+if (!doc.querySelector("p strong")) return "O parágrafo de apresentação precisa de uma palavra em <strong>.";
+if (!doc.querySelector("hr")) return "Falta o <hr> antes do Contato.";
+if (!h2.includes("Contato")) return "Falta o <h2> \"Contato\".";
+return [...doc.querySelectorAll("p")].some(p => p.querySelectorAll("br").length >= 1) || "O endereço precisa de pelo menos um <br> dentro do <p>.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de HTML ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<!DOCTYPE[^>]*>)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="c">${esc(m[2])}</span>`;
+      else {
+        const attrs = m[5].replace(/([\w-]+)(=)("[^"]*"|'[^']*'|[^\s>]+)?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>${eq ? '=' : ''}${v ? `<span class="s">${esc(v)}</span>` : ''}`);
+        h += `<span class="k">${esc(m[3])}${esc(m[4])}</span>${attrs}<span class="k">${esc(m[6])}</span>`;
+      }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Visualizar para renderizar o HTML na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  // diagnóstico simples de tags não fechadas
+  const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr','!doctype']);
+  function lint(src) {
+    const stack = [], msgs = [];
+    const re = /<\/?([a-zA-Z][\w-]*)[^>]*?(\/?)>/g; let m;
+    const clean = src.replace(/<!--[\s\S]*?-->/g, '');
+    while ((m = re.exec(clean))) {
+      const tag = m[1].toLowerCase(), closing = m[0][1] === '/', self = m[2] === '/';
+      if (VOID.has(tag) || self) continue;
+      if (!closing) stack.push(tag);
+      else { const i = stack.lastIndexOf(tag); if (i === -1) msgs.push(`Tem um </${tag}> fechando sem a abertura <${tag}>.`); else { if (i !== stack.length - 1) msgs.push(`A tag <${stack[stack.length - 1]}> foi aberta depois de <${tag}>, então precisa fechar antes dela.`); stack.splice(i); } }
+    }
+    for (const t of stack) if (!['html','head','body','li','p','td','th','tr','option'].includes(t)) msgs.push(`A tag <${t}> foi aberta e não foi fechada com </${t}>.`);
+    return msgs.slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(src) { return src; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Renderizando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">Página renderizada acima. Mude o HTML e visualize de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Renderizado, mas tem tag sem fechar' : '✓ Renderizado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o conteúdo está certo, mas feche as tags apontadas acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Feche as tags'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-html') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-html', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 6 · Assíncrono e APIs — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">06</div>
+      <div class="t">JavaScript assíncrono e APIs</div>
+      <div class="s">Playground — rode os exemplos e treine nos exercícios</div><a href="/aula-06/apostila-aula-06.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a><a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><span>Saída (console)</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+        <div class="out" id="out"><div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EXEMPLOS =====================
+  Para criar um novo exemplo, copie um bloco <section class="ex"> abaixo.
+  data-group = grupo no menu | data-title = título | .desc = explicação | .try = desafio
+====================================================== -->
+<div id="examples" hidden>
+<section class="ex" data-group="Esperando" data-title="Síncrono x assíncrono">
+  <div class="desc"><b>Síncrono</b>: uma linha de cada vez, cada uma espera a anterior terminar. <b>Assíncrono</b>: você pede algo que demora (um timer, um dado da internet) e o programa <b>segue em frente</b>; quando ficar pronto, ele avisa. Analogia: você pede uma pizza e vai arrumar a mesa, não fica parado olhando para a porta.</div>
+  <div class="try"><b>Experimente:</b> mude o tempo para <code>0</code>. A pizza chega antes de arrumar a mesa?</div>
+<script type="text/x-code">
+console.log("1. Pedi a pizza");
+
+setTimeout(() => {
+  console.log("3. A pizza chegou! 🍕");
+}, 1000);
+
+console.log("2. Fui arrumar a mesa");
+</script>
+</section>
+
+<section class="ex" data-group="Esperando" data-title="setTimeout e clearTimeout">
+  <div class="desc"><code>setTimeout(função, ms)</code> agenda a função para rodar <b>uma vez</b>, depois de um tempo em milissegundos (1000 ms = 1 segundo). Ele devolve um número de identificação; <code>clearTimeout(id)</code> cancela o agendamento.</div>
+  <div class="try"><b>Experimente:</b> apague a linha do clearTimeout.</div>
+<script type="text/x-code">
+setTimeout(() => console.log("Lembrete: beber água 💧"), 500);
+
+const id = setTimeout(() => {
+  console.log("Isso não vai aparecer");
+}, 800);
+
+clearTimeout(id);   // cancelou!
+console.log("Agendado e cancelado.");
+</script>
+</section>
+
+<section class="ex" data-group="Esperando" data-title="setInterval e clearInterval">
+  <div class="desc"><code>setInterval(função, ms)</code> repete a função <b>a cada</b> intervalo, para sempre, até você chamar <code>clearInterval(id)</code>. Esquecer o clearInterval é o "loop infinito" do mundo assíncrono.</div>
+  <div class="try"><b>Experimente:</b> faça contar de 5 até 1.</div>
+<script type="text/x-code">
+let contador = 3;
+
+const id = setInterval(() => {
+  console.log(contador);
+  contador--;
+
+  if (contador === 0) {
+    clearInterval(id);
+    console.log("Fogo! 🚀");
+  }
+}, 400);
+</script>
+</section>
+
+<section class="ex" data-group="Callbacks" data-title="Callbacks e o callback hell">
+  <div class="desc">Antes das Promises, a forma de "avisar quando terminar" era passar uma função de <b>callback</b>. Funciona, mas quando uma tarefa depende da outra, os callbacks ficam um dentro do outro: o famoso <b>callback hell</b> (código em pirâmide). As Promises resolvem isso.</div>
+  <div class="try"><b>Experimente:</b> imagine mais 3 etapas nessa pirâmide. Dá para ler?</div>
+<script type="text/x-code">
+function buscarUsuario(id, callback) {
+  setTimeout(() => callback({ id, nome: "Ana" }), 300);
+}
+function buscarPedidos(usuario, callback) {
+  setTimeout(() => callback(["Pizza", "Suco"]), 300);
+}
+
+buscarUsuario(1, (usuario) => {
+  console.log("Usuário:", usuario.nome);
+  buscarPedidos(usuario, (pedidos) => {
+    console.log("Pedidos:", pedidos.join(", "));
+    // e se precisasse de mais uma etapa? mais um nível...
+  });
+});
+</script>
+</section>
+
+<section class="ex" data-group="Promises" data-title="O que é uma Promise">
+  <div class="desc">Uma <b>Promise</b> (promessa) é um objeto que representa um valor que <b>ainda vai chegar</b>. Ela tem 3 estados: <b>pendente</b> (esperando), <b>resolvida</b> (deu certo, chamou <code>resolve</code>) ou <b>rejeitada</b> (deu erro, chamou <code>reject</code>). Pense no comprovante do pedido: ainda não é a pizza, mas é a promessa de que ela vem.</div>
+  <div class="try"><b>Experimente:</b> troque <code>true</code> por <code>false</code> na variável <code>temPizza</code>.</div>
+<script type="text/x-code">
+const temPizza = true;
+
+const pedido = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    if (temPizza) resolve("Pizza de calabresa 🍕");
+    else reject(new Error("Acabou a massa"));
+  }, 500);
+});
+
+console.log(pedido);   // ainda pendente!
+
+pedido
+  .then((pizza) => console.log("Chegou:", pizza))
+  .catch((erro) => console.log("Deu ruim:", erro.message));
+</script>
+</section>
+
+<section class="ex" data-group="Promises" data-title="then, catch e finally">
+  <div class="desc"><code>.then</code> roda quando a Promise <b>resolve</b> (recebe o valor); <code>.catch</code> quando ela <b>rejeita</b> (recebe o erro); <code>.finally</code> roda <b>sempre</b>, no fim, dando certo ou não (ótimo para esconder um "carregando...").</div>
+  <div class="try"><b>Experimente:</b> troque o id para <code>2</code>.</div>
+<script type="text/x-code">
+function buscarAluno(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (id === 1) resolve({ nome: "Ana", nota: 9 });
+      else reject(new Error("Aluno não encontrado"));
+    }, 400);
+  });
+}
+
+console.log("Carregando...");
+
+buscarAluno(1)
+  .then((aluno) => console.log(`${aluno.nome} tirou ${aluno.nota}`))
+  .catch((erro) => console.log("Erro:", erro.message))
+  .finally(() => console.log("Fim da busca"));
+</script>
+</section>
+
+<section class="ex" data-group="Promises" data-title="Encadeando thens">
+  <div class="desc">Se um <code>then</code> devolve um valor (ou outra Promise), o próximo <code>then</code> recebe esse valor. Assim as etapas ficam <b>uma embaixo da outra</b>, sem pirâmide. Um único <code>catch</code> no fim pega o erro de qualquer etapa.</div>
+  <div class="try"><b>Experimente:</b> adicione um terceiro then que mostra o total de pedidos.</div>
+<script type="text/x-code">
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+esperar(300)
+  .then(() => {
+    console.log("Etapa 1: usuário encontrado");
+    return esperar(300);
+  })
+  .then(() => {
+    console.log("Etapa 2: pedidos carregados");
+    return "tudo certo";
+  })
+  .then((msg) => console.log("Etapa 3:", msg))
+  .catch((erro) => console.log("Erro em alguma etapa:", erro.message));
+</script>
+</section>
+
+<section class="ex" data-group="async/await" data-title="async e await">
+  <div class="desc"><code>async/await</code> é um jeito de escrever código com Promises que <b>parece síncrono</b>. <code>await</code> "espera" a Promise resolver e já entrega o valor. Só pode ser usado dentro de uma função <code>async</code> (aqui no playground também funciona solto, como no console do navegador).</div>
+  <div class="try"><b>Experimente:</b> tire o <code>await</code> da linha do buscarAluno e veja o que aparece.</div>
+<script type="text/x-code">
+function buscarAluno(id) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ id, nome: "Ana", nota: 9 }), 400);
+  });
+}
+
+async function mostrarAluno() {
+  console.log("Buscando...");
+  const aluno = await buscarAluno(1);   // espera aqui
+  console.log(`${aluno.nome} tirou ${aluno.nota}`);
+}
+
+mostrarAluno();
+</script>
+</section>
+
+<section class="ex" data-group="async/await" data-title="try/catch com await">
+  <div class="desc">Com <code>async/await</code>, os erros são tratados com <code>try/catch</code>: o código "tenta" no <code>try</code>; se alguma Promise rejeitar, pula direto para o <code>catch</code>. <code>finally</code> também existe aqui.</div>
+  <div class="try"><b>Experimente:</b> troque o id para <code>1</code>.</div>
+<script type="text/x-code">
+function buscarAluno(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (id === 1) resolve({ nome: "Ana" });
+      else reject(new Error("Aluno não encontrado"));
+    }, 400);
+  });
+}
+
+async function mostrar(id) {
+  try {
+    const aluno = await buscarAluno(id);
+    console.log("Achei:", aluno.nome);
+  } catch (erro) {
+    console.log("Erro:", erro.message);
+  } finally {
+    console.log("Busca encerrada");
+  }
+}
+
+mostrar(7);
+</script>
+</section>
+
+<section class="ex" data-group="async/await" data-title="Promise.all: várias ao mesmo tempo">
+  <div class="desc">Com <code>await</code> uma depois da outra, os tempos <b>somam</b>. Quando as tarefas não dependem uma da outra, <code>Promise.all</code> roda todas <b>ao mesmo tempo</b> e espera a última. Se uma falhar, o all inteiro falha.</div>
+  <div class="try"><b>Experimente:</b> compare os tempos mostrados nas duas formas.</div>
+<script type="text/x-code">
+const buscar = (nome, ms) => new Promise((r) => setTimeout(() => r(nome), ms));
+
+async function emSequencia() {
+  const t0 = Date.now();
+  await buscar("A", 500);
+  await buscar("B", 500);
+  console.log("Em sequência:", Date.now() - t0, "ms");
+}
+
+async function emParalelo() {
+  const t0 = Date.now();
+  const resultados = await Promise.all([buscar("A", 500), buscar("B", 500)]);
+  console.log("Em paralelo:", Date.now() - t0, "ms", resultados);
+}
+
+await emSequencia();
+await emParalelo();
+</script>
+</section>
+
+<section class="ex" data-group="fetch" data-title="O que é uma API (e como ler a resposta)">
+  <div class="desc">Uma <b>API</b> é um endereço na internet que, em vez de uma página, devolve <b>dados</b>: você pede uma URL e recebe um texto em <b>JSON</b> (o mesmo formato do <code>JSON.stringify</code> da Aula 1). <code>fetch(url)</code> faz o pedido e devolve uma Promise com a <b>resposta</b>: <code>status</code> (200 ok, 404 não existe, 500 erro no servidor), <code>ok</code> (true se o status for 2xx), e o corpo, que você lê com <code>.text()</code> (texto cru) ou <code>.json()</code> (já convertido em objeto). As duas leituras também são assíncronas.</div>
+  <div class="try"><b>Experimente:</b> troque a URL por <code>https://viacep.com.br/ws/00000000/json/</code>: o status continua 200, mas o JSON vem com <code>erro</code>.</div>
+<script type="text/x-code">
+async function espiar() {
+  const resposta = await fetch("https://viacep.com.br/ws/01001000/json/");
+  console.log("status:", resposta.status, "| ok:", resposta.ok);
+  console.log("tipo:", resposta.headers.get("content-type"));
+
+  const texto = await resposta.text();      // o corpo cru, um texto
+  console.log("texto cru:", texto.slice(0, 60) + "...");
+
+  const dados = JSON.parse(texto);          // vira objeto (o .json() faz isso por você)
+  console.log("objeto:", dados.logradouro, "-", dados.localidade);
+}
+espiar();
+</script>
+</section>
+
+<section class="ex" data-group="fetch" data-title="fetch: buscando um CEP de verdade">
+  <div class="desc"><code>fetch(url)</code> busca dados na internet e devolve uma <b>Promise</b> com a resposta. A resposta chega como texto, então usamos <code>await resposta.json()</code> para virar objeto (o JSON da aula passada!). Aqui usamos a API pública <b>ViaCEP</b>.</div>
+  <div class="try"><b>Experimente:</b> coloque o CEP da sua casa (só números).</div>
+<script type="text/x-code">
+const cep = "01001000";
+
+async function buscarCep() {
+  console.log("Buscando o CEP", cep, "...");
+  const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const dados = await resposta.json();
+
+  console.log("Rua:", dados.logradouro);
+  console.log("Bairro:", dados.bairro);
+  console.log("Cidade:", `${dados.localidade} - ${dados.uf}`);
+}
+
+buscarCep().catch((erro) => console.log("Sem conexão?", erro.message));
+</script>
+</section>
+
+<section class="ex" data-group="fetch" data-title="fetch com lista, ok e tratamento de erro">
+  <div class="desc">APIs costumam devolver <b>listas de objetos</b>, e aí entra tudo da Aula 1 (map, filter...). Sempre confira <code>resposta.ok</code> (false quando o servidor responde com erro, como 404) e trate falhas de rede com <code>try/catch</code>.</div>
+  <div class="try"><b>Experimente:</b> troque a URL para <code>/users/999</code> e veja o tratamento do 404.</div>
+<script type="text/x-code">
+async function listarUsuarios() {
+  try {
+    const resposta = await fetch("https://jsonplaceholder.typicode.com/users");
+    if (!resposta.ok) {
+      console.log("Erro do servidor:", resposta.status);
+      return;
+    }
+    const usuarios = await resposta.json();
+    console.log(`Chegaram ${usuarios.length} usuários:`);
+    usuarios.slice(0, 5).forEach((u) => console.log("-", u.name, "|", u.address.city));
+  } catch (erro) {
+    console.log("Falha na conexão:", erro.message);
+  }
+}
+
+listarUsuarios();
+</script>
+</section>
+
+<section class="ex" data-group="fetch" data-title="Quiz: em que ordem aparece?">
+  <div class="desc">Antes de executar, tente adivinhar a ordem! Primeiro roda todo o código síncrono. Depois as Promises já resolvidas (<code>then</code>). Por último os timers, mesmo com 0 ms. Esse "organizador de filas" do JavaScript se chama <b>event loop</b>.</div>
+  <div class="try"><b>Experimente:</b> adicione um <code>setTimeout</code> de 0 ms antes do primeiro log. Onde ele aparece?</div>
+<script type="text/x-code">
+console.log("A");
+
+setTimeout(() => console.log("B (timer de 0 ms)"), 0);
+
+Promise.resolve().then(() => console.log("C (then)"));
+
+console.log("D");
+
+// Resposta: A, D, C, B
+</script>
+</section>
+
+<section class="ex" data-group="Mais APIs" data-title="PokéAPI: dados de um Pokémon">
+  <div class="desc">Existem milhares de APIs públicas e gratuitas, e todas funcionam do mesmo jeito: uma URL, um JSON. A <b>PokéAPI</b> devolve tudo sobre qualquer Pokémon pelo nome: <code>https://pokeapi.co/api/v2/pokemon/pikachu</code>. Repare como os dados vêm <b>aninhados</b>: os tipos são uma lista de objetos, e cada um tem um objeto <code>type</code> com o <code>name</code>; o <code>map</code> da Aula 1 resolve.</div>
+  <div class="try"><b>Experimente:</b> troque por <code>charmander</code>, <code>bulbasaur</code> ou <code>mewtwo</code>. E por um nome errado: o status vira 404.</div>
+<script type="text/x-code">
+async function pokemon(nome) {
+  const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${nome}`);
+  if (!resposta.ok) {
+    console.log("Não achei esse Pokémon (status", resposta.status + ")");
+    return;
+  }
+  const p = await resposta.json();
+  console.log("Nome:", p.name, "| nº", p.id);
+  console.log("Altura:", p.height / 10, "m | Peso:", p.weight / 10, "kg");
+  console.log("Tipos:", p.types.map((t) => t.type.name).join(", "));
+}
+pokemon("pikachu");
+</script>
+</section>
+
+<section class="ex" data-group="Mais APIs" data-title="BrasilAPI: feriados, bancos e DDD">
+  <div class="desc">A <b>BrasilAPI</b> reúne dados públicos do Brasil, de graça e sem cadastro: CEP, feriados nacionais, bancos pelo código, cidades de um DDD, CNPJ, tabela FIPE. Cada <b>endpoint</b> (caminho da URL) devolve um tipo de dado. Aqui três deles, um atrás do outro com <code>await</code>.</div>
+  <div class="try"><b>Experimente:</b> troque o ano, o código do banco (<code>237</code>, <code>341</code>) e o DDD da sua cidade.</div>
+<script type="text/x-code">
+async function brasil() {
+  const feriados = await (await fetch("https://brasilapi.com.br/api/feriados/v1/2026")).json();
+  console.log(feriados.length, "feriados nacionais em 2026. O primeiro:", feriados[0].name, "em", feriados[0].date);
+
+  const banco = await (await fetch("https://brasilapi.com.br/api/banks/v1/001")).json();
+  console.log("Banco 001:", banco.fullName);
+
+  const ddd = await (await fetch("https://brasilapi.com.br/api/ddd/v1/81")).json();
+  console.log("DDD 81:", ddd.state, "com", ddd.cities.length, "cidades, ex.:", ddd.cities.slice(0, 3).join(", "));
+}
+brasil();
+</script>
+</section>
+
+<section class="ex" data-group="Mais APIs" data-title="Clima agora (Open-Meteo)">
+  <div class="desc">Nem toda API devolve dados fixos: a <b>Open-Meteo</b> devolve o clima <b>de agora</b> para qualquer latitude e longitude, e muda a cada 15 minutos. Repare nos <b>parâmetros</b> da URL depois do <code>?</code>: <code>latitude=...&amp;longitude=...&amp;current_weather=true</code>. É assim que você diz à API o que quer.</div>
+  <div class="try"><b>Experimente:</b> coloque a latitude e longitude da sua cidade (procure no Google Maps: clique com o botão direito no mapa).</div>
+<script type="text/x-code">
+const lat = -8.05, lon = -34.88;   // Recife
+
+async function clima() {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+  const dados = await (await fetch(url)).json();
+  const agora = dados.current_weather;
+  console.log(`Temperatura: ${agora.temperature} °C`);
+  console.log(`Vento: ${agora.windspeed} km/h`);
+  console.log(agora.is_day ? "É dia ☀️" : "É noite 🌙");
+}
+clima();
+</script>
+</section>
+
+<section class="ex" data-group="Mais APIs" data-title="Cotação do dólar (AwesomeAPI)">
+  <div class="desc">A <b>AwesomeAPI</b> devolve a cotação de moedas em tempo real: <code>https://economia.awesomeapi.com.br/last/USD-BRL</code>. Os números vêm como <b>texto</b> (<code>"5.06"</code>): converta com <code>Number()</code> antes de calcular, e formate com <code>toFixed(2)</code>. É o tipo de API que um site de loja ou de viagem consome.</div>
+  <div class="try"><b>Experimente:</b> troque por <code>EUR-BRL</code> ou <code>BTC-BRL</code>, e converta um valor em reais para dólar.</div>
+<script type="text/x-code">
+async function dolar() {
+  const dados = await (await fetch("https://economia.awesomeapi.com.br/last/USD-BRL")).json();
+  const cotacao = Number(dados.USDBRL.bid);
+  console.log(`1 dólar = R$ ${cotacao.toFixed(2)}`);
+  console.log(`100 dólares = R$ ${(100 * cotacao).toFixed(2)}`);
+  console.log("Variação hoje:", dados.USDBRL.pctChange + "%");
+}
+dolar();
+</script>
+</section>
+
+<section class="ex" data-group="Mais APIs" data-title="GitHub: o perfil de um usuário">
+  <div class="desc">A API do <b>GitHub</b> devolve o perfil público de qualquer usuário: <code>https://api.github.com/users/octocat</code>. É a mesma API que o site do GitHub usa. Sem login ela permite 60 pedidos por hora por conexão; se passar, devolve 403 (por isso o <code>ok</code>).</div>
+  <div class="try"><b>Experimente:</b> coloque o seu usuário do GitHub (ou o de um colega) e mostre também <code>dados.bio</code> e <code>dados.html_url</code>.</div>
+<script type="text/x-code">
+async function perfil(usuario) {
+  const resposta = await fetch(`https://api.github.com/users/${usuario}`);
+  if (!resposta.ok) {
+    console.log("Erro", resposta.status, resposta.status === 404 ? "(usuário não existe)" : "(limite de pedidos?)");
+    return;
+  }
+  const dados = await resposta.json();
+  console.log(dados.name, "(@" + dados.login + ")");
+  console.log("Repositórios públicos:", dados.public_repos, "| Seguidores:", dados.followers);
+}
+perfil("octocat");
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Espaço para testar o que a turma quiser. Aqui o playground espera os timers e as Promises terminarem (até 10 segundos).</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para acompanhar a ordem das coisas.</div>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · setTimeout" data-expect='["Início", "Fim", "Depois de meio segundo"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer uma mensagem aparecer depois das outras, usando um timer.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Mostre <code>"Início"</code>.</li><li>Agende com <code>setTimeout</code> a mensagem <code>"Depois de meio segundo"</code> para 500 ms.</li><li>Logo abaixo (fora do setTimeout), mostre <code>"Fim"</code>. Repare na ordem!</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Início<br>Fim<br>Depois de meio segundo</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Agende uma segunda mensagem para 200 ms. Em que ordem elas aparecem?</div>
+<script type="text/x-code">
+console.log("Início");
+
+// setTimeout(...)
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · setInterval" data-expect='["3", "2", "1", "Fogo!"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer uma contagem regressiva com intervalo e parar no fim.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>let contador = 3</code>.</li><li>Com <code>setInterval</code> (a cada 300 ms), mostre o contador e diminua 1.</li><li>Quando chegar a 0, use <code>clearInterval(id)</code> e mostre <code>"Fogo!"</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>3<br>2<br>1<br>Fogo!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Esqueça o clearInterval de propósito e veja o aviso depois de 10 segundos.</div>
+<script type="text/x-code">
+let contador = 3;
+
+// const id = setInterval(() => {
+//   ...
+// }, 300);
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Callback" data-expect='["Esperando...", "Pronto!"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Completar uma função que recebe um callback e chamá-la.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Complete <code>esperar(ms, callback)</code>: dentro, use <code>setTimeout(callback, ms)</code>.</li><li>Mostre <code>"Esperando..."</code>.</li><li>Chame <code>esperar(400, () =&gt; console.log("Pronto!"))</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Esperando...<br>Pronto!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Chame esperar dentro do callback de outro esperar (a pirâmide começa!).</div>
+<script type="text/x-code">
+function esperar(ms, callback) {
+  // seu código aqui
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Criando uma Promise" data-expect='["Você ganhou!", "Erro: Tente de novo"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma Promise que pode dar certo ou errado e tratar os dois casos.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Complete <code>sortear(numero)</code> devolvendo <code>new Promise((resolve, reject) =&gt; { ... })</code>.</li><li>Depois de 300 ms: se o número for maior que 5, <code>resolve("Você ganhou!")</code>; senão, <code>reject(new Error("Tente de novo"))</code>.</li><li>Chame <code>sortear(8)</code> com <code>.then</code> mostrando o resultado.</li><li>Chame <code>sortear(2)</code> com <code>.catch</code> mostrando <code>`Erro: ${erro.message}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Você ganhou!<br>Erro: Tente de novo</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque um <code>.finally</code> que mostra "Sorteio encerrado".</div>
+<script type="text/x-code">
+function sortear(numero) {
+  // return new Promise((resolve, reject) => {
+  //   ...
+  // });
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · then e catch" data-expect='["Ana tirou 9", "Erro: Aluno não encontrado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Consumir a API de alunos com then e catch.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Chame <code>buscarAluno(1)</code> e, no <code>.then</code>, mostre <code>`${aluno.nome} tirou ${aluno.nota}`</code>.</li><li>Chame <code>buscarAluno(3)</code> (não existe) e, no <code>.catch</code>, mostre <code>`Erro: ${erro.message}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Ana tirou 9<br>Erro: Aluno não encontrado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Busque o aluno 2 também.</div>
+<script type="text/x-code">
+// --- API de mentira (não mexa): simula um servidor que demora para responder ---
+function buscarAluno(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const alunos = { 1: { nome: "Ana", nota: 9 }, 2: { nome: "Caio", nota: 5 } };
+      if (alunos[id]) resolve(alunos[id]);
+      else reject(new Error("Aluno não encontrado"));
+    }, 300);
+  });
+}
+// ---------------------------------------------------------------------------------
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · async/await" data-expect='["Ana tirou 9", "Erro: Aluno não encontrado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Reescrever o exercício anterior com async/await e try/catch.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>async function mostrarAluno(id)</code>.</li><li>Dentro de um <code>try</code>: <code>const aluno = await buscarAluno(id);</code> e mostre <code>`${aluno.nome} tirou ${aluno.nota}`</code>.</li><li>No <code>catch (erro)</code>, mostre <code>`Erro: ${erro.message}`</code>.</li><li>Chame <code>await mostrarAluno(1);</code> e depois <code>await mostrarAluno(3);</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Ana tirou 9<br>Erro: Aluno não encontrado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Compare com o exercício 5: qual dos dois ficou mais fácil de ler?</div>
+<script type="text/x-code">
+// --- API de mentira (não mexa): simula um servidor que demora para responder ---
+function buscarAluno(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const alunos = { 1: { nome: "Ana", nota: 9 }, 2: { nome: "Caio", nota: 5 } };
+      if (alunos[id]) resolve(alunos[id]);
+      else reject(new Error("Aluno não encontrado"));
+    }, 300);
+  });
+}
+// ---------------------------------------------------------------------------------
+
+// async function mostrarAluno(id) {
+//   try { ... } catch (erro) { ... }
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Função esperar" data-expect='["Carregando...", "Pronto!"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar a função esperar(ms) que devolve uma Promise, para usar com await.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Complete <code>esperar(ms)</code>: <code>return new Promise((resolve) =&gt; setTimeout(resolve, ms));</code></li><li>Mostre <code>"Carregando..."</code>.</li><li><code>await esperar(500);</code></li><li>Mostre <code>"Pronto!"</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Carregando...<br>Pronto!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça um laço que mostra 3, 2, 1 com um await esperar(300) entre cada número.</div>
+<script type="text/x-code">
+function esperar(ms) {
+  // seu código aqui
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Uma etapa depois da outra" data-expect='["Média da Ana: 9.0"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Buscar o aluno e, com o nome dele, buscar as notas e calcular a média.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>const aluno = await buscarAluno(1);</code></li><li><code>const notas = await buscarNotas(aluno.nome);</code></li><li>Calcule a média com <code>reduce</code> (Aula 1!).</li><li>Mostre <code>`Média da ${aluno.nome}: ${media.toFixed(1)}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Média da Ana: 9.0</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça o mesmo para o aluno 2.</div>
+<script type="text/x-code">
+// --- API de mentira (não mexa): simula um servidor que demora para responder ---
+function buscarAluno(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const alunos = { 1: { nome: "Ana", nota: 9 }, 2: { nome: "Caio", nota: 5 } };
+      if (alunos[id]) resolve(alunos[id]);
+      else reject(new Error("Aluno não encontrado"));
+    }, 300);
+  });
+}
+function buscarNotas(nome) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(nome === "Ana" ? [8, 9, 10] : [5, 6, 4]), 300);
+  });
+}
+// ---------------------------------------------------------------------------------
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · Promise.all" data-expect='["Total: R$ 115"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Buscar 3 preços ao mesmo tempo e somar.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>await Promise.all([buscarPreco("caderno"), buscarPreco("caneta"), buscarPreco("mochila")])</code>.</li><li>O resultado é um array com os 3 preços: some com <code>reduce</code>.</li><li>Mostre <code>`Total: R$ ${total}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Total: R$ 115</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça com três await em sequência e compare o tempo (Date.now()).</div>
+<script type="text/x-code">
+// --- API de mentira (não mexa) ---
+function buscarPreco(produto) {
+  const precos = { caderno: 20, caneta: 5, mochila: 90 };
+  return new Promise((resolve) => setTimeout(() => resolve(precos[produto]), 400));
+}
+// ----------------------------------
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · Desafio: consumindo uma API" data-expect='["Aprovados: Ana, Bia", "Erro 404"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar o padrão do fetch (resposta, ok, json) para listar os aprovados e tratar o erro 404.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>const resposta = await fetchFalso("/api/alunos");</code></li><li>Se <code>!resposta.ok</code>, mostre <code>`Erro ${resposta.status}`</code>; senão, <code>const alunos = await resposta.json();</code></li><li>Filtre os aprovados (nota &gt;= 7) e mostre <code>`Aprovados: ${...join(", ")}`</code>.</li><li>Coloque tudo numa função <code>async function carregar(url)</code> e chame com <code>"/api/alunos"</code> e depois com <code>"/api/professores"</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Aprovados: Ana, Bia<br>Erro 404</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque o fetchFalso pelo fetch de verdade com <code>https://jsonplaceholder.typicode.com/users</code> e mostre os nomes.</div>
+<script type="text/x-code">
+// --- fetch de mentira (não mexa): funciona igual ao fetch de verdade ---
+function fetchFalso(url) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const banco = {
+        "/api/alunos": [
+          { nome: "Ana", nota: 9 }, { nome: "Caio", nota: 5 }, { nome: "Bia", nota: 7 },
+        ],
+      };
+      const existe = url in banco;
+      resolve({
+        ok: existe,
+        status: existe ? 200 : 404,
+        json: async () => banco[url],
+      });
+    }, 300);
+  });
+}
+// ------------------------------------------------------------------------
+
+// async function carregar(url) {
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 11 · CEP de verdade (ViaCEP)" data-expect='["Rua: Praça da Sé", "Bairro: Sé", "Cidade: São Paulo - SP"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Consumir uma API pública: buscar um CEP e mostrar o endereço.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Dentro de uma <code>async function buscar()</code>, faça <code>const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`)</code>.</li><li>Converta com <code>const dados = await resposta.json()</code>.</li><li>Mostre <code>Rua: </code> + <code>dados.logradouro</code>, <code>Bairro: </code> + <code>dados.bairro</code> e <code>Cidade: </code> + <code>dados.localidade</code> + <code> - </code> + <code>dados.uf</code>.</li><li>Chame a função.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Rua: Praça da Sé<br>Bairro: Sé<br>Cidade: São Paulo - SP</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque pelo seu CEP (só números) e veja o seu endereço. Depois mostre também o DDD (<code>dados.ddd</code>).</div>
+<script type="text/x-code">
+const cep = "01001000";
+
+// async function buscar() { ... }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 12 · CEP que não existe" data-expect='["Praça da Sé, São Paulo", "CEP não encontrado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Tratar a resposta de erro de uma API.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>async function buscarCep(cep)</code> que busca no ViaCEP e lê o JSON.</li><li>Se <code>dados.erro</code> existir, mostre <code>CEP não encontrado</code>; senão, mostre <code>`${dados.logradouro}, ${dados.localidade}`</code>.</li><li>Chame com <code>await buscarCep("01001000")</code> e depois <code>await buscarCep("00000000")</code> (o await garante a ordem).</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Praça da Sé, São Paulo<br>CEP não encontrado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Envolva o fetch num <code>try/catch</code> e teste com uma URL errada (<code>https://viacep.com.brx/...</code>) para ver o catch funcionar.</div>
+<script type="text/x-code">
+// async function buscarCep(cep) { ... }
+
+// await buscarCep("01001000");
+// await buscarCep("00000000");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 13 · Usuários de uma API" data-expect='["10 usuários", "- Leanne Graham (Gwenborough)", "- Ervin Howell (Wisokyburgh)", "- Clementine Bauch (McKenziehaven)"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Consumir uma API que devolve uma lista de objetos.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Busque <code>https://jsonplaceholder.typicode.com/users</code> e confira <code>resposta.ok</code> (se não, mostre <code>Erro</code> + status e pare).</li><li>Leia o JSON e mostre <code>`${usuarios.length} usuários`</code>.</li><li>Para os 3 primeiros (<code>slice(0, 3)</code>), mostre <code>`- ${u.name} (${u.address.city})`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>10 usuários<br>- Leanne Graham (Gwenborough)<br>- Ervin Howell (Wisokyburgh)<br>- Clementine Bauch (McKenziehaven)</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre também o e-mail e a empresa (<code>u.company.name</code>). Depois use <code>filter</code> para listar só quem tem e-mail terminando em <code>.biz</code>.</div>
+<script type="text/x-code">
+async function listar() {
+  // fetch, ok, json, length e slice(0, 3)
+}
+listar();
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 14 · Feriados do ano (BrasilAPI)" data-expect='["01/01: Confraternização mundial", "16/02: Carnaval", "17/02: Carnaval"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Consumir uma API e formatar os dados antes de mostrar.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Busque <code>https://brasilapi.com.br/api/feriados/v1/2026</code> e leia o JSON (uma lista de objetos com <code>date</code> e <code>name</code>).</li><li>Para os 3 primeiros, mostre <code>DD/MM: nome</code>. A data vem como <code>2026-01-01</code>: use <code>split("-")</code> e pegue o dia e o mês.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>01/01: Confraternização mundial<br>16/02: Carnaval<br>17/02: Carnaval</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre o ano inteiro e conte quantos caem em <code>weekday</code> igual a <code>"sexta-feira"</code>.</div>
+<script type="text/x-code">
+async function feriados() {
+  // fetch, json, slice(0, 3) e split("-")
+}
+feriados();
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 15 · Dois Pokémon ao mesmo tempo" data-expect='["pikachu: electric (60)", "charmander: fire (85)"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar Promise.all com uma API de verdade e ler dados aninhados.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>async function pokemon(nome)</code> que busca <code>https://pokeapi.co/api/v2/pokemon/${nome}</code> e <b>devolve</b> o JSON.</li><li>Com <code>Promise.all</code>, busque <code>pikachu</code> e <code>charmander</code> ao mesmo tempo.</li><li>Para cada um, mostre <code>`${p.name}: ${tipos} (${p.weight})`</code>, em que tipos é <code>p.types.map((t) =&gt; t.type.name).join(", ")</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>pikachu: electric (60)<br>charmander: fire (85)</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>bulbasaur</code> e <code>squirtle</code> na lista. Depois meça o tempo com <code>console.time</code> comparando Promise.all com awaits em sequência.</div>
+<script type="text/x-code">
+// async function pokemon(nome) { ... return dados; }
+
+// const [a, b] = await Promise.all([...]);
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 16 · Banco pelo código" data-expect='["001: Banco do Brasil S.A.", "Banco não encontrado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Tratar o 404 de uma API de verdade.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>async function banco(codigo)</code> que busca <code>https://brasilapi.com.br/api/banks/v1/${codigo}</code>.</li><li>Se <code>!resposta.ok</code>, mostre <code>Banco não encontrado</code>; senão, mostre <code>`${codigo}: ${dados.fullName}`</code>.</li><li>Chame com <code>await banco("001")</code> e <code>await banco("999")</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>001: Banco do Brasil S.A.<br>Banco não encontrado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Envolva num <code>try/catch</code> e teste com a URL errada. Depois descubra o nome dos bancos 237, 341 e 260.</div>
+<script type="text/x-code">
+// async function banco(codigo) { ... }
+
+// await banco("001");
+// await banco("999");
+</script>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Carrega exemplos ----------
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group,
+    title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML,
+    tryit: s.querySelector('.try') ? s.querySelector('.try').innerHTML : '',
+    expect: s.dataset.expect ? JSON.parse(s.dataset.expect) : null,
+    code: s.querySelector('script').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n'
+  }));
+  const edits = exs.map(e => e.code);   // guarda o que foi editado em cada exemplo
+  let cur = 0;
+
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status');
+
+  // ---------- Menu ----------
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title));
+    b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- Destaque de sintaxe ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src){
+    let h = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint(){ hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart, en = code.selectionEnd;
+      code.setRangeText('  ', s, en, 'end'); code.dispatchEvent(new Event('input'));
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- Mostrar exemplo ----------
+  function show(i){
+    cur = Math.max(0, Math.min(exs.length - 1, i));
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title;
+    $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur;
+    $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); try { history.replaceState(null, '', '#' + (cur + 1)); } catch(_){}
+  }
+
+  // ---------- Saída ----------
+  const MAX_LINES = 300; let lines = 0, hidden = 0, got = [];
+  function clearOut(){ out.innerHTML = '<div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; hidden = 0; got = []; }
+  function addLine(text, cls){
+    if (lines === 0) out.innerHTML = '';
+    if (!cls) got.push(String(text).trim());
+    if (lines >= MAX_LINES && !cls) { hidden++; return; }
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+
+  // Dicas em português para erros comuns
+  function dica(msg){
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/Illegal break|Illegal continue|continue statement/.test(msg)) return 'Dica: break e continue só funcionam dentro de for, for...of e while. No forEach eles não funcionam: ele sempre percorre a lista inteira.';
+    if (/Failed to fetch|NetworkError|Load failed/.test(msg)) return 'Dica: não foi possível acessar a internet/API. Confira o endereço (URL) e a sua conexão.';
+    if (/await is only valid|Unexpected reserved word/.test(msg)) return 'Dica: await só funciona dentro de uma função async.';
+    if (/\.then is not a function/.test(msg)) return 'Dica: .then só existe em Promises. A sua função está devolvendo uma Promise (return new Promise...)?';
+    if (/before initialization/.test(msg)) return 'Dica: a variável foi usada antes de ser criada. Mova a declaração para cima.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+
+  // ---------- Execução em Worker (protege contra loop infinito) ----------
+  const workerSrc = `
+    const fmt = v => typeof v === 'string' ? v
+      : v === undefined ? 'undefined'
+      : typeof v === 'function' ? '[função]'
+      : (v instanceof Error) ? v.name + ': ' + v.message
+      : (v && typeof v.then === 'function') ? 'Promise { <pendente> }'
+      : (typeof v === 'object' && v !== null) ? (()=>{ try { return JSON.stringify(v, null, 1).replace(/\\n\\s*/g,' '); } catch(e){ return String(v); } })()
+      : String(v);
+    const _st = setTimeout, _ct = clearTimeout, _si = setInterval, _ci = clearInterval;
+    const timers = new Set(), intervals = new Set();
+    let pending = 0, mainDone = false, finished = false, ret = null;
+    const report = err => postMessage({ t:'err', x: err && err.name ? err.name + ': ' + err.message : 'Erro: ' + String(err) });
+    function maybeDone(){ _st(() => { if (!finished && mainDone && !timers.size && !intervals.size && !pending) { finished = true; postMessage({ t:'done', r: ret }); } }, 30); }
+    self.setTimeout = (fn, ms, ...a) => { const id = _st(() => { timers.delete(id); try { if (typeof fn === 'function') fn(...a); } catch (err) { report(err); } maybeDone(); }, ms); timers.add(id); return id; };
+    self.clearTimeout = id => { timers.delete(id); _ct(id); maybeDone(); };
+    self.setInterval = (fn, ms, ...a) => { const id = _si(() => { try { fn(...a); } catch (err) { report(err); } }, ms); intervals.add(id); return id; };
+    self.clearInterval = id => { intervals.delete(id); _ci(id); maybeDone(); };
+    const track = p => { pending++; return p.finally(() => { pending--; maybeDone(); }); };
+    if (self.fetch) { const _f = self.fetch; self.fetch = (...a) => track(_f(...a)); }
+    if (self.Response) { for (const k of ['json','text']) { const _m = Response.prototype[k]; Response.prototype[k] = function(){ return track(_m.call(this)); }; } }
+    self.onunhandledrejection = ev => { ev.preventDefault(); const er = ev.reason; postMessage({ t:'err', x: 'Promise rejeitada sem tratamento: ' + (er && er.message ? er.message : String(er)) + '. Use .catch() ou try/catch.' }); maybeDone(); };
+    self.onmessage = async e => {
+      const send = (t, a) => postMessage({ t, x: a.map(fmt).join(' ') });
+      const console = { log:(...a)=>send('log',a), info:(...a)=>send('log',a), warn:(...a)=>send('log',a), error:(...a)=>send('err',a) };
+      try {
+        const fn = new Function('console', 'return (async () => {\\n' + e.data + '\\n})();');
+        const r = await fn(console); ret = r === undefined ? null : fmt(r);
+      } catch (err) { postMessage({ t:'error', x: err.name + ': ' + err.message }); }
+      mainDone = true; maybeDone();
+    };`;
+  let workerURL = null;
+  try { workerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })); } catch(_) {}
+  let worker = null, timer = null, t0 = 0, lastRet = null;
+
+  function finish(ok, msg){
+    clearTimeout(timer); timer = null;
+    if (worker) { worker.terminate(); worker = null; }
+    if (hidden) addLine(`… mais ${hidden} linha(s) não mostrada(s)`, 'tip');
+    if (lines === 0 && ok) out.innerHTML = '<div class="empty">(O código rodou, mas não mostrou nada. Faltou um console.log?)</div>';
+    const retHint = ok && lastRet !== null && got.length === 0;
+    if (retHint) addLine(`Seu código calculou "${lastRet}", mas o return não mostra nada na tela. Para aparecer aqui na saída, troque o return por console.log(...).`, 'tip');
+    const exp = exs[cur].expect;
+    if (ok && exp) {
+      let k = 0; for (const g of got) { if (k < exp.length && g === exp[k]) k++; }
+      if (k === exp.length) { addLine('🎉 Correto! A saída bate com a esperada. Agora faça o "teste também" lá em cima.', 'win'); msg = '✓ Exercício resolvido!'; }
+      else if (retHint) { ok = false; msg = '✗ Quase! Use console.log em vez de return'; }
+      else if (got.length === 0) { addLine('Nada apareceu na saída. Se você usou return, falta mostrar o resultado: por exemplo console.log(dobro(7)) em vez de só dobro(7).', 'tip'); ok = false; msg = '✗ Nada foi mostrado: faltou um console.log?'; }
+      else { addLine('Ainda não bateu. Compare com a "Saída esperada" lá em cima: cada letra, espaço e acento conta. Esperado: ' + exp.slice(0, 4).join(' | ') + (exp.length > 4 ? ' …' : ''), 'tip'); ok = false; msg = '✗ Ainda não: confira a saída esperada'; }
+    }
+    status.className = 'status ' + (ok ? 'ok' : 'bad'); status.textContent = msg;
+  }
+
+  function run(){
+    if (worker) worker.terminate();
+    clearOut(); out.innerHTML = ''; lines = 0; lastRet = null;
+    status.className = 'status'; status.textContent = 'Executando…';
+    t0 = performance.now();
+    const src = code.value;
+    let w = null;
+    try { if (workerURL) w = new Worker(workerURL); } catch(_) { w = null; }
+    if (!w) return runInline(src);
+    worker = w;
+    worker.onmessage = ({ data }) => {
+      if (data.t === 'log') addLine(data.x);
+      else if (data.t === 'err') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); }
+      else if (data.t === 'error') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+      else if (data.t === 'done' && timer) { lastRet = data.r; } if (data.t === 'done' && timer) finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`);
+    };
+    worker.onerror = ev => { ev.preventDefault(); addLine(ev.message || 'Erro', 'err'); const d = dica(ev.message || ''); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); };
+    timer = setTimeout(() => {
+      addLine('⏱ Execução interrompida depois de 10 segundos: algum setInterval não foi parado com clearInterval, ou uma Promise nunca terminou (faltou chamar resolve?).', 'tip');
+      finish(false, '✗ Loop infinito interrompido');
+    }, 10000);
+    worker.postMessage(src);
+  }
+
+  // Plano B (navegadores que bloqueiam Worker em arquivo local): roda direto, com limite de linhas
+  function runInline(src){
+    let count = 0;
+    const fmt = v => typeof v === 'string' ? v : (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v);
+    const fake = { log: (...a) => { if (++count > 2000) throw new Error('LOOP'); addLine(a.map(fmt).join(' ')); } };
+    fake.info = fake.warn = fake.log; fake.error = (...a) => addLine(a.map(fmt).join(' '), 'err');
+    timer = 1;
+    try { const r = new Function('console', src)(fake); lastRet = r === undefined ? null : fmt(r); finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`); }
+    catch (err) {
+      if (err.message === 'LOOP') { addLine('⏱ Execução interrompida: parece um loop infinito!', 'tip'); finish(false, '✗ Loop infinito interrompido'); }
+      else { addLine(err.name + ': ' + err.message, 'err'); const d = dica(err.message); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+    }
+  }
+
+  // ---------- Botões ----------
+  $('run').onclick = run;
+  $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; code.value = edits[cur]; paint(); clearOut(); };
+  $('prev').onclick = () => show(cur - 1);
+  $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement;
+  const defFs = window.innerWidth < 1000 ? 16 : 22;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs') || defFs; } catch(_){}
+  const setFs = v => { fs = Math.max(14, Math.min(40, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs', fs); } catch(_){} };
+  setFs(fs);
+  $('bigger').onclick = () => setFs(fs + 2);
+  $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === code) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  const start = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

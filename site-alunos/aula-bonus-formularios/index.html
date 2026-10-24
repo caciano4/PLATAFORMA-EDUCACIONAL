@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula Bônus · Formulários — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  .work{grid-template-columns:1.15fr 1fr}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:1.15}
+  .right .card.cons{flex:1}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  @media (max-width:1000px){ iframe.stage{min-height:260px} .right .card.cons{min-height:220px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">B</div>
+      <div class="t">Bônus: Formulários</div>
+      <div class="s">Envie o formulário na prévia e veja o JavaScript reagir</div>
+      <a href="/aula-bonus-formularios/apostila-aula-bonus-formularios.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Prévia da página</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Console</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<script type="text/plain" id="stage-css">body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px 20px;color:#1B1D24;background:#FAFAF7;font-size:17px;line-height:1.5;margin:0}
+h1{margin:0 0 10px;font-size:30px} ul{padding-left:22px;margin:8px 0} li{margin:3px 0}
+button{font:inherit;font-size:15px;padding:8px 16px;border-radius:8px;border:0;background:#15171E;color:#fff;cursor:pointer;margin:4px 6px 4px 0}
+input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #bbb;border-radius:8px;margin:4px 6px 4px 0}
+a{color:#2563eb}
+.card{border:2px solid #d4d4d4;border-radius:12px;padding:14px 16px;margin:8px 0;cursor:pointer;background:#fff;transition:all .15s}
+.card.ativo{border-color:#16a34a;background:#DCFCE7}
+.destaque{background:#F0C23B;border-color:#b8860b}
+.oculto{display:none}
+.vermelho{color:#dc2626}
+#numero{font-weight:700;font-size:22px}</script>
+<div id="examples" hidden>
+<section class="ex" data-group="O submit" data-title="O formulário e o evento submit">
+  <div class="desc">Um <code>&lt;form&gt;</code> agrupa campos e tem um botão de <b>enviar</b>. Ao clicar nele (ou apertar Enter num campo), o navegador dispara o evento <b>submit</b> e, do jeito antigo, <b>recarrega a página</b> mandando os dados para um servidor. Execute e clique em Enviar: repare na faixa vermelha.</div>
+  <div class="try"><b>Experimente:</b> digite um nome, clique em Enviar e veja o campo ser apagado pelo "recarregamento".</div>
+<template class="stage"><form id="cadastro">
+  <label>Nome <input id="nome" name="nome" placeholder="Seu nome"></label>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#cadastro");
+
+form.addEventListener("submit", () => {
+  console.log("O formulário foi enviado!");
+  // sem preventDefault, a página recarrega e perdemos tudo
+});
+</script>
+</section>
+
+<section class="ex" data-group="O submit" data-title="preventDefault: o JavaScript assume o controle">
+  <div class="desc"><code>evento.preventDefault()</code> cancela o comportamento padrão (o recarregamento). A partir daí, <b>quem decide o que fazer com os dados é o seu código</b>. Essa é a primeira linha de quase todo submit.</div>
+  <div class="try"><b>Experimente:</b> aperte Enter dentro do campo. Também dispara o submit?</div>
+<template class="stage"><form id="cadastro">
+  <label>Nome <input id="nome" name="nome" placeholder="Seu nome"></label>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#cadastro");
+const resultado = document.querySelector("#resultado");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();          // nada de recarregar!
+  console.log("Enviado sem recarregar");
+  resultado.textContent = "Recebido! 🎉";
+});
+</script>
+</section>
+
+<section class="ex" data-group="Lendo os campos" data-title="Lendo o que foi digitado">
+  <div class="desc">Dentro do submit, leia cada campo com <code>.value</code>. Sempre vem como <b>texto</b>: para números use <code>Number()</code>. <code>.trim()</code> tira espaços das pontas.</div>
+  <div class="try"><b>Experimente:</b> deixe a idade em branco e veja o que <code>Number("")</code> devolve.</div>
+<template class="stage"><form id="cadastro">
+  <label>Nome <input id="nome" placeholder="Nome"></label>
+  <label>Idade <input id="idade" type="number" placeholder="Idade"></label>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#cadastro");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+
+  const nome = document.querySelector("#nome").value.trim();
+  const idade = Number(document.querySelector("#idade").value);
+
+  console.log(nome, idade, typeof idade);
+  document.querySelector("#resultado").textContent =
+    `${nome} vai fazer ${idade + 1} anos no próximo aniversário`;
+});
+</script>
+</section>
+
+<section class="ex" data-group="Lendo os campos" data-title="Checkbox, radio e select">
+  <div class="desc">Cada tipo de campo tem seu jeito: <b>checkbox</b> usa <code>.checked</code> (true/false); <b>radio</b> usa <code>querySelector("input[name=plano]:checked")</code> para achar o marcado; <b>select</b> usa <code>.value</code> da opção escolhida.</div>
+  <div class="try"><b>Experimente:</b> mude as opções e envie de novo.</div>
+<template class="stage"><form id="f">
+  <label><input type="checkbox" id="aceito"> Aceito os termos</label><br>
+  <label><input type="radio" name="plano" value="mensal" checked> Mensal</label>
+  <label><input type="radio" name="plano" value="anual"> Anual</label><br>
+  <select id="curso">
+    <option value="js">JavaScript</option>
+    <option value="php">PHP</option>
+  </select>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+
+  const aceito = document.querySelector("#aceito").checked;
+  const plano = document.querySelector("input[name=plano]:checked").value;
+  const curso = document.querySelector("#curso").value;
+
+  console.log({ aceito, plano, curso });
+  document.querySelector("#resultado").textContent =
+    `Curso ${curso}, plano ${plano}, termos: ${aceito ? "ok" : "não aceitos"}`;
+});
+</script>
+</section>
+
+<section class="ex" data-group="Validação" data-title="Validando antes de aceitar">
+  <div class="desc">Validar é <b>conferir os dados antes de usar</b>: campo vazio, número fora do limite, e-mail sem @. Se algo está errado, mostre a mensagem e <b>pare</b> (<code>return</code>). Lembra do truthy/falsy? <code>if (!nome)</code> pega o texto vazio.</div>
+  <div class="try"><b>Experimente:</b> envie com o nome vazio, depois com a idade 200.</div>
+<template class="stage"><form id="cadastro">
+  <label>Nome <input id="nome" placeholder="Nome"></label>
+  <label>Idade <input id="idade" type="number" placeholder="Idade"></label>
+  <button type="submit">Enviar</button>
+</form>
+<p id="erro" class="vermelho"></p>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#cadastro");
+const erro = document.querySelector("#erro");
+const resultado = document.querySelector("#resultado");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const nome = document.querySelector("#nome").value.trim();
+  const idade = Number(document.querySelector("#idade").value);
+
+  if (!nome) {
+    erro.textContent = "Digite o nome";
+    return;                       // para aqui
+  }
+  if (idade < 1 || idade > 120) {
+    erro.textContent = "Idade inválida";
+    return;
+  }
+
+  erro.textContent = "";
+  resultado.textContent = `Cadastrado: ${nome}, ${idade} anos`;
+});
+</script>
+</section>
+
+<section class="ex" data-group="Validação" data-title="required, type e a validação do navegador">
+  <div class="desc">O HTML já valida um pouco sozinho: <code>required</code> (obrigatório), <code>type="email"</code>, <code>min</code>/<code>max</code>, <code>minlength</code>. Se algo falha, o submit <b>nem dispara</b> e o navegador mostra o balão. Use as duas camadas: HTML para o básico, JavaScript para as regras do seu negócio.</div>
+  <div class="try"><b>Experimente:</b> envie vazio e veja o balão do navegador. Depois apague o <code>required</code> no HTML mentalmente: o JS teria que cuidar disso.</div>
+<template class="stage"><form id="f">
+  <label>E-mail <input id="email" type="email" required placeholder="voce@email.com"></label>
+  <label>Senha <input id="senha" type="password" required minlength="6"></label>
+  <button type="submit">Entrar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  // se chegou aqui, o navegador já conferiu required, email e minlength
+  const email = document.querySelector("#email").value;
+  document.querySelector("#resultado").textContent = `Bem-vindo, ${email}!`;
+});
+</script>
+</section>
+
+<section class="ex" data-group="Em tempo real" data-title="O evento input: reagindo enquanto digita">
+  <div class="desc">O evento <b>input</b> dispara a <b>cada tecla</b>. Serve para contadores de caracteres, prévia ao vivo e validação instantânea. <code>evento.target</code> é o campo que disparou.</div>
+  <div class="try"><b>Experimente:</b> limite em 20 e mude a cor quando passar (classList).</div>
+<template class="stage"><label>Bio <input id="bio" placeholder="Fale sobre você" maxlength="40"></label>
+<p id="contador">0 / 40</p>
+<p>Prévia: <b id="previa"></b></p></template>
+<script type="text/x-code">
+const bio = document.querySelector("#bio");
+const contador = document.querySelector("#contador");
+const previa = document.querySelector("#previa");
+
+bio.addEventListener("input", (evento) => {
+  const texto = evento.target.value;
+  contador.textContent = `${texto.length} / 40`;
+  previa.textContent = texto;
+});
+</script>
+</section>
+
+<section class="ex" data-group="Em tempo real" data-title="change, reset e o estado do botão">
+  <div class="desc"><b>change</b> dispara quando o valor "fecha" (select, checkbox, ou ao sair do campo). <code>form.reset()</code> limpa tudo. E dá para <b>desabilitar</b> o botão até o formulário estar válido.</div>
+  <div class="try"><b>Experimente:</b> marque e desmarque o checkbox e veja o botão ligar e desligar.</div>
+<template class="stage"><form id="f">
+  <label><input type="checkbox" id="termos"> Li e aceito os termos</label><br>
+  <button type="submit" id="btn" disabled>Confirmar</button>
+  <button type="button" id="limpar">Limpar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+const termos = document.querySelector("#termos");
+const btn = document.querySelector("#btn");
+
+termos.addEventListener("change", () => {
+  btn.disabled = !termos.checked;   // liga o botão só com o aceite
+});
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  document.querySelector("#resultado").textContent = "Confirmado!";
+});
+
+document.querySelector("#limpar").addEventListener("click", () => {
+  form.reset();
+  btn.disabled = true;
+  document.querySelector("#resultado").textContent = "";
+});
+</script>
+</section>
+
+<section class="ex" data-group="Juntando tudo" data-title="Dos campos para um objeto (FormData)">
+  <div class="desc">Com <code>name</code> em cada campo, <code>new FormData(form)</code> lê todos de uma vez e <code>Object.fromEntries</code> transforma num <b>objeto</b> (Aula 1!). É exatamente esse objeto que você mandaria para uma API com <code>fetch</code>.</div>
+  <div class="try"><b>Experimente:</b> acrescente um campo com <code>name="cidade"</code> no HTML e veja aparecer no objeto sem mudar o JS.</div>
+<template class="stage"><form id="cadastro">
+  <input name="nome" placeholder="Nome">
+  <input name="email" placeholder="E-mail">
+  <input name="idade" type="number" placeholder="Idade">
+  <button type="submit">Enviar</button>
+</form>
+<pre id="saida"></pre></template>
+<script type="text/x-code">
+const form = document.querySelector("#cadastro");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+
+  const dados = Object.fromEntries(new FormData(form));
+  dados.idade = Number(dados.idade);
+
+  console.log(dados);
+  document.querySelector("#saida").textContent = JSON.stringify(dados, null, 2);
+});
+</script>
+</section>
+
+<section class="ex" data-group="Juntando tudo" data-title="Cadastro que vira lista">
+  <div class="desc">O padrão completo: submit → validar → montar o objeto → guardar no <b>array</b> → <b>renderizar</b> a lista → limpar o form. É assim que funcionam listas de tarefas, carrinhos e cadastros.</div>
+  <div class="try"><b>Experimente:</b> mostre também o total de cadastrados.</div>
+<template class="stage"><form id="f">
+  <input id="nome" placeholder="Nome">
+  <input id="nota" type="number" placeholder="Nota">
+  <button type="submit">Adicionar</button>
+</form>
+<ul id="lista"></ul></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+const lista = document.querySelector("#lista");
+const alunos = [];
+
+function renderizar() {
+  lista.innerHTML = "";
+  alunos.forEach((aluno) => {
+    const li = document.createElement("li");
+    li.textContent = `${aluno.nome} - nota ${aluno.nota}`;
+    if (aluno.nota >= 7) li.classList.add("destaque");
+    lista.appendChild(li);
+  });
+}
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const nome = document.querySelector("#nome").value.trim();
+  const nota = Number(document.querySelector("#nota").value);
+  if (!nome) return;
+
+  alunos.push({ nome, nota });
+  renderizar();
+  form.reset();
+});
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Um formulário completo para testar o que quiser.</div>
+  <div class="try"><b>Dica:</b> comece sempre pelo <code>preventDefault()</code>.</div>
+<template class="stage"><form id="f">
+  <input id="nome" name="nome" placeholder="Nome">
+  <input id="email" name="email" type="email" placeholder="E-mail">
+  <select id="curso" name="curso"><option value="js">JavaScript</option><option value="php">PHP</option></select>
+  <label><input type="checkbox" id="termos" name="termos"> Aceito</label>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p>
+<ul id="lista"></ul></template>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Enviar sem recarregar">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer o submit mostrar uma mensagem sem recarregar a página.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o <code>#f</code> e escute o evento <code>submit</code>.</li><li>Na primeira linha do callback, <code>evento.preventDefault()</code>.</li><li>Coloque <code>"Enviado!"</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Clicou em Enviar → &quot;Enviado!&quot;<br>Sem faixa vermelha de recarregamento</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Tire o preventDefault e veja a faixa vermelha.</div>
+<template class="stage"><form id="f">
+  <input id="nome" placeholder="Nome">
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// const form = document.querySelector("#f");
+// form.addEventListener("submit", (evento) => { ... });
+
+</script>
+<script type="text/x-check">
+doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "O submit aconteceu, mas a página recarregou. Chame evento.preventDefault() no começo do callback.";
+if (!win.__submits) return "Nenhum submit foi tratado. Use form.addEventListener(\"submit\", ...).";
+const r = doc.getElementById("resultado").textContent.trim();
+return r === "Enviado!" || ("Depois do envio o #resultado deveria ser \"Enviado!\", mas está \"" + r + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Saudação">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Ler o nome digitado e cumprimentar ao enviar.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit (com preventDefault), leia <code>#nome</code> com <code>.value</code>.</li><li>Mostre <code>`Olá, ${nome}!`</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Digitou Ana + Enviar → &quot;Olá, Ana!&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use <code>.trim()</code> e teste digitando espaços antes do nome.</div>
+<template class="stage"><form id="f">
+  <input id="nome" placeholder="Nome">
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+doc.getElementById("nome").value = "Ana";
+doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault(): a página recarregou.";
+const r = doc.getElementById("resultado").textContent.trim();
+return r === "Olá, Ana!" || ("O corretor digitou \"Ana\" e enviou. Esperava \"Olá, Ana!\", mas ficou \"" + r + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Campo obrigatório">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Não aceitar o envio com o nome vazio.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit, leia o nome com <code>.value.trim()</code>.</li><li>Se estiver vazio (<code>if (!nome)</code>), mostre <code>"Digite o nome"</code> no <code>#erro</code> e <code>return</code>.</li><li>Senão, limpe o <code>#erro</code> e mostre <code>`Cadastrado: ${nome}`</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Vazio + Enviar → erro &quot;Digite o nome&quot;<br>Ana + Enviar → &quot;Cadastrado: Ana&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça o erro sumir assim que a pessoa começar a digitar (evento input).</div>
+<template class="stage"><form id="f">
+  <input id="nome" placeholder="Nome">
+  <button type="submit">Enviar</button>
+</form>
+<p id="erro" class="vermelho"></p>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const n = doc.getElementById("nome"), e = doc.getElementById("erro"), r = doc.getElementById("resultado");
+n.value = "   "; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+if (e.textContent.trim() !== "Digite o nome") return "Com o nome vazio, o #erro deveria mostrar \"Digite o nome\" (use .trim() e if (!nome)).";
+if (r.textContent.trim()) return "Com o nome vazio, nada deveria ir para o #resultado. Use return depois da mensagem de erro.";
+n.value = "Ana"; doc.getElementById("f").requestSubmit();
+if (e.textContent.trim()) return "Depois de um envio válido, limpe o #erro.";
+return r.textContent.trim() === "Cadastrado: Ana" || "Com \"Ana\" o #resultado deveria ser \"Cadastrado: Ana\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Contador de caracteres">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar quantos caracteres foram digitados, em tempo real.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Escute o evento <code>input</code> do <code>#msg</code>.</li><li>A cada tecla, mostre <code>`${msg.value.length} / 100`</code> no <code>#contador</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Digitou &quot;Olá&quot; → &quot;3 / 100&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione a classe <code>vermelho</code> no contador quando passar de 90.</div>
+<template class="stage"><textarea id="msg" maxlength="100" placeholder="Sua mensagem"></textarea>
+<p id="contador">0 / 100</p></template>
+<script type="text/x-code">
+// const msg = document.querySelector("#msg");
+// msg.addEventListener("input", () => { ... });
+
+</script>
+<script type="text/x-check">
+const m = doc.getElementById("msg"); m.value = "Olá"; m.dispatchEvent(new win.Event("input", { bubbles: true }));
+const c = doc.getElementById("contador").textContent.trim();
+return c === "3 / 100" || ("Depois de digitar \"Olá\" o contador deveria ser \"3 / 100\", mas está \"" + c + "\". Use o evento input e msg.value.length.");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Aceite dos termos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Só confirmar se o checkbox estiver marcado.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit (com preventDefault), leia <code>#termos</code> com <code>.checked</code>.</li><li>Se não estiver marcado, mostre <code>"Aceite os termos"</code> no <code>#resultado</code>.</li><li>Se estiver, mostre <code>"Confirmado!"</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Desmarcado → &quot;Aceite os termos&quot;<br>Marcado → &quot;Confirmado!&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Desabilite o botão até o checkbox ser marcado (evento change + disabled).</div>
+<template class="stage"><form id="f">
+  <label><input type="checkbox" id="termos"> Li e aceito os termos</label><br>
+  <button type="submit">Confirmar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const t = doc.getElementById("termos"), r = doc.getElementById("resultado");
+t.checked = false; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+if (r.textContent.trim() !== "Aceite os termos") return "Desmarcado, o #resultado deveria ser \"Aceite os termos\". Leia termos.checked.";
+t.checked = true; doc.getElementById("f").requestSubmit();
+return r.textContent.trim() === "Confirmado!" || "Marcado, o #resultado deveria ser \"Confirmado!\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Select de curso">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar uma mensagem diferente conforme a opção escolhida.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit, leia <code>#curso</code> com <code>.value</code>.</li><li>Mostre <code>`Você escolheu ${curso}`</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Escolheu php → &quot;Você escolheu php&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use um <code>switch</code> para mostrar o nome completo de cada curso.</div>
+<template class="stage"><form id="f">
+  <select id="curso">
+    <option value="js">JavaScript</option>
+    <option value="php">PHP</option>
+    <option value="laravel">Laravel</option>
+  </select>
+  <button type="submit">Enviar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+doc.getElementById("curso").value = "php"; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+const r = doc.getElementById("resultado").textContent.trim();
+return r === "Você escolheu php" || ("Com php selecionado esperava \"Você escolheu php\", mas ficou \"" + r + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Calculadora">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Somar dois números digitados (de verdade, não juntar textos).</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit, leia <code>#a</code> e <code>#b</code> e converta com <code>Number()</code>.</li><li>Mostre <code>`Soma: ${a + b}`</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>2 e 3 → &quot;Soma: 5&quot; (e não &quot;Soma: 23&quot;)</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um select com a operação (+, −, ×) e use switch.</div>
+<template class="stage"><form id="f">
+  <input id="a" type="number" placeholder="Primeiro">
+  <input id="b" type="number" placeholder="Segundo">
+  <button type="submit">Somar</button>
+</form>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+doc.getElementById("a").value = "2"; doc.getElementById("b").value = "3"; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+const r = doc.getElementById("resultado").textContent.trim();
+if (r === "Soma: 23") return "Apareceu \"23\": os textos foram juntados. Converta com Number() antes de somar.";
+return r === "Soma: 5" || ("Com 2 e 3 esperava \"Soma: 5\", mas ficou \"" + r + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Objeto com FormData">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Transformar o formulário num objeto e mostrar como JSON.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit, crie <code>const dados = Object.fromEntries(new FormData(form));</code></li><li>Mostre <code>JSON.stringify(dados)</code> no <code>#saida</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Ana + ana@email.com → {&quot;nome&quot;:&quot;Ana&quot;,&quot;email&quot;:&quot;ana@email.com&quot;}</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Converta a idade com Number() antes de mostrar.</div>
+<template class="stage"><form id="f">
+  <input name="nome" placeholder="Nome">
+  <input name="email" placeholder="E-mail">
+  <button type="submit">Enviar</button>
+</form>
+<pre id="saida"></pre></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const f = doc.getElementById("f"); f.elements.nome.value = "Ana"; f.elements.email.value = "ana@email.com"; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+let o; try { o = JSON.parse(doc.getElementById("saida").textContent); } catch (e) { return "O #saida deveria ter um JSON válido (use JSON.stringify(dados))."; }
+return (o && o.nome === "Ana" && o.email === "ana@email.com") || "O objeto deveria ter nome \"Ana\" e email \"ana@email.com\". Use Object.fromEntries(new FormData(form)).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · Lista de tarefas">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Adicionar cada tarefa digitada na lista, sem aceitar vazio, e limpar o campo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No submit (com preventDefault), leia <code>#tarefa</code> com <code>.value.trim()</code>; se vazio, <code>return</code>.</li><li>Crie um <code>li</code> com o texto e adicione em <code>#lista</code>.</li><li>Limpe o formulário com <code>form.reset()</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Digitou &quot;Estudar&quot; + Enter → item &quot;Estudar&quot; na lista<br>Campo limpo depois</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Guarde as tarefas num array e renderize a lista a partir dele.</div>
+<template class="stage"><form id="f">
+  <input id="tarefa" placeholder="Nova tarefa">
+  <button type="submit">Adicionar</button>
+</form>
+<ul id="lista"></ul></template>
+<script type="text/x-code">
+const form = document.querySelector("#f");
+const lista = document.querySelector("#lista");
+
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const t = doc.getElementById("tarefa"), ul = doc.getElementById("lista");
+t.value = "  "; doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+if (ul.querySelectorAll("li").length !== 0) return "Com o campo vazio nada deveria ser adicionado.";
+t.value = "Estudar"; doc.getElementById("f").requestSubmit();
+const lis = ul.querySelectorAll("li");
+if (lis.length !== 1 || lis[0].textContent.trim() !== "Estudar") return "Depois de enviar \"Estudar\" a lista deveria ter 1 item com esse texto.";
+return t.value === "" || "Depois de adicionar, limpe o campo (form.reset()).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · Desafio: validação completa">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Validar nome, e-mail e idade com mensagens específicas, e só cadastrar se tudo estiver certo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Leia nome (<code>.trim()</code>), email e idade (<code>Number()</code>).</li><li>Regras: nome vazio → <code>"Digite o nome"</code>; e-mail sem <code>@</code> (<code>!email.includes("@")</code>) → <code>"E-mail inválido"</code>; idade menor que 18 → <code>"Só para maiores de 18"</code>.</li><li>Mostre a primeira mensagem de erro no <code>#erro</code> e pare. Se tudo ok, limpe o erro e mostre <code>`Bem-vindo, ${nome}!`</code> no <code>#resultado</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>ana@email → &quot;E-mail inválido&quot;<br>idade 15 → &quot;Só para maiores de 18&quot;<br>tudo ok → &quot;Bem-vindo, Ana!&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Guarde cada cadastro válido num array e mostre o total.</div>
+<template class="stage"><form id="f">
+  <input id="nome" placeholder="Nome">
+  <input id="email" placeholder="E-mail">
+  <input id="idade" type="number" placeholder="Idade">
+  <button type="submit">Cadastrar</button>
+</form>
+<p id="erro" class="vermelho"></p>
+<p id="resultado"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const g = id => doc.getElementById(id); const set = (n, e, i) => { g("nome").value = n; g("email").value = e; g("idade").value = i; };
+set("", "ana@email.com", "30"); doc.getElementById("f").requestSubmit();
+if (win.__prevented === false) return "Faltou o evento.preventDefault().";
+if (g("erro").textContent.trim() !== "Digite o nome") return "Nome vazio deveria dar \"Digite o nome\".";
+set("Ana", "ana.email.com", "30"); doc.getElementById("f").requestSubmit();
+if (g("erro").textContent.trim() !== "E-mail inválido") return "E-mail sem @ deveria dar \"E-mail inválido\" (use includes).";
+set("Ana", "ana@email.com", "15"); doc.getElementById("f").requestSubmit();
+if (g("erro").textContent.trim() !== "Só para maiores de 18") return "Idade 15 deveria dar \"Só para maiores de 18\" (converta com Number).";
+set("Ana", "ana@email.com", "30"); doc.getElementById("f").requestSubmit();
+if (g("erro").textContent.trim()) return "Com tudo certo, o #erro deveria ficar vazio.";
+return g("resultado").textContent.trim() === "Bem-vindo, Ana!" || "Com tudo certo esperava \"Bem-vindo, Ana!\" no #resultado.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const STAGE_CSS = document.getElementById('stage-css').textContent;
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    stage: s.querySelector('template.stage').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|of|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN|document)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src) {
+    let h = '', last = 0, m; re.lastIndex = 0;
+    while ((m = re.exec(src))) { h += esc(src.slice(last, m.index)); const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd'; h += `<span class="${cls}">${esc(m[0])}</span>`; last = re.lastIndex; }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- console ----------
+  let lines = 0, got = [];
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Executar. O que o console.log mostrar aparece aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; got = []; }
+  function addLine(text, cls) {
+    if (lines === 0) out.innerHTML = '';
+    if (lines > 400) return;
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function fmtEl(el) {
+    if (!el.tagName) return el.nodeType === 3 ? JSON.stringify(el.textContent) : '[nó]';
+    const tag = el.tagName.toLowerCase();
+    let s = '<' + tag;
+    for (const a of el.attributes) s += ` ${a.name}="${a.value}"`;
+    if (tag === 'body' || tag === 'html') return s + '>…</' + tag + '>';
+    const txt = el.children.length ? '…' : el.textContent.trim().slice(0, 40);
+    return s + '>' + txt + '</' + tag + '>';
+  }
+  function fmt(v, deep) {
+    if (typeof v === 'string') return deep ? JSON.stringify(v) : v;
+    if (v === undefined) return 'undefined';
+    if (v === null) return 'null';
+    if (typeof v === 'function') return '[função]';
+    if (typeof v === 'object') {
+      if (typeof v.nodeType === 'number') return v.nodeType === 9 ? '#document' : fmtEl(v);
+      const nome = (v.constructor && v.constructor.name) || '';
+      if (nome === 'DOMTokenList') return `classList [ ${Array.from(v).join(', ')} ]`;
+      if (typeof v.length === 'number' && typeof v.item === 'function') {
+        return `${nome || 'Lista'}(${v.length}) [ ${Array.from(v).slice(0, 6).map(x => fmt(x, true)).join(', ')}${v.length > 6 ? ', …' : ''} ]`;
+      }
+      if (Array.isArray(v)) return '[ ' + v.map(x => fmt(x, true)).join(', ') + ' ]';
+      if (typeof v.type === 'string' && v.target && 'bubbles' in v) return `Evento "${v.type}" em ${fmt(v.target)}`;
+      try { return JSON.stringify(v); } catch (e) { return String(v); }
+    }
+    return String(v);
+  }
+  function dica(msg) {
+    if (/of null/.test(msg)) return 'Dica: o querySelector/getElementById devolveu null, ou seja, não achou o elemento. Confira o seletor: com # no querySelector e sem # no getElementById.';
+    if (/recarregou/.test(msg)) return 'Dica: dentro do addEventListener("submit", (evento) => { ... }) chame evento.preventDefault() na primeira linha.';
+    if (/requestSubmit|submit is not a function/.test(msg)) return 'Dica: um campo chamado name="submit" esconde o método submit do formulário. Use outro name.';
+    if (/forEach is not a function/.test(msg)) return 'Dica: HTMLCollection não tem forEach. Use querySelectorAll ou Array.from(...).forEach.';
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+  let testLogs = [], runId = 0, checking = false;
+  window.__pgLog = (target, kind, args, id) => {
+    if (id !== runId) return;
+    const text = args.map(a => fmt(a)).join(' ');
+    if (target === 'test') { if (kind === 'log') testLogs.push(text.trim()); return; }
+    if (kind === 'err') { addLine(text, 'err'); const d = dica(text); if (d) addLine(d, 'tip'); if (!checking) { status.className = 'status bad'; status.textContent = '✗ O código tem um erro'; } return; }
+    got.push(text.trim()); addLine(text);
+  };
+  function buildDoc(stage, src, target, id) {
+    const S = '<scr' + 'ipt>', E = '</scr' + 'ipt>';
+    const boot = `(function(){var P=parent,T=${JSON.stringify(target)},I=${id};function f(k){return function(){P.__pgLog(T,k,Array.prototype.slice.call(arguments),I)}}console.log=f('log');console.info=f('log');console.warn=f('log');console.error=f('err');window.onerror=function(m){P.__pgLog(T,'err',[String(m).replace(/^Uncaught /,'')],I);return true};window.open=function(){};document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a)e.preventDefault()},true);window.__submits=0;window.__prevented=null;window.addEventListener('submit',function(e){window.__submits++;window.__prevented=e.defaultPrevented;if(!e.defaultPrevented){e.preventDefault();var f=e.target;var b=document.createElement('div');b.style.cssText='position:fixed;left:0;right:0;top:0;background:#dc2626;color:#fff;font:14px system-ui;padding:8px 12px;z-index:9';b.textContent='⚠️ A página recarregou e perdeu tudo: o formulário foi enviado do jeito antigo. Falta evento.preventDefault().';document.body.appendChild(b);setTimeout(function(){f.reset();},50);P.__pgLog(T,'err',['A página recarregou: o submit não teve preventDefault()'],I)}},false)})();`;
+    const safe = src.replace(/<\/script/gi, '<\\/script');
+    return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Green School</title><style>${STAGE_CSS}</style></head><body>${stage}${S}${boot}${E}${S}\n${safe}\n${E}</body></html>`;
+  }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = ''; lines = 0; got = []; testLogs = [];
+    status.className = 'status'; status.textContent = 'Executando…';
+    const t0 = performance.now();
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (lines === 0) out.innerHTML = '<div class="empty">(Nada no console. Veja a prévia da página acima.)</div>';
+        if (!e.check) { if (!/bad/.test(status.className)) { status.className = 'status ok'; status.textContent = `✓ Executado em ${Math.round(performance.now() - t0)} ms`; } return; }
+        runCheck(id, e);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(e.stage, code.value, 'main', id);
+  }
+  function runCheck(id, e) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r; checking = true;
+        try { r = new Function('doc', 'win', 'logs', e.check)(tester.contentDocument, tester.contentWindow, testLogs.slice()); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        checking = false;
+        if (r === true) { addLine('🎉 Correto! Página e console do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica no console'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(e.stage, code.value, 'test', id);
+  }
+
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(e.stage, '', 'main', -1);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 16 : 20;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-dom') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-dom', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

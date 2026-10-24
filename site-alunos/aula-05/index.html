@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 5 · DOM — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  .work{grid-template-columns:1.15fr 1fr}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:1.15}
+  .right .card.cons{flex:1}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  @media (max-width:1000px){ iframe.stage{min-height:260px} .right .card.cons{min-height:220px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">05</div>
+      <div class="t">DOM: manipulando a página</div>
+      <div class="s">Rode o código e veja a página mudar ao lado</div>
+      <a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Prévia da página</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Console</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<script type="text/plain" id="stage-css">body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px 20px;color:#1B1D24;background:#FAFAF7;font-size:17px;line-height:1.5;margin:0}
+h1{margin:0 0 10px;font-size:30px} ul{padding-left:22px;margin:8px 0} li{margin:3px 0}
+button{font:inherit;font-size:15px;padding:8px 16px;border-radius:8px;border:0;background:#15171E;color:#fff;cursor:pointer;margin:4px 6px 4px 0}
+input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #bbb;border-radius:8px;margin:4px 6px 4px 0}
+a{color:#2563eb}
+.card{border:2px solid #d4d4d4;border-radius:12px;padding:14px 16px;margin:8px 0;cursor:pointer;background:#fff;transition:all .15s}
+.card.ativo{border-color:#16a34a;background:#DCFCE7}
+.destaque{background:#F0C23B;border-color:#b8860b}
+.oculto{display:none}
+.vermelho{color:#dc2626}
+#numero{font-weight:700;font-size:22px}</script>
+<div id="examples" hidden>
+<section class="ex" data-group="Introdução" data-title="O que é o DOM: o document">
+  <div class="desc">O <b>DOM</b> é a forma como o navegador representa a página: ele lê o HTML e cria <b>objetos</b> que o JavaScript pode ler e alterar. Tudo começa pelo objeto <code>document</code>. A <b>prévia</b> ao lado é a página de verdade, e o seu código roda dentro dela.</div>
+  <div class="try"><b>Experimente:</b> troque o <code>document.title</code> e mostre <code>document.body</code> no console.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<p>Bem-vindos à aula de DOM!</p></template>
+<script type="text/x-code">
+console.log(document.title);
+
+document.title = "DOM na prática";
+console.log(document.title);
+
+console.log(document.querySelector("h1"));
+</script>
+</section>
+
+<section class="ex" data-group="Selecionar" data-title="getElementById: pelo id">
+  <div class="desc">Busca <b>um único elemento</b> pelo <code>id</code>, escrito <b>sem o #</b>. Se o id não existir, devolve <code>null</code>.</div>
+  <div class="try"><b>Experimente:</b> busque um id que não existe e tente pegar o <code>textContent</code> dele. Qual erro aparece?</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<p id="subtitulo">Aula de DOM</p></template>
+<script type="text/x-code">
+const titulo = document.getElementById("titulo");
+console.log(titulo);
+console.log(titulo.textContent);
+
+console.log(document.getElementById("nao-existe"));
+</script>
+</section>
+
+<section class="ex" data-group="Selecionar" data-title="Por classe e por tag">
+  <div class="desc"><code>getElementsByClassName</code> (sem o ponto) e <code>getElementsByTagName</code> (sem &lt; &gt;) devolvem uma <b>HTMLCollection</b>: acessa por índice, mas <b>não tem forEach</b>. Para usar forEach, converta com <code>Array.from()</code>.</div>
+  <div class="try"><b>Experimente:</b> use <code>getElementsByTagName("li")</code> e mostre quantos são.</div>
+<template class="stage"><ul id="lista">
+  <li class="item">HTML</li>
+  <li class="item">CSS</li>
+  <li class="item">JavaScript</li>
+</ul></template>
+<script type="text/x-code">
+const itens = document.getElementsByClassName("item");
+
+console.log(itens.length);
+console.log(itens[0].textContent);
+
+Array.from(itens).forEach((item) => {
+  console.log("item:", item.textContent);
+});
+</script>
+</section>
+
+<section class="ex" data-group="Selecionar" data-title="querySelector e querySelectorAll">
+  <div class="desc">Aceitam <b>qualquer seletor CSS</b> (<code>#id</code>, <code>.classe</code>, tag). <code>querySelector</code> devolve o <b>primeiro</b> (ou null); <code>querySelectorAll</code> devolve <b>todos</b> numa NodeList, que <b>tem forEach</b>. Regra prática: um elemento → querySelector; vários → querySelectorAll.</div>
+  <div class="try"><b>Experimente:</b> tente <code>document.querySelector(".nao-existe")</code> e <code>querySelectorAll(".nao-existe").length</code>.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<ul id="lista">
+  <li class="item">HTML</li>
+  <li class="item">CSS</li>
+  <li class="item">JavaScript</li>
+</ul></template>
+<script type="text/x-code">
+console.log(document.querySelector("#titulo").textContent);
+console.log(document.querySelector(".item").textContent);
+
+const itens = document.querySelectorAll(".item");
+console.log("Total:", itens.length);
+
+itens.forEach((item) => {
+  console.log(item.textContent);
+});
+</script>
+</section>
+
+<section class="ex" data-group="Selecionar" data-title="Seletores CSS no JS">
+  <div class="desc">Se o seletor funciona no CSS, funciona no <code>querySelector</code>: filho direto (<code>ul &gt; li</code>), pseudo-classe (<code>:first-child</code>, <code>:last-child</code>) e atributo (<code>[type='text']</code>).</div>
+  <div class="try"><b>Experimente:</b> pegue o último item com <code>ul &gt; li:last-child</code>.</div>
+<template class="stage"><ul id="lista">
+  <li class="item">HTML</li>
+  <li class="item">CSS</li>
+  <li class="item">JavaScript</li>
+</ul>
+<input type="text" placeholder="Digite algo"></template>
+<script type="text/x-code">
+const primeiro = document.querySelector("ul > li:first-child");
+console.log(primeiro.textContent);
+
+const campo = document.querySelector("input[type='text']");
+console.log(campo.placeholder);
+</script>
+</section>
+
+<section class="ex" data-group="Modificar" data-title="textContent, innerHTML e value">
+  <div class="desc"><code>textContent</code> lê/troca só o <b>texto</b> (seguro). <code>innerHTML</code> lê/troca o <b>HTML</b> de dentro (as tags são interpretadas: não use com texto digitado pelo usuário). <code>value</code> é o valor de um <code>input</code>, sempre uma <b>string</b>.</div>
+  <div class="try"><b>Experimente:</b> troque <code>textContent</code> por <code>innerHTML</code> na linha do título e coloque <code>&lt;i&gt;Olá&lt;/i&gt;</code>.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<ul id="lista"><li>Item antigo</li></ul>
+<input id="nome" value="Ana"></template>
+<script type="text/x-code">
+const titulo = document.querySelector("#titulo");
+titulo.textContent = "Olá, DOM!";
+
+const lista = document.querySelector("#lista");
+lista.innerHTML = "<li>Novo item</li><li>Outro item</li>";
+
+const nome = document.querySelector("#nome");
+console.log(nome.value);
+console.log(typeof nome.value);
+</script>
+</section>
+
+<section class="ex" data-group="Modificar" data-title="classList: add, remove, toggle, contains">
+  <div class="desc">Liga e desliga classes do CSS sem apagar as outras. <code>toggle</code>: se tem, tira; se não tem, põe. Prefira classList a <code>className = "..."</code>, que apaga as outras classes.</div>
+  <div class="try"><b>Experimente:</b> rode várias vezes só a linha do toggle e veja o card mudar.</div>
+<template class="stage"><div class="card" id="card">Card do curso</div>
+<p id="aviso" class="oculto">Aviso escondido!</p></template>
+<script type="text/x-code">
+const card = document.querySelector("#card");
+
+card.classList.add("destaque");
+card.classList.toggle("ativo");
+console.log(card.classList.contains("ativo"));
+
+document.querySelector("#aviso").classList.remove("oculto");
+</script>
+</section>
+
+<section class="ex" data-group="Modificar" data-title="style: mexendo no CSS pelo JS">
+  <div class="desc">As propriedades são em <b>camelCase</b> (<code>backgroundColor</code>, não <code>background-color</code>) e o valor é sempre <b>texto com unidade</b> (<code>"24px"</code>). Para muitos estilos, prefira criar uma classe e usar classList.</div>
+  <div class="try"><b>Experimente:</b> mude também <code>titulo.style.textAlign = "center"</code>.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<p>Texto da página</p></template>
+<script type="text/x-code">
+const titulo = document.querySelector("#titulo");
+
+titulo.style.color = "green";
+titulo.style.backgroundColor = "#F0C23B";
+titulo.style.fontSize = "40px";
+
+console.log(titulo.style.color);
+</script>
+</section>
+
+<section class="ex" data-group="Modificar" data-title="Propriedades e atributos">
+  <div class="desc">Propriedade é acesso direto no objeto (<code>link.id</code>, <code>input.value</code>). Atributo usa os métodos <code>getAttribute</code>, <code>setAttribute</code>, <code>hasAttribute</code> e <code>removeAttribute</code>. <code>link.href</code> devolve a URL completa; <code>getAttribute("href")</code> devolve o que está escrito no HTML.</div>
+  <div class="try"><b>Experimente:</b> remova o target com <code>removeAttribute</code> e confira com <code>hasAttribute</code>.</div>
+<template class="stage"><a id="meu-link" href="pagina.html">Abrir documentação</a></template>
+<script type="text/x-code">
+const link = document.querySelector("a");
+
+console.log(link.id);
+console.log(link.getAttribute("href"));
+
+link.setAttribute("href", "https://developer.mozilla.org");
+link.setAttribute("target", "_blank");
+console.log(link.hasAttribute("target"));
+</script>
+</section>
+
+<section class="ex" data-group="Navegar" data-title="Pais, filhos e irmãos">
+  <div class="desc">A partir de um elemento dá para "andar" pela árvore: <code>parentElement</code> (o pai), <code>children</code> (os filhos) e <code>previousElementSibling</code> / <code>nextElementSibling</code> (os irmãos). Nas pontas, o resultado é <code>null</code>.</div>
+  <div class="try"><b>Experimente:</b> mostre <code>bia.nextElementSibling.nextElementSibling</code>.</div>
+<template class="stage"><ul id="lista">
+  <li>Ana</li>
+  <li id="bia">Bia</li>
+  <li>Léo</li>
+</ul></template>
+<script type="text/x-code">
+const bia = document.getElementById("bia");
+
+const lista = bia.parentElement;
+console.log(lista);
+console.log(lista.children.length);
+console.log(lista.children[0].textContent);
+
+console.log(bia.previousElementSibling.textContent);
+console.log(bia.nextElementSibling.textContent);
+</script>
+</section>
+
+<section class="ex" data-group="Eventos" data-title="addEventListener: reagindo ao clique">
+  <div class="desc"><code>elemento.addEventListener("click", função)</code>: a função (um <b>callback</b>!) roda <b>toda vez</b> que o evento acontece. Execute e depois <b>clique no botão da prévia</b>. Outros eventos: <code>input</code>, <code>submit</code>, <code>keydown</code>, <code>mouseover</code>.</div>
+  <div class="try"><b>Experimente:</b> troque <code>"click"</code> por <code>"mouseover"</code> e passe o mouse no botão.</div>
+<template class="stage"><button id="btn">Clique em mim</button>
+<p id="mensagem">Ninguém clicou ainda.</p></template>
+<script type="text/x-code">
+const botao = document.querySelector("#btn");
+const mensagem = document.querySelector("#mensagem");
+
+botao.addEventListener("click", (evento) => {
+  console.log("Clicou!", evento.target);
+  mensagem.textContent = "Você clicou no botão!";
+});
+</script>
+</section>
+
+<section class="ex" data-group="Eventos" data-title="O fluxo do DOM: selecionar, acessar, modificar, reagir">
+  <div class="desc">Quase todo código de DOM segue 4 passos: <b>1. selecionar</b> o elemento, <b>2. acessar</b> o que ele tem, <b>3. modificar</b> e <b>4. reagir</b> a um evento. Execute e clique no botão várias vezes.</div>
+  <div class="try"><b>Experimente:</b> faça o título voltar ao texto original quando passar de 5 exclamações.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<button id="btn">Animar</button></template>
+<script type="text/x-code">
+const btn = document.querySelector("#btn");          // 1. selecionar
+const titulo = document.querySelector("#titulo");
+
+btn.addEventListener("click", () => {                // 4. reagir
+  const atual = titulo.textContent;                  // 2. acessar
+  titulo.textContent = atual + "!";                  // 3. modificar
+  titulo.classList.toggle("vermelho");
+});
+</script>
+</section>
+
+<section class="ex" data-group="Eventos" data-title="Revisão: DOM + funções + arrays">
+  <div class="desc">Juntando as aulas anteriores: uma <b>função</b> que cria um item, um <b>array</b> percorrido com <b>forEach</b> e um <b>if</b> para destacar. É assim que os sites montam listas a partir de dados.</div>
+  <div class="try"><b>Experimente:</b> acrescente um aluno no array e mude a regra de destaque.</div>
+<template class="stage"><h1>Turma</h1>
+<ul id="alunos"></ul></template>
+<script type="text/x-code">
+const alunos = [
+  { nome: "Ana", nota: 9 },
+  { nome: "Caio", nota: 5 },
+  { nome: "Bia", nota: 7 },
+];
+
+const lista = document.querySelector("#alunos");
+
+function criarItem(aluno) {
+  const li = document.createElement("li");
+  li.textContent = `${aluno.nome} - nota ${aluno.nota}`;
+  if (aluno.nota >= 7) li.classList.add("destaque");
+  return li;
+}
+
+alunos.forEach((aluno) => {
+  lista.appendChild(criarItem(aluno));
+});
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Uma página com um título, uma lista, um botão e um campo para testar o que quiser.</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para inspecionar os elementos.</div>
+<template class="stage"><h1 id="titulo">Área livre</h1>
+<ul id="lista">
+  <li class="item">HTML</li>
+  <li class="item">CSS</li>
+  <li class="item">JavaScript</li>
+</ul>
+<input id="campo" placeholder="Digite algo">
+<button id="btn">Botão</button>
+<div class="card" id="card">Card</div></template>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Ler e trocar o título">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar o texto atual do título no console e depois trocá-lo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o título com <code>document.getElementById("titulo")</code>.</li><li>Mostre o texto atual: <code>console.log(titulo.textContent)</code>.</li><li>Troque o texto para <code>"Olá, DOM!"</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Console: Green School<br>Página: título &quot;Olá, DOM!&quot;</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque também o <code>document.title</code>.</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<p>Bem-vindos à aula de DOM!</p></template>
+<script type="text/x-code">
+// const titulo = ...
+
+</script>
+<script type="text/x-check">
+if (!logs.includes("Green School")) return "Primeiro mostre no console o texto atual do título: console.log(titulo.textContent).";
+const t = doc.getElementById("titulo");
+if (!t) return "O h1 #titulo sumiu da página!";
+if (t.textContent !== "Olá, DOM!") return "O título deveria ser \"Olá, DOM!\", mas está \"" + t.textContent + "\".";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Listar os itens">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar no console o texto de cada item da lista.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione todos com <code>document.querySelectorAll(".item")</code>.</li><li>Percorra com <code>forEach</code>.</li><li>Para cada item, mostre <code>item.textContent</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>HTML<br>CSS<br>JavaScript</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre também <code>`Total: ${itens.length}`</code>.</div>
+<template class="stage"><ul id="lista">
+  <li class="item">HTML</li>
+  <li class="item">CSS</li>
+  <li class="item">JavaScript</li>
+</ul></template>
+<script type="text/x-code">
+// const itens = ...
+
+</script>
+<script type="text/x-check">
+const exp = ["HTML", "CSS", "JavaScript"]; let k = 0;
+for (const l of logs) if (l === exp[k]) k++;
+return k === 3 || "O console deveria mostrar HTML, CSS e JavaScript, um por linha. Use item.textContent dentro do forEach.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Mudar o estilo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Deixar o título verde e com 40px.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o <code>#titulo</code>.</li><li><code>titulo.style.color = "green";</code></li><li><code>titulo.style.fontSize = "40px";</code> (com a unidade, entre aspas!)</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Título verde e grande</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque um fundo com <code>backgroundColor</code> (camelCase!).</div>
+<template class="stage"><h1 id="titulo">Green School</h1>
+<p>Texto da página</p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const s = doc.getElementById("titulo").style;
+if (s.color !== "green") return "A cor do título deveria ser \"green\". Use titulo.style.color.";
+if (s.fontSize !== "40px") return "O tamanho deveria ser \"40px\" (texto, com a unidade). Use titulo.style.fontSize.";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Classes">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Destacar o card e mostrar o aviso escondido.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Adicione a classe <code>destaque</code> no <code>.card</code> com <code>classList.add</code>.</li><li>Remova a classe <code>oculto</code> do <code>#aviso</code> com <code>classList.remove</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Card amarelo<br>Aviso aparecendo</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre no console <code>card.classList.contains("destaque")</code>.</div>
+<template class="stage"><div class="card">Curso de JavaScript</div>
+<p id="aviso" class="oculto">⚠️ Aula ao vivo hoje às 7h!</p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const c = doc.querySelector(".card");
+if (!c) return "O card perdeu a classe \"card\"! Use classList.add em vez de className.";
+if (!c.classList.contains("destaque")) return "O card ainda não tem a classe \"destaque\". Use card.classList.add(\"destaque\").";
+if (doc.getElementById("aviso").classList.contains("oculto")) return "O aviso continua escondido. Remova a classe \"oculto\" dele.";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Atributos do link">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Ler e alterar os atributos de um link.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o link (<code>#link</code>).</li><li>Mostre no console <code>link.getAttribute("href")</code>.</li><li>Troque o href para <code>"https://developer.mozilla.org"</code>.</li><li>Faça abrir em nova aba: <code>setAttribute("target", "_blank")</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Console: pagina.html<br>Link apontando para o MDN, em nova aba</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude também o texto do link com textContent.</div>
+<template class="stage"><a id="link" href="pagina.html">Documentação do JavaScript</a></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+if (!logs.includes("pagina.html")) return "Primeiro mostre no console o href atual com link.getAttribute(\"href\").";
+const a = doc.getElementById("link");
+if (a.getAttribute("href") !== "https://developer.mozilla.org") return "O href deveria ser \"https://developer.mozilla.org\".";
+if (a.getAttribute("target") !== "_blank") return "Falta o target=\"_blank\" para abrir em nova aba.";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Navegando pelos irmãos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> A partir da Bia, mostrar quem vem antes, quem vem depois e o total da lista.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione <code>#bia</code>.</li><li>Mostre o texto do irmão anterior: <code>previousElementSibling.textContent</code>.</li><li>Mostre o texto do próximo: <code>nextElementSibling.textContent</code>.</li><li>Pelo pai (<code>parentElement</code>), mostre <code>`Total: ${...children.length}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Ana<br>Léo<br>Total: 3</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre o que vem depois do Léo. O que aparece?</div>
+<template class="stage"><ul id="lista">
+  <li>Ana</li>
+  <li id="bia">Bia</li>
+  <li>Léo</li>
+</ul></template>
+<script type="text/x-code">
+const bia = document.getElementById("bia");
+
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const exp = ["Ana", "Léo", "Total: 3"]; let k = 0;
+for (const l of logs) if (l === exp[k]) k++;
+return k === 3 || ("O console deveria mostrar, nesta ordem: Ana, Léo e Total: 3. Faltou: " + exp[k]);
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Primeiro clique">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Trocar a mensagem quando o botão for clicado.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o botão <code>#btn</code> e o parágrafo <code>#mensagem</code>.</li><li>Use <code>btn.addEventListener("click", () =&gt; { ... })</code>.</li><li>Dentro, troque o texto da mensagem para <code>"Botão clicado!"</code>.</li><li>Execute e clique no botão da prévia para ver funcionando.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Antes: Ainda não clicou<br>Depois do clique: Botão clicado!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre também <code>console.log("clicou")</code> a cada clique.</div>
+<template class="stage"><button id="btn">Clique aqui</button>
+<p id="mensagem">Ainda não clicou</p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const m = doc.getElementById("mensagem");
+if (m.textContent === "Botão clicado!") return "A mensagem mudou antes do clique! A troca precisa ficar dentro do addEventListener.";
+doc.getElementById("btn").click();
+return m.textContent === "Botão clicado!" || ("Depois do clique a mensagem deveria ser \"Botão clicado!\", mas está \"" + m.textContent + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Contador">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer o botão somar 1 no número da tela a cada clique.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o <code>#numero</code> e o botão <code>#mais</code>.</li><li>No clique, leia o número atual: <code>Number(numero.textContent)</code> (o texto vira número!).</li><li>Some 1 e coloque de volta no <code>textContent</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Clique 3 vezes → 3</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Crie um botão de −1 e não deixe passar de zero (use if).</div>
+<template class="stage"><p>Cliques: <span id="numero">0</span></p>
+<button id="mais">+1</button></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const n = doc.getElementById("numero"), b = doc.getElementById("mais");
+if (n.textContent.trim() !== "0") return "O número deveria começar em 0 e só mudar no clique.";
+b.click(); b.click(); b.click();
+if (n.textContent.trim() === "0111") return "Apareceu \"0111\": o texto foi juntado em vez de somado. Use Number(numero.textContent) antes de somar.";
+return n.textContent.trim() === "3" || ("Depois de 3 cliques o número deveria ser 3, mas está \"" + n.textContent + "\".");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · Lendo o input">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar uma saudação com o nome digitado ao clicar em Enviar.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o <code>#nome</code>, o botão <code>#enviar</code> e o <code>#saudacao</code>.</li><li>No clique, leia o que foi digitado com <code>nome.value</code>.</li><li>Coloque <code>`Olá, ${nome.value}!`</code> no <code>textContent</code> da saudação.</li><li>Execute, digite seu nome na prévia e clique em Enviar.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Digitou Ana + Enviar → Olá, Ana!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Se o campo estiver vazio, mostre "Digite seu nome" (lembra do truthy/falsy?).</div>
+<template class="stage"><input id="nome" placeholder="Seu nome">
+<button id="enviar">Enviar</button>
+<p id="saudacao"></p></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const i = doc.getElementById("nome");
+i.value = "Ana";
+doc.getElementById("enviar").click();
+const s = doc.getElementById("saudacao").textContent;
+return s === "Olá, Ana!" || ("O corretor digitou \"Ana\" e clicou. A saudação deveria ser \"Olá, Ana!\", mas ficou \"" + s + "\". Leia o nome.value dentro do clique.");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · Card ativo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Alternar a classe ativo do card a cada clique.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Selecione o <code>#card</code>.</li><li>No clique do próprio card, use <code>card.classList.toggle("ativo")</code>.</li><li>Execute e clique no card da prévia: ele deve ligar e desligar.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>1º clique: card verde<br>2º clique: volta ao normal</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude também o texto para "Ativo" ou "Inativo" conforme a classe.</div>
+<template class="stage"><div class="card" id="card">Clique em mim para ativar</div></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const c = doc.getElementById("card");
+if (c.classList.contains("ativo")) return "O card já começou ativo. A classe só deve mudar no clique.";
+c.click();
+if (!c.classList.contains("ativo")) return "Depois do 1º clique o card deveria ter a classe \"ativo\". Use classList.toggle.";
+c.click();
+return !c.classList.contains("ativo") || "Depois do 2º clique o card deveria voltar ao normal. Use toggle em vez de add.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 11 · Cor de fundo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Trocar a cor de fundo da página a cada clique, passando pelas cores do array.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No clique do <code>#trocar</code>, pinte a página: <code>document.body.style.backgroundColor = cores[indice];</code></li><li>Depois some 1 no <code>indice</code>.</li><li>Quando o índice chegar no fim do array, volte para 0 (use <code>if</code> ou o <code>%</code>).</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Cada clique, uma cor diferente<br>Depois da última, recomeça</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre no console qual cor foi aplicada.</div>
+<template class="stage"><h1>Mudando cores</h1>
+<button id="trocar">Trocar cor</button></template>
+<script type="text/x-code">
+const cores = ["#FDE68A", "#BBF7D0", "#BFDBFE"];
+let indice = 0;
+
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const b = doc.getElementById("trocar"), body = doc.body;
+const vistas = [];
+for (let k = 0; k < 4; k++) { b.click(); vistas.push(body.style.backgroundColor); }
+if (!vistas[0]) return "Depois do clique o fundo não mudou. Use document.body.style.backgroundColor.";
+if (vistas[0] === vistas[1] || vistas[1] === vistas[2]) return "Cada clique deveria trocar para a próxima cor. Não esqueça de somar 1 no indice.";
+if (vistas[3] !== vistas[0]) return "Depois da última cor, deveria voltar para a primeira. Zere o indice quando ele chegar em cores.length.";
+return true;
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 12 · Desafio: lista de compras">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Adicionar o item digitado na lista a cada clique, sem aceitar campo vazio.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No clique do <code>#adicionar</code>, leia <code>item.value</code>.</li><li>Se estiver vazio, não faça nada (<code>if (!item.value) return;</code>).</li><li>Crie um <code>li</code> com <code>document.createElement("li")</code>, coloque o texto e use <code>compras.appendChild(li)</code> (ou innerHTML +=).</li><li>Limpe o campo: <code>item.value = ""</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Digitou Pão + Adicionar → novo item &quot;Pão&quot;<br>Campo vazio → nada acontece</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça cada item ser removido ao ser clicado (<code>li.remove()</code>).</div>
+<template class="stage"><input id="item" placeholder="Item">
+<button id="adicionar">Adicionar</button>
+<ul id="compras">
+  <li>Arroz</li>
+</ul></template>
+<script type="text/x-code">
+// seu código aqui
+
+</script>
+<script type="text/x-check">
+const i = doc.getElementById("item"), b = doc.getElementById("adicionar"), ul = doc.getElementById("compras");
+const q = () => ul.querySelectorAll("li").length;
+i.value = ""; b.click();
+if (q() !== 1) return "Com o campo vazio, nada deveria ser adicionado. Use um if para conferir o item.value.";
+i.value = "Pão"; b.click();
+if (q() !== 2) return "O corretor digitou \"Pão\" e clicou, mas a lista não ganhou um item novo.";
+const ult = ul.querySelectorAll("li")[1].textContent.trim();
+if (ult !== "Pão") return "O novo item deveria ser \"Pão\", mas ficou \"" + ult + "\".";
+if (i.value !== "") return "Depois de adicionar, limpe o campo: item.value = \"\".";
+return true;
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const STAGE_CSS = document.getElementById('stage-css').textContent;
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    stage: s.querySelector('template.stage').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|of|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN|document)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src) {
+    let h = '', last = 0, m; re.lastIndex = 0;
+    while ((m = re.exec(src))) { h += esc(src.slice(last, m.index)); const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd'; h += `<span class="${cls}">${esc(m[0])}</span>`; last = re.lastIndex; }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- console ----------
+  let lines = 0, got = [];
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Executar. O que o console.log mostrar aparece aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; got = []; }
+  function addLine(text, cls) {
+    if (lines === 0) out.innerHTML = '';
+    if (lines > 400) return;
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function fmtEl(el) {
+    if (!el.tagName) return el.nodeType === 3 ? JSON.stringify(el.textContent) : '[nó]';
+    const tag = el.tagName.toLowerCase();
+    let s = '<' + tag;
+    for (const a of el.attributes) s += ` ${a.name}="${a.value}"`;
+    if (tag === 'body' || tag === 'html') return s + '>…</' + tag + '>';
+    const txt = el.children.length ? '…' : el.textContent.trim().slice(0, 40);
+    return s + '>' + txt + '</' + tag + '>';
+  }
+  function fmt(v, deep) {
+    if (typeof v === 'string') return deep ? JSON.stringify(v) : v;
+    if (v === undefined) return 'undefined';
+    if (v === null) return 'null';
+    if (typeof v === 'function') return '[função]';
+    if (typeof v === 'object') {
+      if (typeof v.nodeType === 'number') return v.nodeType === 9 ? '#document' : fmtEl(v);
+      const nome = (v.constructor && v.constructor.name) || '';
+      if (nome === 'DOMTokenList') return `classList [ ${Array.from(v).join(', ')} ]`;
+      if (typeof v.length === 'number' && typeof v.item === 'function') {
+        return `${nome || 'Lista'}(${v.length}) [ ${Array.from(v).slice(0, 6).map(x => fmt(x, true)).join(', ')}${v.length > 6 ? ', …' : ''} ]`;
+      }
+      if (Array.isArray(v)) return '[ ' + v.map(x => fmt(x, true)).join(', ') + ' ]';
+      if (typeof v.type === 'string' && v.target && 'bubbles' in v) return `Evento "${v.type}" em ${fmt(v.target)}`;
+      try { return JSON.stringify(v); } catch (e) { return String(v); }
+    }
+    return String(v);
+  }
+  function dica(msg) {
+    if (/of null/.test(msg)) return 'Dica: o querySelector/getElementById devolveu null, ou seja, não achou o elemento. Confira o seletor: com # no querySelector e sem # no getElementById.';
+    if (/recarregou/.test(msg)) return 'Dica: dentro do addEventListener("submit", (evento) => { ... }) chame evento.preventDefault() na primeira linha.';
+    if (/requestSubmit|submit is not a function/.test(msg)) return 'Dica: um campo chamado name="submit" esconde o método submit do formulário. Use outro name.';
+    if (/forEach is not a function/.test(msg)) return 'Dica: HTMLCollection não tem forEach. Use querySelectorAll ou Array.from(...).forEach.';
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+  let testLogs = [], runId = 0, checking = false;
+  window.__pgLog = (target, kind, args, id) => {
+    if (id !== runId) return;
+    const text = args.map(a => fmt(a)).join(' ');
+    if (target === 'test') { if (kind === 'log') testLogs.push(text.trim()); return; }
+    if (kind === 'err') { addLine(text, 'err'); const d = dica(text); if (d) addLine(d, 'tip'); if (!checking) { status.className = 'status bad'; status.textContent = '✗ O código tem um erro'; } return; }
+    got.push(text.trim()); addLine(text);
+  };
+  function buildDoc(stage, src, target, id) {
+    const S = '<scr' + 'ipt>', E = '</scr' + 'ipt>';
+    const boot = `(function(){var P=parent,T=${JSON.stringify(target)},I=${id};function f(k){return function(){P.__pgLog(T,k,Array.prototype.slice.call(arguments),I)}}console.log=f('log');console.info=f('log');console.warn=f('log');console.error=f('err');window.onerror=function(m){P.__pgLog(T,'err',[String(m).replace(/^Uncaught /,'')],I);return true};window.open=function(){};document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a)e.preventDefault()},true);window.__submits=0;window.__prevented=null;window.addEventListener('submit',function(e){window.__submits++;window.__prevented=e.defaultPrevented;if(!e.defaultPrevented){e.preventDefault();var f=e.target;var b=document.createElement('div');b.style.cssText='position:fixed;left:0;right:0;top:0;background:#dc2626;color:#fff;font:14px system-ui;padding:8px 12px;z-index:9';b.textContent='⚠️ A página recarregou e perdeu tudo: o formulário foi enviado do jeito antigo. Falta evento.preventDefault().';document.body.appendChild(b);setTimeout(function(){f.reset();},50);P.__pgLog(T,'err',['A página recarregou: o submit não teve preventDefault()'],I)}},false)})();`;
+    const safe = src.replace(/<\/script/gi, '<\\/script');
+    return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Green School</title><style>${STAGE_CSS}</style></head><body>${stage}${S}${boot}${E}${S}\n${safe}\n${E}</body></html>`;
+  }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = ''; lines = 0; got = []; testLogs = [];
+    status.className = 'status'; status.textContent = 'Executando…';
+    const t0 = performance.now();
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (lines === 0) out.innerHTML = '<div class="empty">(Nada no console. Veja a prévia da página acima.)</div>';
+        if (!e.check) { if (!/bad/.test(status.className)) { status.className = 'status ok'; status.textContent = `✓ Executado em ${Math.round(performance.now() - t0)} ms`; } return; }
+        runCheck(id, e);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(e.stage, code.value, 'main', id);
+  }
+  function runCheck(id, e) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r; checking = true;
+        try { r = new Function('doc', 'win', 'logs', e.check)(tester.contentDocument, tester.contentWindow, testLogs.slice()); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        checking = false;
+        if (r === true) { addLine('🎉 Correto! Página e console do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica no console'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(e.stage, code.value, 'test', id);
+  }
+
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(e.stage, '', 'main', -1);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 16 : 20;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-dom') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-dom', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projeto JS · Meu portfólio — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#F0C23B}
+  .nav.on{color:#F0C23B}
+  .nav .cnt{float:right;font-family:Consolas,monospace;font-size:12px;color:var(--muted)}
+  .nav.done .cnt{color:var(--ok)}
+  .work{grid-template-columns:1.15fr 1fr}
+  .work>*{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:1}
+  .right .card.chk{flex:1.25}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic} .d{color:#F4A77A} .b{color:#8FC7FF}
+  .tabs{display:flex;gap:4px}
+  .tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:inherit;font-size:13px;letter-spacing:1px;padding:4px 10px;cursor:pointer;font-family:"JetBrains Mono",Consolas,monospace}
+  .tab.on{color:var(--ink);border-bottom-color:var(--acc)}
+  .list{flex:1;overflow:auto;padding:6px 0}
+  .etp{padding:4px 0;border-bottom:1px solid #262A37}
+  .etp.on{background:rgba(255,255,255,.025)}
+  .eth{display:flex;justify-content:space-between;padding:6px 16px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer}
+  .etp.on .eth{color:var(--acc)}
+  .it{display:flex;gap:10px;padding:5px 16px 5px 18px;font-size:calc(var(--fs) * .78);line-height:1.4}
+  .it .ic{width:18px;flex-shrink:0;font-weight:700}
+  .it.ok .ic{color:var(--ok)} .it.no .ic{color:var(--err)} .it.wait .ic{color:#555C6E}
+  .it.ok .itt{color:var(--muted);text-decoration:line-through;text-decoration-color:#3A4052}
+  .it .msg{color:var(--acc);font-size:calc(var(--fs) * .7);margin-top:2px}
+  .progwrap{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0}
+  .progbar{width:110px;height:6px;background:#2A2F3D;border-radius:3px;overflow:hidden}
+  .progbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+  #win{margin:8px 16px 4px;padding:10px 14px;background:rgba(127,209,139,.12);border:1px solid rgba(127,209,139,.4);border-radius:10px;color:var(--ok);font-size:14px;line-height:1.4}
+  .desc ul,.desc ol{margin:8px 0 0;padding-left:22px} .desc li{margin:3px 0}
+  .desc pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:#C4C8D2;white-space:pre-wrap;max-height:220px;overflow:auto}
+  .desc{max-height:26vh;overflow:auto;padding-right:8px}
+  main{overflow:auto}
+  .work{min-height:520px}
+  .btn.dl{border-color:var(--acc);color:var(--acc)}
+  @media (max-width:1000px){ iframe.stage{min-height:320px} .right .card.chk{max-height:none} .list{max-height:360px} .desc{max-height:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#F0C23B">P</div>
+      <div class="t">Projeto: meu portfólio</div>
+      <div class="s">A interação do seu site pessoal, em JavaScript</div>
+      <a href="/js-projeto/roteiro-projeto-js.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Roteiro em PDF</a>
+      <a href="/#javascript" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← voltar ao módulo</a>
+    </div>
+    <div class="grp">Etapas</div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher etapa"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" style="background:#F0C23B">Projeto · JavaScript</span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Apagar o seu trabalho e voltar ao modelo">↺ Recomeçar</button>
+        <button class="btn dl" id="dl" title="Baixar os arquivos do projeto">⬇ Baixar</button>
+        <button class="btn run" id="run" style="background:#F0C23B;border-color:#F0C23B">▶ Atualizar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card ed">
+        <div class="hd"><div class="tabs" id="tabs"></div><span class="hint2" id="saved">index.html + style.css + script.js · salvo automaticamente neste navegador</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Seu site</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia do projeto"></iframe>
+        </div>
+        <div class="card chk">
+          <div class="hd"><span>Checklist do projeto</span><span class="progwrap"><span class="progbar"><i id="bar"></i></span><span id="prog">0/0</span></span></div>
+          <div id="win" hidden>🎉 <b>Projeto concluído!</b> Clique em <b>⬇ Baixar</b> para salvar os arquivos e veja a etapa <b>Publicar</b> para colocar seu site no ar.</div>
+          <div class="list" id="list"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:500px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<script type="application/json" id="cfg">{"tabs": ["html", "css", "js"], "files": {"html": "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"description\" content=\"Portfólio de Ana Souza, desenvolvedora front-end em formação.\">\n  <title>Ana Souza · Portfólio<\/title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n<\/head>\n<body>\n  <header class=\"topo\">\n    <div class=\"container\">\n      <h1>Ana Souza<\/h1>\n      <p class=\"tagline\">Desenvolvedora front-end em formação<\/p>\n      <nav>\n        <ul class=\"menu\">\n          <li><a href=\"#sobre\">Sobre<\/a><\/li>\n          <li><a href=\"#habilidades\">Habilidades<\/a><\/li>\n          <li><a href=\"#projetos\">Projetos<\/a><\/li>\n          <li><a href=\"#contato\">Contato<\/a><\/li>\n        <\/ul>\n      <\/nav>\n    <\/div>\n  <\/header>\n\n  <main class=\"container\">\n    <section id=\"sobre\">\n      <h2>Sobre mim<\/h2>\n      <img src=\"/img/greenn.svg\" alt=\"Foto de Ana Souza\" class=\"foto\" width=\"120\">\n      <p>Olá! Sou a Ana, estudante de programação na Greenn School. Comecei pelo HTML e CSS e hoje estou aprendendo JavaScript para criar páginas que reagem ao usuário.<\/p>\n      <p>Gosto de transformar ideias em telas simples e bonitas. Meu objetivo é trabalhar como desenvolvedora front-end.<\/p>\n    <\/section>\n\n    <section id=\"habilidades\">\n      <h2>Habilidades<\/h2>\n      <ul class=\"lista-habilidades\">\n        <li>HTML semântico<\/li>\n        <li>CSS: Flexbox, Grid e responsivo<\/li>\n        <li>JavaScript e DOM<\/li>\n        <li>Git e GitHub (aprendendo)<\/li>\n      <\/ul>\n    <\/section>\n\n    <section id=\"projetos\">\n      <h2>Projetos<\/h2>\n      <div class=\"cards\">\n        <article class=\"card\">\n          <h3>Site da escola<\/h3>\n          <p>Página institucional feita só com HTML semântico e CSS responsivo.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n        <article class=\"card\">\n          <h3>Lista de tarefas<\/h3>\n          <p>Um app de tarefas com JavaScript: adicionar, concluir e remover itens.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n        <article class=\"card\">\n          <h3>Calculadora de notas<\/h3>\n          <p>Calcula a média do aluno e diz se foi aprovado, usando funções e condicionais.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n      <\/div>\n    <\/section>\n\n    <section id=\"contato\">\n      <h2>Contato<\/h2>\n      <form id=\"form-contato\">\n        <label for=\"nome\">Nome<\/label>\n        <input type=\"text\" id=\"nome\" name=\"nome\" required>\n\n        <label for=\"email\">E-mail<\/label>\n        <input type=\"email\" id=\"email\" name=\"email\" required>\n\n        <label for=\"mensagem\">Mensagem<\/label>\n        <textarea id=\"mensagem\" name=\"mensagem\" rows=\"4\"><\/textarea>\n\n        <button type=\"submit\" class=\"botao\">Enviar<\/button>\n      <\/form>\n    <\/section>\n  <\/main>\n\n  <footer class=\"rodape\">\n    <p>© 2026 Ana Souza · feito na Greenn School<\/p>\n    <p><a href=\"https://www.linkedin.com\" target=\"_blank\">LinkedIn<\/a> · <a href=\"https://github.com\" target=\"_blank\">GitHub<\/a><\/p>\n  <\/footer>\n<\/body>\n<\/html>\n", "css": ":root {\n  --principal: #38BDF8;\n  --escuro: #15171E;\n  --fundo: #F1F5F9;\n  --texto: #334155;\n}\n\n* { box-sizing: border-box; }\n\nbody {\n  margin: 0;\n  font-family: Arial, Helvetica, sans-serif;\n  background-color: var(--fundo);\n  color: var(--texto);\n  line-height: 1.6;\n}\n\n.container {\n  max-width: 900px;\n  margin: 0 auto;\n  padding: 0 20px;\n}\n\n/* cabeçalho */\n.topo {\n  background-color: var(--escuro);\n  color: white;\n  padding: 40px 0 24px;\n  text-align: center;\n}\n.topo h1 { margin: 0; font-size: 2.2rem; }\n.tagline { color: var(--principal); margin: 6px 0 18px; }\n.menu {\n  display: flex;\n  justify-content: center;\n  gap: 24px;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n.menu a { color: white; text-decoration: none; transition: color 0.2s; }\n.menu a:hover { color: var(--principal); }\n\n/* seções */\nsection { padding: 40px 0; }\nimg { max-width: 100%; height: auto; }\nh2 { color: var(--escuro); margin-top: 0; }\n.foto { border-radius: 50%; }\n\n/* projetos */\n.cards {\n  display: grid;\n  grid-template-columns: 1fr;\n  gap: 16px;\n}\n.card {\n  background-color: white;\n  padding: 20px;\n  border-radius: 12px;\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);\n  transition: transform 0.2s;\n}\n.card:hover { transform: translateY(-4px); }\n.card h3 { margin-top: 0; color: var(--principal); }\n.card a { color: var(--escuro); font-weight: bold; }\n\n/* formulário */\nform label { display: block; margin-top: 12px; font-weight: bold; }\nform input, form textarea {\n  width: 100%;\n  padding: 10px;\n  border: 1px solid #CBD5E1;\n  border-radius: 8px;\n  font: inherit;\n}\n.botao {\n  margin-top: 16px;\n  padding: 12px 28px;\n  background-color: var(--principal);\n  color: var(--escuro);\n  border: 0;\n  border-radius: 8px;\n  font-weight: bold;\n  cursor: pointer;\n  transition: transform 0.2s;\n}\n.botao:hover { transform: scale(1.05); }\n\n/* rodapé */\n.rodape {\n  background-color: var(--escuro);\n  color: #9AA0AE;\n  text-align: center;\n  padding: 20px;\n}\n.rodape a { color: var(--principal); }\n\n/* celular primeiro; a partir de 700px, três colunas */\n@media (min-width: 700px) {\n  .cards { grid-template-columns: repeat(3, 1fr); }\n}\n", "js": "// ==== Projeto: meu portfólio ====\n// Este arquivo é carregado no fim do body, então a página já existe quando ele roda.\n\n// etapa 2: ano automático no rodapé\n\n\n// etapa 3: tema escuro\n\n\n// etapa 4: lista de projetos gerada a partir de um array\nconst projetos = [\n  // { nome: \"...\", descricao: \"...\", link: \"https://...\" },\n];\n\n\n// etapa 5: formulário de contato com validação\n\n"}}</script>
+<div id="etapas" hidden>
+<section class="et" data-title="Preparar o HTML">
+  <div class="desc"><p><b>O projeto:</b> o portfólio que você estruturou (HTML) e estilizou (CSS) ganha agora <b>comportamento</b>: ano automático no rodapé, botão de tema escuro, lista de projetos gerada a partir de um array de objetos e formulário que valida e responde. Tudo com o que você viu nas aulas de DOM, formulários, objetos e arrays.</p>
+<p><b>Como funciona:</b> três abas (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>); a prévia é o site de verdade e o checklist <b>testa</b> o site (clica no botão, envia o formulário) quando você clica em ▶ Atualizar. Se você fez os projetos anteriores neste navegador, seus arquivos já estão nas abas.</p>
+<p><b>Nesta etapa</b>, prepare os "ganchos" no <code>index.html</code>:</p>
+<ul>
+<li>no <code>header</code>, um <code>&lt;button id="tema" type="button"&gt;🌙 Tema escuro&lt;/button&gt;</code>;</li>
+<li>no <code>footer</code>, o ano vira <code>&lt;span id="ano"&gt;&lt;/span&gt;</code> (ex.: <code>© &lt;span id="ano"&gt;&lt;/span&gt; Ana Souza</code>);</li>
+<li>em <code>#projetos</code>, apague os <code>&lt;article&gt;</code> e deixe só <code>&lt;div id="lista-projetos" class="cards"&gt;&lt;/div&gt;</code> (o JavaScript vai criá-los);</li>
+<li>em <code>#contato</code>, depois do form, um <code>&lt;p id="mensagem"&gt;&lt;/p&gt;</code>;</li>
+<li>antes de <code>&lt;/body&gt;</code>, <code>&lt;script src="script.js"&gt;&lt;/script&gt;</code>.</li>
+</ul></div>
+<script type="text/x-item" data-t="button#tema no header">
+const b = doc.querySelector("header button#tema"); return !!b || "Falta <button id=\"tema\" type=\"button\"> dentro do header.";
+</script>
+<script type="text/x-item" data-t="span#ano no footer">
+return !!doc.querySelector("footer #ano") || "Falta <span id=\"ano\"></span> no footer.";
+</script>
+<script type="text/x-item" data-t="div#lista-projetos vazia no HTML (os cartões virão do JS)">
+const d = new DOMParser().parseFromString(src.html, "text/html").querySelector("#projetos #lista-projetos");
+if (!d) return "Falta <div id=\"lista-projetos\"> dentro de #projetos.";
+return d.children.length === 0 || "A div#lista-projetos precisa ficar vazia no HTML: apague os <article> escritos à mão.";
+</script>
+<script type="text/x-item" data-t="p#mensagem na seção de contato">
+return !!doc.querySelector("#contato #mensagem") || "Falta <p id=\"mensagem\"></p> em #contato (fora do form ou dentro, tanto faz).";
+</script>
+<script type="text/x-item" data-t="script.js ligado antes de &lt;/body&gt;">
+return /<script[^>]*src=["']\.?\/?script\.js["']/.test(src.html) || "Coloque <script src=\"script.js\"><\/script> antes de </body>.";
+</script>
+</section>
+
+<section class="et" data-title="Ano automático">
+  <div class="desc"><p>O primeiro JavaScript útil: nunca mais atualizar o ano do rodapé na mão.</p>
+<pre>const ano = new Date().getFullYear();
+document.querySelector("#ano").textContent = ano;</pre>
+<p><code>new Date()</code> é a data de agora; <code>getFullYear()</code> devolve o ano como número. Selecionar e trocar o texto é o que você fez na aula de DOM.</p></div>
+<script type="text/x-item" data-t="#ano mostra o ano atual">
+const s = doc.querySelector("#ano"); if (!s) return "Falta o span#ano (etapa 1).";
+return s.textContent.trim() === String(new Date().getFullYear()) || "O #ano deveria mostrar " + new Date().getFullYear() + ", mas está \"" + s.textContent.trim() + "\".";
+</script>
+<script type="text/x-item" data-t="Usa new Date().getFullYear()">
+return /getFullYear\s*\(\)/.test(src.js) || "Use new Date().getFullYear() em vez de escrever o ano.";
+</script>
+</section>
+
+<section class="et" data-title="Tema escuro">
+  <div class="desc"><p>O botão <code>#tema</code> liga e desliga a classe <code>escuro</code> no <code>body</code>; o CSS faz o resto. É o <code>classList.toggle</code> da aula de DOM.</p>
+<pre>// script.js
+const botaoTema = document.querySelector("#tema");
+botaoTema.addEventListener("click", () => {
+  document.body.classList.toggle("escuro");
+  const ativo = document.body.classList.contains("escuro");
+  botaoTema.textContent = ativo ? "☀️ Tema claro" : "🌙 Tema escuro";
+});</pre>
+<pre>/* style.css: redefina as variáveis quando o body tiver a classe */
+body.escuro {
+  --fundo: #15171E;
+  --texto: #E2E8F0;
+  background-color: var(--fundo);
+  color: var(--texto);
+}
+body.escuro article { background-color: #1F2330; }</pre></div>
+<script type="text/x-item" data-t="Clicar em #tema liga a classe escuro no body">
+const b = doc.querySelector("#tema"); if (!b) return "Falta o button#tema (etapa 1).";
+b.click(); await new Promise(r => setTimeout(r, 60));
+const on = doc.body.classList.contains("escuro");
+if (!on) { return "Ao clicar no botão, o body deveria ganhar a classe escuro (classList.toggle)."; }
+return true;
+</script>
+<script type="text/x-item" data-t="Clicar de novo desliga (toggle)">
+const b = doc.querySelector("#tema"); if (!b) return "Falta o button#tema.";
+if (!doc.body.classList.contains("escuro")) b.click();
+await new Promise(r => setTimeout(r, 60)); b.click(); await new Promise(r => setTimeout(r, 60));
+return !doc.body.classList.contains("escuro") || "O segundo clique deveria tirar a classe: use toggle, não add.";
+</script>
+<script type="text/x-item" data-t="O fundo da página muda de verdade com o tema">
+const b = doc.querySelector("#tema"); if (!b) return "Falta o button#tema.";
+const antes = win.getComputedStyle(doc.body).backgroundColor; b.click(); await new Promise(r => setTimeout(r, 60));
+const depois = win.getComputedStyle(doc.body).backgroundColor; b.click(); await new Promise(r => setTimeout(r, 60));
+return antes !== depois || "Crie no CSS a regra body.escuro { background-color: ...; color: ...; }.";
+</script>
+<script type="text/x-item" data-t="O texto do botão muda (🌙 / ☀️)">
+const b = doc.querySelector("#tema"); if (!b) return "Falta o button#tema.";
+const t1 = b.textContent; b.click(); await new Promise(r => setTimeout(r, 60)); const t2 = b.textContent; b.click(); await new Promise(r => setTimeout(r, 60));
+return t1 !== t2 || "Troque o textContent do botão conforme o tema (ex.: ☀️ Tema claro).";
+</script>
+</section>
+
+<section class="et" data-title="Lista de projetos">
+  <div class="desc"><p>Os projetos viram <b>dados</b>: um array de objetos no <code>script.js</code>. Um laço (<code>forEach</code> ou <code>map</code>) cria um <code>&lt;article&gt;</code> para cada um dentro de <code>#lista-projetos</code>. Para adicionar um projeto, você só acrescenta um objeto no array.</p>
+<pre>const projetos = [
+  { nome: "Site da escola", descricao: "HTML semântico e CSS responsivo.", link: "https://github.com" },
+  { nome: "Lista de tarefas", descricao: "App com JavaScript e DOM.", link: "https://github.com" },
+];
+
+const lista = document.querySelector("#lista-projetos");
+projetos.forEach((p) => {
+  const card = document.createElement("article");
+  card.className = "card";
+  card.innerHTML = `&lt;h3&gt;${p.nome}&lt;/h3&gt;&lt;p&gt;${p.descricao}&lt;/p&gt;&lt;a href="${p.link}" target="_blank"&gt;Ver projeto&lt;/a&gt;`;
+  lista.appendChild(card);
+});</pre></div>
+<script type="text/x-item" data-t="Array projetos com pelo menos 2 objetos">
+if (!/const\s+projetos\s*=\s*\[/.test(src.js)) return "Crie const projetos = [ ... ] no script.js.";
+const m = src.js.match(/const\s+projetos\s*=\s*\[([\s\S]*?)\];/); const n = m ? (m[1].match(/\{/g) || []).length : 0;
+return n >= 2 || "O array precisa de pelo menos 2 objetos { ... } (tem " + n + ").";
+</script>
+<script type="text/x-item" data-t="#lista-projetos recebe um article por projeto">
+const l = doc.querySelector("#lista-projetos"); if (!l) return "Falta a div#lista-projetos (etapa 1).";
+const n = l.querySelectorAll("article").length;
+if (n < 2) return "A lista deveria ter pelo menos 2 <article> criados pelo JavaScript (tem " + n + "). Use forEach + createElement + appendChild.";
+const m = src.js.match(/const\s+projetos\s*=\s*\[([\s\S]*?)\];/); const q = m ? (m[1].match(/\{/g) || []).length : 0;
+return n === q || "O array tem " + q + " projetos, mas a página mostra " + n + " cartões.";
+</script>
+<script type="text/x-item" data-t="Cada cartão tem h3, p e link">
+for (const a of doc.querySelectorAll("#lista-projetos article")) { if (!a.querySelector("h3")) return "Cada article precisa de um <h3> com o nome."; if (!a.querySelector("p")) return "Cada article precisa de um <p> com a descrição."; if (!a.querySelector("a[href]")) return "Cada article precisa de um link <a href>."; }
+return true;
+</script>
+<script type="text/x-item" data-t="Usa forEach ou map para percorrer o array">
+return /projetos\s*\.\s*(forEach|map)\s*\(/.test(src.js) || "Percorra o array com projetos.forEach((p) => { ... }) ou map.";
+</script>
+</section>
+
+<section class="et" data-title="Formulário com validação">
+  <div class="desc"><p>No <code>submit</code>: <code>preventDefault()</code>, ler os campos, validar (nome com 2+ letras, e-mail com @, mensagem não vazia), mostrar o erro em <code>#mensagem</code> ou, se estiver tudo certo, agradecer <b>pelo nome</b> e limpar o formulário.</p>
+<pre>const form = document.querySelector("#form-contato");
+const mensagem = document.querySelector("#mensagem");
+
+form.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const nome = form.nome.value.trim();
+  const email = form.email.value.trim();
+  const texto = form.mensagem.value.trim();
+
+  if (nome.length < 2) { mensagem.textContent = "Digite seu nome."; return; }
+  if (!email.includes("@")) { mensagem.textContent = "Digite um e-mail válido."; return; }
+  if (!texto) { mensagem.textContent = "Escreva uma mensagem."; return; }
+
+  mensagem.textContent = `Obrigada, ${nome}! Recebi sua mensagem e respondo em breve.`;
+  form.reset();
+});</pre>
+<p>Dê <code>id="form-contato"</code> ao form e <code>name</code> a cada campo (<code>nome</code>, <code>email</code>, <code>mensagem</code>). O site não tem servidor, então a "resposta" é só na tela; mais tarde, com Laravel, ela vira um e-mail de verdade.</p></div>
+<script type="text/x-item" data-t="O submit tem preventDefault (a página não recarrega)">
+const f = doc.querySelector("#contato form"); if (!f) return "Não achei o form em #contato.";
+f.reset(); const ev = new win.Event("submit", { cancelable: true, bubbles: true }); f.dispatchEvent(ev);
+return ev.defaultPrevented || "Chame evento.preventDefault() na primeira linha do submit.";
+</script>
+<script type="text/x-item" data-t="Com campos vazios, mostra um erro em #mensagem">
+const f = doc.querySelector("#contato form"), m = doc.querySelector("#mensagem"); if (!f || !m) return "Precisa do form e do p#mensagem.";
+f.reset(); f.dispatchEvent(new win.Event("submit", { cancelable: true, bubbles: true })); await new Promise(r => setTimeout(r, 60));
+const t = m.textContent.trim();
+if (!t) return "Enviando vazio, o #mensagem deveria mostrar um erro.";
+return !/obrigad|recebi|enviad/i.test(t) || "Enviando vazio, apareceu uma mensagem de sucesso: valide os campos antes.";
+</script>
+<script type="text/x-item" data-t="Com dados válidos, agradece usando o nome digitado">
+const f = doc.querySelector("#contato form"), m = doc.querySelector("#mensagem"); if (!f || !m) return "Precisa do form e do p#mensagem.";
+const set = (sel, v) => { const e = f.querySelector(sel); if (e) e.value = v; };
+set("[name=nome], #nome", "Joaquim"); set("[name=email], #email", "joaquim@email.com"); set("textarea", "Olá! Gostei do seu portfólio.");
+f.dispatchEvent(new win.Event("submit", { cancelable: true, bubbles: true })); await new Promise(r => setTimeout(r, 60));
+const t = m.textContent.trim();
+if (!t || /digite|preench|inválid|escreva/i.test(t)) return "Com dados válidos ainda apareceu erro: \"" + t + "\". Confira a validação.";
+return /Joaquim/.test(t) || "A mensagem de sucesso deveria usar o nome digitado (ex.: Obrigada, Joaquim!).";
+</script>
+<script type="text/x-item" data-t="Depois de enviar, o formulário é limpo (form.reset())">
+const f = doc.querySelector("#contato form"); if (!f) return "Não achei o form.";
+const set = (sel, v) => { const e = f.querySelector(sel); if (e) e.value = v; };
+set("[name=nome], #nome", "Olivia"); set("[name=email], #email", "olivia@email.com"); set("textarea", "Mensagem de teste.");
+f.dispatchEvent(new win.Event("submit", { cancelable: true, bubbles: true })); await new Promise(r => setTimeout(r, 60));
+const n = f.querySelector("[name=nome], #nome");
+return (n && n.value === "") || "Depois do sucesso, chame form.reset() para limpar os campos.";
+</script>
+</section>
+
+<section class="et" data-title="Publicar">
+  <div class="desc"><p>Seu site é só arquivos: qualquer serviço de hospedagem estática publica de graça. Baixe os arquivos (botão <b>⬇ Baixar</b>) e escolha um caminho:</p>
+<ol>
+<li><b>Netlify Drop</b> (o mais fácil, sem conta): abra <code>app.netlify.com/drop</code> e arraste a pasta do projeto para a página. Em segundos você recebe um link <code>algo.netlify.app</code>. Para manter o link, crie a conta gratuita.</li>
+<li><b>GitHub Pages</b> (o jeito profissional): crie uma conta no GitHub, um repositório chamado <code>seu-usuario.github.io</code>, envie os arquivos (botão "Add file → Upload files") e o site fica em <code>https://seu-usuario.github.io</code>. De quebra, o repositório vira o seu portfólio de código.</li>
+<li><b>Vercel</b> (o mesmo do site da turma): com conta no GitHub, importe o repositório em <code>vercel.com/new</code> e cada atualização no GitHub publica sozinha.</li>
+</ol>
+<p><b>Depois de publicar:</b> coloque o link no seu LinkedIn e no currículo. Esse site é seu: continue melhorando a cada módulo.</p><p><b>O que você entrega:</b> <code>index.html</code> + <code>style.css</code> + <code>script.js</code> no .zip (botão ⬇ Baixar). Abra o index.html no computador: tudo funciona sem servidor. No módulo de Laravel, o formulário passa a enviar de verdade.</p></div>
+</section>
+
+</div>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const CFG = JSON.parse($('cfg').textContent);           // {tabs, keys, year}
+  const FILES = CFG.files || {};                          // padrões
+  const ETAPAS = [...document.querySelectorAll('#etapas .et')].map(s => ({
+    title: s.dataset.title, desc: s.querySelector('.desc').innerHTML,
+    itens: [...s.querySelectorAll('script[type="text/x-item"]')].map(i => ({ t: i.dataset.t, check: i.textContent }))
+  }));
+  const TABS = CFG.tabs;                                   // ex.: ["html"], ["html","css"], ["html","css","js"]
+  const KEY = t => 'proj-' + t;
+  const files = {};
+  for (const t of ['html', 'css', 'js']) { let v = null; try { v = localStorage.getItem(KEY(t)); } catch (_) {} files[t] = (v !== null && v.trim()) ? v : (FILES[t] || ''); }
+  let cur = TABS[0], curEt = 0, results = ETAPAS.map(e => e.itens.map(() => null));
+  const code = $('code'), hl = $('hl'), frame = $('frame'), tester = $('tester'), status = $('status'), list = $('list'), nav = $('nav'), mnav = $('mnav');
+
+  // ---------- destaque ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function hlCss(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function hlHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function hlJs(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|of|switch|case|break|default|return|function|new|typeof|continue|async|await|class|this)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  const HL = { html: hlHtml, css: hlCss, js: hlJs };
+  function paint() { hl.innerHTML = HL[cur](code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  let saveT = null;
+  function save() { for (const t of TABS) { try { localStorage.setItem(KEY(t), files[t]); } catch (_) {} } $('saved').textContent = 'salvo no navegador ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+  code.addEventListener('input', () => { files[cur] = code.value; paint(); clearTimeout(saveT); saveT = setTimeout(save, 400); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- abas ----------
+  const NAMES = { html: 'index.html', css: 'style.css', js: 'script.js' };
+  const tabsEl = $('tabs');
+  TABS.forEach(t => { const b = document.createElement('button'); b.className = 'tab'; b.dataset.t = t; b.textContent = NAMES[t]; b.onclick = () => showTab(t); tabsEl.appendChild(b); });
+  function showTab(t) { cur = t; code.value = files[t]; paint(); [...tabsEl.children].forEach(b => b.classList.toggle('on', b.dataset.t === t)); code.setAttribute('aria-label', 'Código ' + NAMES[t]); }
+
+  // ---------- montagem da página ----------
+  function assemble(forDownload) {
+    let h = files.html;
+    if (TABS.includes('css')) {
+      const link = /<link[^>]*href=["']\.?\/?style\.css["'][^>]*>/i;
+      if (forDownload) { if (!link.test(h)) h = h.replace(/<\/head>/i, '  <link rel="stylesheet" href="style.css">\n</head>'); }
+      else { const tag = `<style>\n${files.css.replace(/<\/style/gi, '<\\/style')}\n</style>`; h = link.test(h) ? h.replace(link, tag) : (/<\/head>/i.test(h) ? h.replace(/<\/head>/i, tag + '\n</head>') : tag + h); }
+    }
+    if (TABS.includes('js')) {
+      const sc = /<script[^>]*src=["']\.?\/?script\.js["'][^>]*>\s*<\/script>/i;
+      if (forDownload) { if (!sc.test(h)) h = h.replace(/<\/body>/i, '  <script src="script.js"><\/script>\n</body>'); }
+      else { const tag = `<script>\n${files.js.replace(/<\/script/gi, '<\\/script')}\n<\/script>`; h = sc.test(h) ? h.replace(sc, tag) : (/<\/body>/i.test(h) ? h.replace(/<\/body>/i, tag + '\n</body>') : h + tag); }
+    }
+    return h;
+  }
+  const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  function lint(src) {
+    const stack = [], msgs = [];
+    const re = /<\/?([a-zA-Z][\w-]*)[^>]*?(\/?)>/g; let m;
+    const clean = src.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '');
+    while ((m = re.exec(clean))) {
+      const tag = m[1].toLowerCase(), closing = m[0][1] === '/', self = m[2] === '/';
+      if (VOID.has(tag) || self) continue;
+      if (!closing) stack.push(tag);
+      else { const i = stack.lastIndexOf(tag); if (i === -1) msgs.push(`Tem um </${tag}> fechando sem a abertura <${tag}>.`); else { if (i !== stack.length - 1) msgs.push(`A tag <${stack[stack.length - 1]}> foi aberta depois de <${tag}>, então precisa fechar antes dela.`); stack.splice(i); } }
+    }
+    for (const t of stack) if (!['html','head','body','li','p','td','th','tr','option'].includes(t)) msgs.push(`A tag <${t}> foi aberta e não foi fechada com </${t}>.`);
+    return msgs.slice(0, 3);
+  }
+  window.__lint = lint;
+
+  // ---------- checklist ----------
+  function renderList() {
+    let total = 0, ok = 0, h = '';
+    ETAPAS.forEach((e, i) => {
+      if (!e.itens.length) return;
+      const n = e.itens.filter((_, j) => results[i][j] === true).length; total += e.itens.length; ok += n;
+      h += `<div class="etp${i === curEt ? ' on' : ''}" data-i="${i}"><div class="eth">${esc(e.title)} <span>${n}/${e.itens.length}</span></div>`;
+      e.itens.forEach((it, j) => { const r = results[i][j]; const st = r === true ? 'ok' : r === null ? 'wait' : 'no';
+        h += `<div class="it ${st}"><span class="ic">${r === true ? '✓' : r === null ? '○' : '✗'}</span><div><div class="itt">${esc(it.t)}</div>${(r && r !== true) ? `<div class="msg">${esc(r)}</div>` : ''}</div></div>`; });
+      h += '</div>';
+    });
+    list.innerHTML = h;
+    list.querySelectorAll('.etp .eth').forEach(el => el.onclick = () => showEt(+el.parentElement.dataset.i));
+    $('prog').textContent = `${ok}/${total}`; $('bar').style.width = total ? (100 * ok / total) + '%' : '0';
+    [...nav.querySelectorAll('.nav')].forEach((b, i) => { const e = ETAPAS[i]; if (e.itens.length) { const n = e.itens.filter((_, j) => results[i][j] === true).length; b.querySelector('.cnt').textContent = `${n}/${e.itens.length}`; b.classList.toggle('done', n === e.itens.length); } });
+    const done = total && ok === total;
+    $('win').hidden = !done;
+    if (results.flat().some(r => r !== null)) { status.className = 'status ' + (done ? 'ok' : 'bad'); status.textContent = done ? '🎉 Projeto concluído! Baixe os arquivos e publique.' : `${ok} de ${total} requisitos cumpridos. Veja os ✗ e continue.`; }
+    return done;
+  }
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  let runId = 0;
+  function run() {
+    runId++; const id = runId;
+    status.className = 'status'; status.textContent = 'Atualizando a prévia e conferindo…';
+    const doc = assemble(false);
+    frame.srcdoc = doc;
+    tester.onload = async () => {
+      if (id !== runId) return;
+      await new Promise(r => setTimeout(r, 120));
+      if (id !== runId) return;
+      const src = { html: files.html, css: files.css || '', js: files.js || '' };
+      for (let i = 0; i < ETAPAS.length; i++) for (let j = 0; j < ETAPAS[i].itens.length; j++) {
+        let r;
+        try { r = await new AsyncFunction('doc', 'win', 'src', ETAPAS[i].itens[j].check)(tester.contentDocument, tester.contentWindow, src); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (id !== runId) return;
+        results[i][j] = r === true ? true : (typeof r === 'string' && r ? r : 'Ainda não cumprido.');
+      }
+      renderList();
+    };
+    tester.srcdoc = doc;
+  }
+  $('run').onclick = run;
+
+  // ---------- etapas (sidebar) ----------
+  ETAPAS.forEach((e, i) => {
+    const b = document.createElement('button'); b.className = 'nav'; b.innerHTML = `<span class="n">${i + 1}</span>${esc(e.title)}<span class="cnt"></span>`; b.onclick = () => showEt(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${i + 1} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => showEt(+mnav.value);
+  function showEt(i) {
+    curEt = Math.max(0, Math.min(ETAPAS.length - 1, i)); const e = ETAPAS[curEt];
+    $('title').textContent = e.title; $('desc').innerHTML = e.desc;
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === curEt)); mnav.value = curEt;
+    $('prev').disabled = curEt === 0; $('next').disabled = curEt === ETAPAS.length - 1; $('pos').textContent = `etapa ${curEt + 1} de ${ETAPAS.length}`;
+    list.querySelectorAll('.etp').forEach(el => el.classList.toggle('on', +el.dataset.i === curEt));
+    const on = list.querySelector('.etp.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+    try { history.replaceState(null, '', '#' + (curEt + 1)); } catch (_) {}
+  }
+  $('prev').onclick = () => showEt(curEt - 1); $('next').onclick = () => showEt(curEt + 1);
+
+  // ---------- recomeçar / baixar ----------
+  let resetArmed = false;
+  $('reset').onclick = () => {
+    if (!resetArmed) { resetArmed = true; $('reset').textContent = 'Tem certeza? Clique de novo'; setTimeout(() => { resetArmed = false; $('reset').textContent = '↺ Recomeçar'; }, 3000); return; }
+    resetArmed = false; $('reset').textContent = '↺ Recomeçar';
+    for (const t of TABS) { files[t] = FILES[t] || ''; try { localStorage.removeItem(KEY(t)); } catch (_) {} }
+    results = ETAPAS.map(e => e.itens.map(() => null)); showTab(TABS[0]); renderList(); run();
+  };
+  function crc32(buf) { let c, crc = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) { c = (crc ^ buf[i]) & 0xFF; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1; crc = (crc >>> 8) ^ c; } return (crc ^ 0xFFFFFFFF) >>> 0; }
+  function zip(entries) {
+    const enc = new TextEncoder(); const parts = [], central = []; let off = 0;
+    const u16 = n => [n & 255, (n >> 8) & 255], u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+    for (const [name, text] of entries) {
+      const nm = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+      const head = new Uint8Array([0x50, 0x4B, 3, 4, ...u16(20), ...u16(0x800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...nm]);
+      parts.push(head, data);
+      central.push(new Uint8Array([0x50, 0x4B, 1, 2, ...u16(20), ...u16(20), ...u16(0x800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off), ...nm]));
+      off += head.length + data.length;
+    }
+    const cstart = off, csize = central.reduce((s, c) => s + c.length, 0);
+    const end = new Uint8Array([0x50, 0x4B, 5, 6, ...u16(0), ...u16(0), ...u16(entries.length), ...u16(entries.length), ...u32(csize), ...u32(cstart), ...u16(0)]);
+    return new Blob([...parts, ...central, end], { type: 'application/zip' });
+  }
+  function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  $('dl').onclick = () => {
+    if (TABS.length === 1) download('index.html', new Blob([files.html], { type: 'text/html' }));
+    else { const e = [['meu-portfolio/index.html', assemble(true)]]; if (TABS.includes('css')) e.push(['meu-portfolio/style.css', files.css]); if (TABS.includes('js')) e.push(['meu-portfolio/script.js', files.js]); download('meu-portfolio.zip', zip(e)); }
+  };
+
+  // ---------- fonte / início ----------
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 18;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-proj') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-proj', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  showTab(TABS[0]); renderList();
+  const h0 = parseInt((location.hash || '').slice(1), 10); showEt(h0 ? h0 - 1 : 0);
+  run();
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

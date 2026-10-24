@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 3 · Arrays, while e for — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">03</div>
+      <div class="t">Arrays e laços: while, for, for...of e forEach</div>
+      <div class="s">Playground — rode os exemplos e treine nos exercícios</div><a href="/aula-03/apostila-aula-03.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a><a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><span>Saída (console)</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+        <div class="out" id="out"><div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EXEMPLOS =====================
+  Para criar um novo exemplo, copie um bloco <section class="ex"> abaixo.
+  data-group = grupo no menu | data-title = título | .desc = explicação | .try = desafio
+====================================================== -->
+<div id="examples" hidden>
+<section class="ex" data-group="Começo: arrays" data-title="O que é um array">
+  <div class="desc">Um <b>array</b> é uma variável que guarda uma <b>lista</b> de valores, em ordem. Pense numa fileira de gavetas numeradas: cada gaveta tem um valor, e o número dela é o <b>índice</b>, que <b>começa no zero</b>. <code>.length</code> diz quantos itens tem.</div>
+  <div class="try"><b>Experimente:</b> mostre <code>frutas[10]</code> (um índice que não existe) e veja o que aparece.</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+//   índice:      0        1        2
+
+console.log("Primeira:", frutas[0]);
+console.log("Terceira:", frutas[2]);
+console.log("Quantas:", frutas.length);
+console.log("Última:", frutas[frutas.length - 1]);
+</script>
+</section>
+
+<section class="ex" data-group="Começo: arrays" data-title="Mudando um array: trocar e adicionar">
+  <div class="desc">Dá para <b>trocar</b> um item pelo índice e <b>adicionar</b> no fim com <code>.push()</code>. Um array pode guardar qualquer tipo: textos, números, booleanos.</div>
+  <div class="try"><b>Experimente:</b> adicione mais duas frutas com push e mostre o novo length.</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+frutas[1] = "manga";     // troca o item da posição 1
+frutas.push("kiwi");     // adiciona no fim
+
+console.log(frutas);
+console.log("Agora são", frutas.length);
+
+const notas = [8, 6.5, 9];
+console.log("Primeira nota:", notas[0]);
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="while: repetindo enquanto for true">
+  <div class="desc">O <code>while</code> é um <b>if que se repete</b>: testa a condição e, enquanto for true, roda o bloco e volta a testar. Pense: <i>"enquanto tiver louça na pia, continuo lavando"</i>. Passo a passo: 1) testa; 2) se true, roda o bloco e volta ao 1; 3) se false, sai do laço.</div>
+  <div class="try"><b>Experimente:</b> faça contar até <code>10</code>. Depois, faça contar de 2 em 2 (troque <code>contador++</code> por <code>contador += 2</code>).</div>
+<script type="text/x-code">
+let contador = 1;
+
+while (contador <= 3) {
+  console.log("Volta " + contador);
+  contador++;
+}
+
+console.log("Fim!");
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="while com if dentro: sacando dinheiro">
+  <div class="desc">O <code>while</code> brilha quando <b>não sabemos</b> quantas voltas serão: a parada depende de uma conta. Aqui sacamos R$ 30 enquanto houver saldo, e usamos um <code>if</code> dentro do loop.</div>
+  <div class="try"><b>Experimente:</b> mude o saldo inicial para <code>250</code> e o valor do saque para <code>50</code>.</div>
+<script type="text/x-code">
+let saldo = 100;
+let saques = 0;
+
+while (saldo >= 30) {
+  saldo -= 30;
+  saques++;
+  console.log(`Saque ${saques}: sobrou R$ ${saldo}`);
+
+  if (saldo < 30) {
+    console.log("Saldo insuficiente para outro saque");
+  }
+}
+
+console.log(`Total de saques: ${saques}`);
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="Cuidado: loop infinito">
+  <div class="desc">Se a condição <b>nunca</b> virar false, o programa não para. Este playground interrompe sozinho depois de 2 segundos (no terminal, use <code>Ctrl + C</code>).</div>
+  <div class="try"><b>Experimente:</b> execute, veja o problema e depois adicione <code>i++</code> dentro do bloco.</div>
+<script type="text/x-code">
+let i = 1;
+
+while (i <= 3) {
+  console.log(i);
+  // esqueceu o i++ !
+}
+</script>
+</section>
+
+<section class="ex" data-group="for" data-title="for: repetir um número de vezes">
+  <div class="desc">O <code>for</code> é um <b>while compacto</b>: as três partes (criar o contador, testar e atualizar) ficam juntas na mesma linha: <code>for (início; condição; atualização)</code>. Aqui: começa em 1, repete enquanto <code>i &lt;= 5</code> e soma 1 a cada volta.</div>
+  <div class="try"><b>Experimente:</b> mude para <code>i &lt;= 10</code> e depois troque <code>i++</code> por <code>i += 2</code>.</div>
+<script type="text/x-code">
+for (let i = 1; i <= 5; i++) {
+  console.log("Volta " + i);
+}
+
+console.log("Fim!");
+</script>
+</section>
+
+<section class="ex" data-group="for" data-title="Variações: de 2 em 2 e de trás para frente">
+  <div class="desc">Mudando só a atualização, o mesmo <code>for</code> anda de 2 em 2 ou conta para trás.</div>
+  <div class="try"><b>Experimente:</b> faça uma contagem de 100 até 0, de 10 em 10.</div>
+<script type="text/x-code">
+for (let i = 0; i <= 10; i += 2) {
+  console.log("Par:", i);
+}
+
+for (let i = 3; i >= 1; i--) {
+  console.log(i);
+}
+console.log("Fogo!");
+</script>
+</section>
+
+<section class="ex" data-group="for" data-title="for x while: o mesmo resultado">
+  <div class="desc">Os dois repetem igual. Use <code>for</code> quando souber o número de voltas; <code>while</code> quando a parada depender de outra coisa.</div>
+  <div class="try"><b>Experimente:</b> apague o <code>i++</code> do while e veja o loop infinito ser interrompido.</div>
+<script type="text/x-code">
+let i = 1;
+while (i <= 3) {
+  console.log("while:", i);
+  i++;
+}
+
+for (let j = 1; j <= 3; j++) {
+  console.log("for:", j);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="for com índice: percorrendo o array">
+  <div class="desc">Comece em <code>0</code> e vá <b>enquanto</b> <code>i &lt; frutas.length</code> (menor, não menor ou igual!). O índice serve para pegar o item e para numerar.</div>
+  <div class="try"><b>Experimente:</b> troque <code>&lt;</code> por <code>&lt;=</code> e veja aparecer <code>undefined</code>: esse índice não existe.</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+for (let i = 0; i < frutas.length; i++) {
+  console.log(`${i + 1}. ${frutas[i]}`);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="for...of: quando o índice não importa">
+  <div class="desc">Leia assim: <i>"para cada fruta <b>de</b> frutas, faça..."</i>. A cada volta, a variável <code>fruta</code> recebe o <b>próximo item</b> da lista: 1ª volta "maçã", 2ª "banana", 3ª "uva". Acabou a lista, acabou o laço. Sem contador, sem índice, sem risco de errar o <code>&lt;</code>.</div>
+  <div class="try"><b>Experimente:</b> troque a lista por nomes dos alunos.</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+for (const fruta of frutas) {
+  console.log("Eu gosto de " + fruta);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="for...of em texto e soma de lista">
+  <div class="desc">Também percorre um texto letra por letra. E, com uma variável somando fora do laço, calcula totais e médias.</div>
+  <div class="try"><b>Experimente:</b> troque "JS" pelo seu nome e acrescente uma nota na lista.</div>
+<script type="text/x-code">
+for (const letra of "JS") {
+  console.log(letra);
+}
+
+const notas = [8, 6.5, 9, 7];
+let soma = 0;
+for (const nota of notas) {
+  soma += nota;
+}
+console.log("Média:", (soma / notas.length).toFixed(1));
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="forEach: o array percorre a si mesmo">
+  <div class="desc">O <code>forEach</code> é um método do array: você pede para a própria lista executar o bloco <b>para cada item</b>. Leia assim: <i>"frutas, para cada item (que vou chamar de fruta), faça isto"</i>. A parte <code>(fruta) =&gt; { }</code> é uma função; por enquanto, use como receita.</div>
+  <div class="try"><b>Experimente:</b> troque o nome <code>fruta</code> por <code>item</code> nos dois lugares. Continua funcionando?</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+frutas.forEach((fruta) => {
+  console.log("Eu gosto de " + fruta);
+});
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="forEach com a posição">
+  <div class="desc">O <code>forEach</code> entrega um <b>segundo valor</b>: a posição do item. Aqui chamamos de <code>i</code>.</div>
+  <div class="try"><b>Experimente:</b> mostre só os itens em posição par (dica: um if dentro do forEach).</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+frutas.forEach((fruta, i) => {
+  console.log(`${i + 1}. ${fruta}`);
+});
+</script>
+</section>
+
+<section class="ex" data-group="Percorrendo arrays" data-title="for x for...of x forEach">
+  <div class="desc">As três formas percorrem a mesma lista. <b>for</b>: controle total e índice. <b>for...of</b>: só os valores, curto. <b>forEach</b>: curto e com índice, mas <b>não aceita break nem continue</b>: sempre passa pela lista inteira.</div>
+  <div class="try"><b>Experimente:</b> coloque um <code>break</code> dentro do forEach e veja o erro.</div>
+<script type="text/x-code">
+const nomes = ["Ana", "Bia", "Caio"];
+
+for (let i = 0; i < nomes.length; i++) {
+  console.log("for:", nomes[i]);
+}
+
+for (const nome of nomes) {
+  console.log("for...of:", nome);
+}
+
+nomes.forEach((nome) => {
+  console.log("forEach:", nome);
+});
+</script>
+</section>
+
+<section class="ex" data-group="break e continue" data-title="break: parar na hora">
+  <div class="desc"><code>break</code> encerra o laço imediatamente. Ótimo para procurar algo e parar assim que achar.</div>
+  <div class="try"><b>Experimente:</b> apague o <code>break</code> e veja o laço continuar até o fim.</div>
+<script type="text/x-code">
+for (const n of [4, 9, 7, 2]) {
+  console.log("olhando", n);
+  if (n === 7) {
+    console.log("Achei o 7! Pode parar.");
+    break;
+  }
+}
+</script>
+</section>
+
+<section class="ex" data-group="break e continue" data-title="continue: pular esta volta">
+  <div class="desc"><code>continue</code> pula o resto da volta atual e vai direto para a próxima.</div>
+  <div class="try"><b>Experimente:</b> inverta a condição para pular os pares.</div>
+<script type="text/x-code">
+for (let i = 1; i <= 5; i++) {
+  if (i % 2 !== 0) continue;
+  console.log("par:", i);
+}
+</script>
+</section>
+
+<section class="ex" data-group="for aninhado" data-title="for dentro de for">
+  <div class="desc">O laço de dentro roda <b>inteiro</b> a cada volta do de fora. Use nomes que expliquem o papel de cada contador.</div>
+  <div class="try"><b>Experimente:</b> mude para 5 linhas e depois inverta, começando pela linha maior.</div>
+<script type="text/x-code">
+for (let linha = 1; linha <= 3; linha++) {
+  let texto = "";
+  for (let coluna = 1; coluna <= linha; coluna++) {
+    texto += "*";
+  }
+  console.log(texto);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Espaço para testar o que a turma quiser.</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para mostrar qualquer valor aqui na saída.</div>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Contagem" data-expect='["1", "2", "3", "4", "5"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar os números de 1 até 5, um por linha.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Escreva <code>for (let i = 1; i &lt;= 5; i++) { ... }</code>.</li><li>Dentro das chaves, mostre <code>i</code> com <code>console.log(i)</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>1<br>2<br>3<br>4<br>5</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude para contar até 12.</div>
+<script type="text/x-code">
+// for (let i = 1; i <= 5; i++) {
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Tabuada do 7" data-expect='["7 x 1 = 7", "7 x 2 = 14", "7 x 3 = 21", "7 x 4 = 28", "7 x 5 = 35", "7 x 6 = 42", "7 x 7 = 49", "7 x 8 = 56", "7 x 9 = 63", "7 x 10 = 70"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar a tabuada do 7, de 1 a 10.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Faça um <code>for</code> de 1 até 10.</li><li>Dentro, mostre <code>`7 x ${n} = ${7 * n}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>7 x 1 = 7<br>7 x 2 = 14<br>7 x 3 = 21<br>7 x 4 = 28<br>7 x 5 = 35<br>7 x 6 = 42<br>7 x 7 = 49<br>7 x 8 = 56<br>7 x 9 = 63<br>7 x 10 = 70</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque para a tabuada do 9.</div>
+<script type="text/x-code">
+// for (let n = 1; n <= 10; n++) {
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Soma de 1 a 100" data-expect='["A soma é 5050"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Somar todos os números de 1 até 100 com um for.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>let soma = 0;</code> <b>antes</b> do laço.</li><li>No for de 1 a 100, faça <code>soma += n;</code>.</li><li><b>Depois</b> do laço, mostre <code>`A soma é ${soma}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>A soma é 5050</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Some de 1 a 10: deve dar 55.</div>
+<script type="text/x-code">
+let soma = 0;
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Só os pares" data-expect='["0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar os números pares de 0 até 20.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Comece em 0 e use <code>i += 2</code> na atualização.</li><li>Outra forma: vá de 1 em 1 e use <code>if (i % 2 === 0)</code> dentro do for.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>0<br>2<br>4<br>6<br>8<br>10<br>12<br>14<br>16<br>18<br>20</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça a versão com if e compare as duas.</div>
+<script type="text/x-code">
+// for (let i = 0; i <= 20; i += 2) {
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Contagem regressiva" data-expect='["10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "Fogo!"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Contar de 10 até 1 com for e lançar o foguete.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Comece em <code>10</code>, repita enquanto <code>i &gt;= 1</code> e use <code>i--</code>.</li><li>Depois do laço, mostre <code>"Fogo!"</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>10<br>9<br>8<br>7<br>6<br>5<br>4<br>3<br>2<br>1<br>Fogo!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Conte de 20 até 0.</div>
+<script type="text/x-code">
+// for (let i = 10; i >= 1; i--) {
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Média das notas" data-expect='["Média: 7.6"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Calcular a média de uma lista de notas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>let soma = 0;</code> antes do laço.</li><li>Percorra com <code>for (const nota of notas)</code> somando cada nota.</li><li>Mostre <code>`Média: ${(soma / notas.length).toFixed(1)}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Média: 7.6</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Acrescente a nota 10 na lista e veja a média subir.</div>
+<script type="text/x-code">
+const notas = [8, 6.5, 9, 7];
+let soma = 0;
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Lista numerada com forEach" data-expect='["1. maçã", "2. banana", "3. uva"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar a lista de frutas numerada usando <code>forEach</code>.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>frutas.forEach((fruta, i) =&gt; { ... })</code>.</li><li>Dentro, mostre <code>`${i + 1}. ${fruta}`</code> — o <code>+ 1</code> é porque a posição começa em 0.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>1. maçã<br>2. banana<br>3. uva</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça a mesma lista com <code>for</code> com índice e compare.</div>
+<script type="text/x-code">
+const frutas = ["maçã", "banana", "uva"];
+
+// frutas.forEach((fruta, i) => {
+//   ...
+// });
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Contando letras" data-expect='["A letra a aparece 2 vezes"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Contar quantas vezes a letra a aparece em uma palavra.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>let quantidade = 0;</code>.</li><li>Percorra com <code>for (const letra of palavra)</code>.</li><li>Dentro, <code>if (letra === "a") quantidade++;</code>.</li><li>No fim, mostre <code>`A letra a aparece ${quantidade} vezes`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>A letra a aparece 2 vezes</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Conte a letra o em "programação" (resposta: 2). Repare que ã não é a.</div>
+<script type="text/x-code">
+const palavra = "programação";
+let quantidade = 0;
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · Procurando com break" data-expect='["Achei o 7 na posição 2"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Achar o primeiro 7 da lista e parar o laço.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Use <code>for</code> com índice para saber a posição.</li><li>Se <code>numeros[i] === 7</code>, mostre <code>`Achei o 7 na posição ${i}`</code>.</li><li>Logo depois, use <code>break</code> para não continuar procurando.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Achei o 7 na posição 2</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Tire o break: sem ele aparece também o 7 do fim da lista.</div>
+<script type="text/x-code">
+const numeros = [4, 9, 7, 2, 7];
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · Pulando com continue" data-expect='["Soma dos positivos: 16"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Somar só os números positivos da lista.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>let soma = 0;</code>.</li><li>Percorra com <code>for...of</code>.</li><li>Se o valor for negativo, use <code>continue</code> para pular.</li><li>No fim, mostre <code>`Soma dos positivos: ${soma}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Soma dos positivos: 16</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Acrescente -10 na lista: o resultado não muda.</div>
+<script type="text/x-code">
+const valores = [5, -2, 8, -1, 3];
+let soma = 0;
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 11 · O maior da lista" data-expect='["O maior é 89"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Descobrir o maior número da lista sem usar Math.max.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Guarde o primeiro item: <code>let maior = numeros[0];</code>.</li><li>Percorra a lista e, se o item for maior que <code>maior</code>, guarde ele no lugar.</li><li>No fim, mostre <code>`O maior é ${maior}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>O maior é 89</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adapte para achar o menor valor.</div>
+<script type="text/x-code">
+const numeros = [12, 45, 7, 89, 23];
+let maior = numeros[0];
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 12 · Desafio: pirâmide de estrelas" data-expect='["*", "**", "***", "****", "*****"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Desenhar uma pirâmide de 5 linhas com dois for.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>O <code>for</code> de fora controla a <b>linha</b>, de 1 a 5.</li><li>Dentro dele, crie <code>let texto = "";</code>.</li><li>O <code>for</code> de dentro vai de 1 até <code>linha</code> e faz <code>texto += "*";</code>.</li><li>Ainda no laço de fora, mostre <code>texto</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>*<br>**<br>***<br>****<br>*****</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Inverta a pirâmide, começando com 5 estrelas.</div>
+<script type="text/x-code">
+// for (let linha = 1; linha <= 5; linha++) {
+//   let texto = "";
+//   ...
+// }
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 13 · Cofrinho (while)" data-expect='["Em 7 semanas você terá R$ 105"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Descobrir em quantas semanas um cofrinho chega a R$ 100, guardando R$ 15 por semana.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Repita com <code>while (total &lt; 100)</code>.</li><li>A cada volta: <code>total += 15;</code> e <code>semanas++;</code></li><li>Depois do laço, mostre <code>`Em ${semanas} semanas você terá R$ ${total}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Em 7 semanas você terá R$ 105</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Guarde R$ 40 por semana: deve dar 3 semanas e R$ 120.</div>
+<script type="text/x-code">
+let total = 0;
+let semanas = 0;
+
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 14 · Dobrando (while)" data-expect='["1", "2", "4", "8", "16", "32", "64", "128", "256", "512"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mostrar um número que vai dobrando, enquanto for menor que 1000.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Repita com <code>while (numero &lt; 1000)</code>.</li><li>Dentro, mostre <code>numero</code> e depois dobre: <code>numero *= 2;</code></li><li>Cuidado com a ordem: primeiro mostra, depois dobra.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>1<br>2<br>4<br>8<br>16<br>32<br>64<br>128<br>256<br>512</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque o limite para 100: deve parar no 64.</div>
+<script type="text/x-code">
+let numero = 1;
+
+// seu código aqui
+</script>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Carrega exemplos ----------
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group,
+    title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML,
+    tryit: s.querySelector('.try') ? s.querySelector('.try').innerHTML : '',
+    expect: s.dataset.expect ? JSON.parse(s.dataset.expect) : null,
+    code: s.querySelector('script').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n'
+  }));
+  const edits = exs.map(e => e.code);   // guarda o que foi editado em cada exemplo
+  let cur = 0;
+
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status');
+
+  // ---------- Menu ----------
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title));
+    b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- Destaque de sintaxe ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src){
+    let h = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint(){ hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart, en = code.selectionEnd;
+      code.setRangeText('  ', s, en, 'end'); code.dispatchEvent(new Event('input'));
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- Mostrar exemplo ----------
+  function show(i){
+    cur = Math.max(0, Math.min(exs.length - 1, i));
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title;
+    $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur;
+    $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); try { history.replaceState(null, '', '#' + (cur + 1)); } catch(_){}
+  }
+
+  // ---------- Saída ----------
+  const MAX_LINES = 300; let lines = 0, hidden = 0, got = [];
+  function clearOut(){ out.innerHTML = '<div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; hidden = 0; got = []; }
+  function addLine(text, cls){
+    if (lines === 0) out.innerHTML = '';
+    if (!cls) got.push(String(text).trim());
+    if (lines >= MAX_LINES && !cls) { hidden++; return; }
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+
+  // Dicas em português para erros comuns
+  function dica(msg){
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/Illegal break|Illegal continue|continue statement/.test(msg)) return 'Dica: break e continue só funcionam dentro de for, for...of e while. No forEach eles não funcionam: ele sempre percorre a lista inteira.';
+    if (/before initialization/.test(msg)) return 'Dica: a variável foi usada antes de ser criada. Mova a declaração para cima.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+
+  // ---------- Execução em Worker (protege contra loop infinito) ----------
+  const workerSrc = `
+    const fmt = v => typeof v === 'string' ? v
+      : v === undefined ? 'undefined'
+      : typeof v === 'function' ? '[função]'
+      : (typeof v === 'object' && v !== null) ? (()=>{ try { return JSON.stringify(v, null, 1).replace(/\\n\\s*/g,' '); } catch(e){ return String(v); } })()
+      : String(v);
+    self.onmessage = e => {
+      const send = (t, a) => postMessage({ t, x: a.map(fmt).join(' ') });
+      const console = { log:(...a)=>send('log',a), info:(...a)=>send('log',a), warn:(...a)=>send('log',a), error:(...a)=>send('err',a) };
+      try { const r = new Function('console', e.data)(console); postMessage({ t:'done', r: r === undefined ? null : fmt(r) }); }
+      catch (err) { postMessage({ t:'error', x: err.name + ': ' + err.message }); postMessage({ t:'done' }); }
+    };`;
+  let workerURL = null;
+  try { workerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })); } catch(_) {}
+  let worker = null, timer = null, t0 = 0, lastRet = null;
+
+  function finish(ok, msg){
+    clearTimeout(timer); timer = null;
+    if (worker) { worker.terminate(); worker = null; }
+    if (hidden) addLine(`… mais ${hidden} linha(s) não mostrada(s)`, 'tip');
+    if (lines === 0 && ok) out.innerHTML = '<div class="empty">(O código rodou, mas não mostrou nada. Faltou um console.log?)</div>';
+    const retHint = ok && lastRet !== null && got.length === 0;
+    if (retHint) addLine(`Seu código calculou "${lastRet}", mas o return não mostra nada na tela. Para aparecer aqui na saída, troque o return por console.log(...).`, 'tip');
+    const exp = exs[cur].expect;
+    if (ok && exp) {
+      let k = 0; for (const g of got) { if (k < exp.length && g === exp[k]) k++; }
+      if (k === exp.length) { addLine('🎉 Correto! A saída bate com a esperada. Agora faça o "teste também" lá em cima.', 'win'); msg = '✓ Exercício resolvido!'; }
+      else if (retHint) { ok = false; msg = '✗ Quase! Use console.log em vez de return'; }
+      else if (got.length === 0) { addLine('Nada apareceu na saída. Se você usou return, falta mostrar o resultado: por exemplo console.log(dobro(7)) em vez de só dobro(7).', 'tip'); ok = false; msg = '✗ Nada foi mostrado: faltou um console.log?'; }
+      else { addLine('Ainda não bateu. Compare com a "Saída esperada" lá em cima: cada letra, espaço e acento conta. Esperado: ' + exp.slice(0, 4).join(' | ') + (exp.length > 4 ? ' …' : ''), 'tip'); ok = false; msg = '✗ Ainda não: confira a saída esperada'; }
+    }
+    status.className = 'status ' + (ok ? 'ok' : 'bad'); status.textContent = msg;
+  }
+
+  function run(){
+    if (worker) worker.terminate();
+    clearOut(); out.innerHTML = ''; lines = 0; lastRet = null;
+    status.className = 'status'; status.textContent = 'Executando…';
+    t0 = performance.now();
+    const src = code.value;
+    let w = null;
+    try { if (workerURL) w = new Worker(workerURL); } catch(_) { w = null; }
+    if (!w) return runInline(src);
+    worker = w;
+    worker.onmessage = ({ data }) => {
+      if (data.t === 'log') addLine(data.x);
+      else if (data.t === 'err') addLine(data.x, 'err');
+      else if (data.t === 'error') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+      else if (data.t === 'done' && timer) { lastRet = data.r; } if (data.t === 'done' && timer) finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`);
+    };
+    worker.onerror = ev => { ev.preventDefault(); addLine(ev.message || 'Erro', 'err'); const d = dica(ev.message || ''); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); };
+    timer = setTimeout(() => {
+      addLine('⏱ Execução interrompida depois de 2 segundos: parece um loop infinito! A condição do while nunca ficou false.', 'tip');
+      finish(false, '✗ Loop infinito interrompido');
+    }, 2000);
+    worker.postMessage(src);
+  }
+
+  // Plano B (navegadores que bloqueiam Worker em arquivo local): roda direto, com limite de linhas
+  function runInline(src){
+    let count = 0;
+    const fmt = v => typeof v === 'string' ? v : (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v);
+    const fake = { log: (...a) => { if (++count > 2000) throw new Error('LOOP'); addLine(a.map(fmt).join(' ')); } };
+    fake.info = fake.warn = fake.log; fake.error = (...a) => addLine(a.map(fmt).join(' '), 'err');
+    timer = 1;
+    try { const r = new Function('console', src)(fake); lastRet = r === undefined ? null : fmt(r); finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`); }
+    catch (err) {
+      if (err.message === 'LOOP') { addLine('⏱ Execução interrompida: parece um loop infinito!', 'tip'); finish(false, '✗ Loop infinito interrompido'); }
+      else { addLine(err.name + ': ' + err.message, 'err'); const d = dica(err.message); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+    }
+  }
+
+  // ---------- Botões ----------
+  $('run').onclick = run;
+  $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; code.value = edits[cur]; paint(); clearOut(); };
+  $('prev').onclick = () => show(cur - 1);
+  $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement;
+  const defFs = window.innerWidth < 1000 ? 16 : 22;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs') || defFs; } catch(_){}
+  const setFs = v => { fs = Math.max(14, Math.min(40, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs', fs); } catch(_){} };
+  setFs(fs);
+  $('bigger').onclick = () => setFs(fs + 2);
+  $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === code) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  const start = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projeto CSS · Meu portfólio — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#38BDF8}
+  .nav.on{color:#7DD3FC}
+  .nav .cnt{float:right;font-family:Consolas,monospace;font-size:12px;color:var(--muted)}
+  .nav.done .cnt{color:var(--ok)}
+  .work{grid-template-columns:1.15fr 1fr}
+  .work>*{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:1}
+  .right .card.chk{flex:1.25}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic} .d{color:#F4A77A} .b{color:#8FC7FF}
+  .tabs{display:flex;gap:4px}
+  .tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:inherit;font-size:13px;letter-spacing:1px;padding:4px 10px;cursor:pointer;font-family:"JetBrains Mono",Consolas,monospace}
+  .tab.on{color:var(--ink);border-bottom-color:var(--acc)}
+  .list{flex:1;overflow:auto;padding:6px 0}
+  .etp{padding:4px 0;border-bottom:1px solid #262A37}
+  .etp.on{background:rgba(255,255,255,.025)}
+  .eth{display:flex;justify-content:space-between;padding:6px 16px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer}
+  .etp.on .eth{color:var(--acc)}
+  .it{display:flex;gap:10px;padding:5px 16px 5px 18px;font-size:calc(var(--fs) * .78);line-height:1.4}
+  .it .ic{width:18px;flex-shrink:0;font-weight:700}
+  .it.ok .ic{color:var(--ok)} .it.no .ic{color:var(--err)} .it.wait .ic{color:#555C6E}
+  .it.ok .itt{color:var(--muted);text-decoration:line-through;text-decoration-color:#3A4052}
+  .it .msg{color:var(--acc);font-size:calc(var(--fs) * .7);margin-top:2px}
+  .progwrap{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0}
+  .progbar{width:110px;height:6px;background:#2A2F3D;border-radius:3px;overflow:hidden}
+  .progbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+  #win{margin:8px 16px 4px;padding:10px 14px;background:rgba(127,209,139,.12);border:1px solid rgba(127,209,139,.4);border-radius:10px;color:var(--ok);font-size:14px;line-height:1.4}
+  .desc ul,.desc ol{margin:8px 0 0;padding-left:22px} .desc li{margin:3px 0}
+  .desc pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:#C4C8D2;white-space:pre-wrap;max-height:220px;overflow:auto}
+  .desc{max-height:26vh;overflow:auto;padding-right:8px}
+  main{overflow:auto}
+  .work{min-height:520px}
+  .btn.dl{border-color:var(--acc);color:var(--acc)}
+  @media (max-width:1000px){ iframe.stage{min-height:320px} .right .card.chk{max-height:none} .list{max-height:360px} .desc{max-height:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#38BDF8">P</div>
+      <div class="t">Projeto: meu portfólio</div>
+      <div class="s">O visual do seu site pessoal, em CSS</div>
+      <a href="/css-projeto/roteiro-projeto-css.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#38BDF8;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Roteiro em PDF</a>
+      <a href="/#css" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← voltar ao módulo</a>
+    </div>
+    <div class="grp">Etapas</div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher etapa"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" style="background:#38BDF8">Projeto · CSS</span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Apagar o seu trabalho e voltar ao modelo">↺ Recomeçar</button>
+        <button class="btn dl" id="dl" title="Baixar os arquivos do projeto">⬇ Baixar</button>
+        <button class="btn run" id="run" style="background:#38BDF8;border-color:#38BDF8">▶ Atualizar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card ed">
+        <div class="hd"><div class="tabs" id="tabs"></div><span class="hint2" id="saved">index.html + style.css · salvo automaticamente neste navegador</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Seu site</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia do projeto"></iframe>
+        </div>
+        <div class="card chk">
+          <div class="hd"><span>Checklist do projeto</span><span class="progwrap"><span class="progbar"><i id="bar"></i></span><span id="prog">0/0</span></span></div>
+          <div id="win" hidden>🎉 <b>Projeto concluído!</b> Clique em <b>⬇ Baixar</b> para salvar os arquivos e veja a etapa <b>Publicar</b> para colocar seu site no ar.</div>
+          <div class="list" id="list"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:500px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<script type="application/json" id="cfg">{"tabs": ["html", "css"], "files": {"html": "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"description\" content=\"Portfólio de Ana Souza, desenvolvedora front-end em formação.\">\n  <title>Ana Souza · Portfólio<\/title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n<\/head>\n<body>\n  <header class=\"topo\">\n    <div class=\"container\">\n      <h1>Ana Souza<\/h1>\n      <p class=\"tagline\">Desenvolvedora front-end em formação<\/p>\n      <nav>\n        <ul class=\"menu\">\n          <li><a href=\"#sobre\">Sobre<\/a><\/li>\n          <li><a href=\"#habilidades\">Habilidades<\/a><\/li>\n          <li><a href=\"#projetos\">Projetos<\/a><\/li>\n          <li><a href=\"#contato\">Contato<\/a><\/li>\n        <\/ul>\n      <\/nav>\n    <\/div>\n  <\/header>\n\n  <main class=\"container\">\n    <section id=\"sobre\">\n      <h2>Sobre mim<\/h2>\n      <img src=\"/img/greenn.svg\" alt=\"Foto de Ana Souza\" class=\"foto\" width=\"120\">\n      <p>Olá! Sou a Ana, estudante de programação na Greenn School. Comecei pelo HTML e CSS e hoje estou aprendendo JavaScript para criar páginas que reagem ao usuário.<\/p>\n      <p>Gosto de transformar ideias em telas simples e bonitas. Meu objetivo é trabalhar como desenvolvedora front-end.<\/p>\n    <\/section>\n\n    <section id=\"habilidades\">\n      <h2>Habilidades<\/h2>\n      <ul class=\"lista-habilidades\">\n        <li>HTML semântico<\/li>\n        <li>CSS: Flexbox, Grid e responsivo<\/li>\n        <li>JavaScript e DOM<\/li>\n        <li>Git e GitHub (aprendendo)<\/li>\n      <\/ul>\n    <\/section>\n\n    <section id=\"projetos\">\n      <h2>Projetos<\/h2>\n      <div class=\"cards\">\n        <article class=\"card\">\n          <h3>Site da escola<\/h3>\n          <p>Página institucional feita só com HTML semântico e CSS responsivo.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n        <article class=\"card\">\n          <h3>Lista de tarefas<\/h3>\n          <p>Um app de tarefas com JavaScript: adicionar, concluir e remover itens.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n        <article class=\"card\">\n          <h3>Calculadora de notas<\/h3>\n          <p>Calcula a média do aluno e diz se foi aprovado, usando funções e condicionais.<\/p>\n          <a href=\"https://github.com\" target=\"_blank\">Ver no GitHub<\/a>\n        <\/article>\n      <\/div>\n    <\/section>\n\n    <section id=\"contato\">\n      <h2>Contato<\/h2>\n      <form id=\"form-contato\">\n        <label for=\"nome\">Nome<\/label>\n        <input type=\"text\" id=\"nome\" name=\"nome\" required>\n\n        <label for=\"email\">E-mail<\/label>\n        <input type=\"email\" id=\"email\" name=\"email\" required>\n\n        <label for=\"mensagem\">Mensagem<\/label>\n        <textarea id=\"mensagem\" name=\"mensagem\" rows=\"4\"><\/textarea>\n\n        <button type=\"submit\" class=\"botao\">Enviar<\/button>\n      <\/form>\n    <\/section>\n  <\/main>\n\n  <footer class=\"rodape\">\n    <p>© 2026 Ana Souza · feito na Greenn School<\/p>\n    <p><a href=\"https://www.linkedin.com\" target=\"_blank\">LinkedIn<\/a> · <a href=\"https://github.com\" target=\"_blank\">GitHub<\/a><\/p>\n  <\/footer>\n<\/body>\n<\/html>\n", "css": "/* ==== Projeto: meu portfólio ==== */\n\n/* etapa 1: variáveis, box-sizing e body */\n:root {\n\n}\n\n/* etapa 2: cabeçalho e menu */\n\n/* etapa 3: container e seções */\n\n/* etapa 4: cartões de projeto */\n\n/* etapa 5: formulário */\n\n/* etapa 6: responsivo (media query) */\n\n/* etapa 7: rodapé */\n"}}</script>
+<div id="etapas" hidden>
+<section class="et" data-title="A base">
+  <div class="desc"><p><b>O projeto:</b> o portfólio que você estruturou no módulo de HTML ganha agora o <b>visual</b>: cores, fontes, cartões, menu e versão para celular. Se você fez o projeto de HTML neste navegador, o seu <code>index.html</code> já está na aba ao lado; se não, você recebe um portfólio-modelo para estilizar (troque os textos pelos seus).</p>
+<p><b>Como funciona:</b> escreva na aba <code>style.css</code>; a prévia é o site de verdade; o checklist confere o estilo <b>aplicado</b> (cor, tamanho, display…) quando você clica em ▶ Atualizar. Você pode editar o HTML também (para adicionar uma classe, por exemplo). No fim, baixe o .zip e publique.</p>
+<p><b>Nesta etapa:</b> as variáveis da sua paleta em <code>:root</code> (<code>--principal</code>, <code>--escuro</code>, <code>--fundo</code>, <code>--texto</code>), <code>* { box-sizing: border-box; }</code> e o <code>body</code> com <code>margin: 0</code>, <code>font-family</code>, <code>background-color</code>, <code>color</code> e <code>line-height: 1.6</code>. Dica: escolha 2 cores que combinem (coolors.co ajuda) e use <code>var(--principal)</code> em tudo que for destaque.</p></div>
+<script type="text/x-item" data-t="Variáveis em :root (pelo menos 2) usadas com var()">
+const d = (src.css.match(/--[\w-]+\s*:/g) || []).length, u = (src.css.match(/var\(--/g) || []).length;
+if (d < 2) return "Declare pelo menos 2 variáveis em :root { --nome: valor; }.";
+return u >= 3 || "Use as variáveis com var(--nome) em pelo menos 3 lugares (tem " + u + ").";
+</script>
+<script type="text/x-item" data-t="* { box-sizing: border-box; }">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+return (cs("header") || cs("body")).boxSizing === "border-box" || "Falta * { box-sizing: border-box; } (confira na aba style.css).";
+</script>
+<script type="text/x-item" data-t="body com margin 0, fonte, cor de fundo e line-height">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const b = cs("body");
+if (b.marginTop !== "0px") return "O body precisa de margin: 0.";
+if (!/body\s*\{[^}]*font-family/i.test(src.css) || /times/i.test(b.fontFamily)) return "Defina uma font-family no body (ex.: Arial, Helvetica, sans-serif).";
+if (b.backgroundColor === "rgba(0, 0, 0, 0)") return "Dê um background-color ao body (ex.: var(--fundo)).";
+return parseFloat(b.lineHeight) / parseFloat(b.fontSize) >= 1.4 || "Coloque line-height: 1.6 no body para o texto respirar.";
+</script>
+<script type="text/x-item" data-t="CSS sem chaves desbalanceadas">
+const c = src.css.replace(/\/\*[\s\S]*?\*\//g, ""); const o = (c.match(/\{/g) || []).length, f = (c.match(/\}/g) || []).length;
+return o === f || "Tem " + o + " chaves { e " + f + " chaves }: alguma regra ficou sem fechar.";
+</script>
+</section>
+
+<section class="et" data-title="Cabeçalho e menu">
+  <div class="desc"><p>O <code>header</code> com fundo escuro (<code>var(--escuro)</code>), texto claro, <code>padding</code> e <code>text-align: center</code> (ou um layout flex com o nome de um lado e o menu do outro, como na aula C3). O <code>nav ul</code> vira uma linha: <code>display: flex</code>, <code>gap</code>, <code>list-style: none</code>, <code>margin: 0</code> e <code>padding: 0</code>. Os links sem sublinhado, com a cor de destaque no <code>:hover</code> e uma <code>transition</code>.</p>
+<pre>header { background-color: var(--escuro); color: white; padding: 40px 20px; text-align: center; }
+nav ul { display: flex; justify-content: center; gap: 24px; list-style: none; margin: 0; padding: 0; }
+nav a { color: white; text-decoration: none; transition: color 0.2s; }
+nav a:hover { color: var(--principal); }</pre></div>
+<script type="text/x-item" data-t="header com fundo diferente do body">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const h = cs("header"), b = cs("body"); if (!h) return "Não achei o <header> no HTML.";
+return (h.backgroundColor !== "rgba(0, 0, 0, 0)" && h.backgroundColor !== b.backgroundColor) || "Dê ao header um background-color diferente do fundo da página.";
+</script>
+<script type="text/x-item" data-t="Menu em linha: nav ul com display flex e sem bolinhas">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const u = cs("header nav ul"); if (!u) return "Não achei nav > ul no header.";
+if (u.display !== "flex") return "O nav ul precisa de display: flex.";
+if (u.listStyleType !== "none") return "Falta list-style: none no nav ul.";
+return (u.paddingLeft === "0px") || "Zere o padding do nav ul (padding: 0).";
+</script>
+<script type="text/x-item" data-t="Links do menu sem sublinhado e com :hover">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const a = cs("header nav a"); if (!a) return "Não achei links no nav.";
+if (a.textDecorationLine !== "none") return "Os links do menu precisam de text-decoration: none.";
+return /a:hover\s*\{/.test(src.css) || "Crie uma regra :hover para os links do menu (ex.: nav a:hover { color: var(--principal); }).";
+</script>
+<script type="text/x-item" data-t="h1 com tamanho definido e margem zerada">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const h = cs("header h1"); if (!h) return "Não achei o h1 no header.";
+if (!/h1[^{]*\{[^}]*font-size/.test(src.css)) return "Defina o font-size do h1 (ex.: 2.2rem).";
+return h.marginTop === "0px" || "Zere a margem do h1 (margin: 0) para o cabeçalho ficar compacto.";
+</script>
+</section>
+
+<section class="et" data-title="Container e seções">
+  <div class="desc"><p>O conteúdo não pode esticar até as bordas em telas grandes: envolva as seções com um <b>container</b> (o <code>main</code> ou uma div) com <code>max-width: 900px</code>, <code>margin: 0 auto</code> e <code>padding: 0 20px</code>. Cada <code>section</code> ganha <code>padding: 40px 0</code>; os <code>h2</code> ficam na cor escura; a foto fica redonda com <code>border-radius: 50%</code> e nunca estoura a largura (<code>img { max-width: 100%; height: auto; }</code>).</p>
+<pre>main { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+section { padding: 40px 0; }
+#sobre img { border-radius: 50%; }</pre></div>
+<script type="text/x-item" data-t="Container com max-width e margin: 0 auto">
+const c = src.css.replace(/\/\*[\s\S]*?\*\//g, "");
+if (!/max-width\s*:/.test(c)) return "Defina um max-width para o container do conteúdo (main ou uma div).";
+return /margin\s*:\s*0\s+auto|margin-left\s*:\s*auto/.test(c) || "Centralize o container com margin: 0 auto.";
+</script>
+<script type="text/x-item" data-t="Seções com espaço vertical (padding ou margin de 24px+)">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const s = cs("main section"); if (!s) return "Não achei section dentro do main.";
+return (parseFloat(s.paddingTop) + parseFloat(s.marginTop) >= 24) || "Dê padding: 40px 0 (ou margem) às sections.";
+</script>
+<script type="text/x-item" data-t="Foto redonda (border-radius)">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const i = cs("#sobre img"); if (!i) return "Não achei a img na seção Sobre.";
+return parseFloat(i.borderTopLeftRadius) > 0 || "Use border-radius: 50% na foto.";
+</script>
+<script type="text/x-item" data-t="Imagens com max-width: 100%">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const i = cs("img"); if (!i) return "Não achei imagens.";
+return i.maxWidth === "100%" || "Coloque img { max-width: 100%; height: auto; }.";
+</script>
+</section>
+
+<section class="et" data-title="Cartões de projeto">
+  <div class="desc"><p>Cada <code>article</code> vira um <b>cartão</b>: fundo branco, <code>padding: 20px</code>, <code>border-radius: 12px</code>, uma <code>box-shadow</code> leve e <code>transition</code> com um <code>:hover</code> que levanta (<code>transform: translateY(-4px)</code>). O pai dos articles vira <code>display: grid</code> com <code>gap</code>; por enquanto <b>uma coluna</b> (celular primeiro): a media query da etapa 6 faz as colunas.</p>
+<pre>#projetos .cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+article { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .2s; }
+article:hover { transform: translateY(-4px); }</pre>
+<p>Se o seu HTML não tem uma div envolvendo os articles, adicione uma na aba <code>index.html</code> (ex.: <code>&lt;div class="cards"&gt;</code>) ou use a própria section como grid.</p></div>
+<script type="text/x-item" data-t="Articles com fundo, padding e cantos arredondados">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const a = cs("#projetos article"); if (!a) return "Não achei article dentro de #projetos.";
+if (a.backgroundColor === "rgba(0, 0, 0, 0)") return "Dê um background-color aos articles (ex.: white).";
+if (parseFloat(a.paddingTop) < 12) return "Os articles precisam de padding (ex.: 20px).";
+return parseFloat(a.borderTopLeftRadius) > 0 || "Arredonde os cantos com border-radius.";
+</script>
+<script type="text/x-item" data-t="Sombra ou borda no cartão">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const a = cs("#projetos article"); if (!a) return "Não achei article dentro de #projetos.";
+return (a.boxShadow !== "none" || parseFloat(a.borderTopWidth) > 0) || "Dê uma box-shadow (ou border) ao cartão.";
+</script>
+<script type="text/x-item" data-t="Pai dos articles com display grid (ou flex) e gap">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const a = doc.querySelector("#projetos article"); if (!a) return "Não achei article dentro de #projetos.";
+const p = win.getComputedStyle(a.parentElement);
+if (p.display !== "grid" && p.display !== "flex") return "O elemento que envolve os articles precisa de display: grid (ou flex).";
+return parseFloat(p.rowGap || p.gap) > 0 || "Falta gap entre os cartões.";
+</script>
+<script type="text/x-item" data-t="Hover com transition no cartão">
+const c = src.css.replace(/\/\*[\s\S]*?\*\//g, "");
+if (!/(article|\.card)[^{]*:hover\s*\{/.test(c)) return "Crie a regra article:hover (ou .card:hover) com transform: translateY(-4px).";
+return /transition\s*:/.test(c) || "Adicione transition no article para o hover ser suave.";
+</script>
+</section>
+
+<section class="et" data-title="Formulário">
+  <div class="desc"><p>Campos que ocupam a largura toda, com <code>padding</code>, borda fina e cantos arredondados; <code>label</code> em bloco acima de cada campo; o botão com a cor de destaque, sem borda, com <code>cursor: pointer</code>.</p>
+<pre>form label { display: block; margin-top: 12px; font-weight: bold; }
+form input, form textarea { width: 100%; padding: 10px; border: 1px solid #CBD5E1; border-radius: 8px; font: inherit; }
+form button { margin-top: 16px; padding: 12px 28px; background-color: var(--principal); border: 0; border-radius: 8px; font-weight: bold; cursor: pointer; }</pre></div>
+<script type="text/x-item" data-t="Campos com largura total e padding">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const f = doc.querySelector("#contato form"), i = doc.querySelector("#contato form input"); if (!f || !i) return "Não achei o form com input em #contato.";
+if (i.getBoundingClientRect().width < f.clientWidth * 0.9) return "Os inputs precisam de width: 100%.";
+return parseFloat(win.getComputedStyle(i).paddingTop) >= 6 || "Dê padding aos inputs (ex.: 10px).";
+</script>
+<script type="text/x-item" data-t="Labels em bloco (display: block)">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const l = cs("#contato form label"); if (!l) return "Não achei label no form.";
+return l.display === "block" || "Coloque form label { display: block; } para o rótulo ficar acima do campo.";
+</script>
+<script type="text/x-item" data-t="Textarea com a mesma largura e fonte dos inputs">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const t = doc.querySelector("#contato form textarea"), f = doc.querySelector("#contato form"); if (!t) return "Não achei a textarea.";
+if (t.getBoundingClientRect().width < f.clientWidth * 0.9) return "A textarea também precisa de width: 100%.";
+return !/monospace/i.test(win.getComputedStyle(t).fontFamily) || "Use font: inherit nos campos para a textarea não ficar em fonte de máquina de escrever.";
+</script>
+<script type="text/x-item" data-t="Botão com cor de destaque, sem borda e cursor pointer">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const b = cs("#contato form button"); if (!b) return "Não achei o button do form.";
+if (b.backgroundColor === "rgba(0, 0, 0, 0)" || b.backgroundColor === "rgb(239, 239, 239)") return "Dê um background-color ao botão (ex.: var(--principal)).";
+if (parseFloat(b.borderTopWidth) > 0 && b.borderTopStyle === "outset") return "Tire a borda padrão do botão (border: 0).";
+return b.cursor === "pointer" || "Falta cursor: pointer no botão.";
+</script>
+</section>
+
+<section class="et" data-title="Responsivo">
+  <div class="desc"><p>Estreite a janela do navegador: o site precisa funcionar no celular. A regra é <b>mobile first</b>: o CSS que você escreveu é o do celular (uma coluna); agora uma <code>@media (min-width: 700px)</code> coloca os cartões em <b>3 colunas</b> (ou 2) e, se quiser, aumenta o h1.</p>
+<pre>@media (min-width: 700px) {
+  #projetos .cards { grid-template-columns: repeat(3, 1fr); }
+  header h1 { font-size: 3rem; }
+}</pre>
+<p>Teste: com a janela estreita, nada pode sair para o lado (sem barra de rolagem horizontal).</p></div>
+<script type="text/x-item" data-t="@media (min-width: ...) com colunas para telas grandes">
+const c = src.css.replace(/\/\*[\s\S]*?\*\//g, "");
+const m = c.match(/@media[^{]*min-width[^{]*\{([\s\S]*)\}/); if (!m) return "Falta a @media (min-width: 700px) { ... }.";
+return /grid-template-columns|flex-direction|columns/.test(m[1]) || "Dentro da media query, mude as colunas dos cartões (grid-template-columns: repeat(3, 1fr)).";
+</script>
+<script type="text/x-item" data-t="No celular (600px) os cartões ficam em uma coluna">
+const a = doc.querySelector("#projetos article"); if (!a) return "Não achei article em #projetos.";
+const w = a.getBoundingClientRect().width, pw = a.parentElement.getBoundingClientRect().width;
+return w >= pw * 0.9 || "Com 600px de largura os cartões deveriam ocupar a largura toda (uma coluna): deixe o grid de 1 coluna fora da media query.";
+</script>
+<script type="text/x-item" data-t="Nada estoura a largura da tela">
+return doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1 || "Algum elemento está mais largo que a tela (barra de rolagem horizontal). Confira widths fixos e img max-width: 100%.";
+</script>
+</section>
+
+<section class="et" data-title="Rodapé e revisão">
+  <div class="desc"><p>O <code>footer</code> com o mesmo fundo escuro do header, texto centralizado e cor suave; os links do rodapé na cor de destaque. Depois, revise o site inteiro em três larguras (celular, tablet, computador) e confira o contraste: texto claro em fundo escuro, texto escuro em fundo claro.</p>
+<p class="tip">Quando tudo estiver ✓, clique em <b>⬇ Baixar</b>: você recebe <code>meu-portfolio.zip</code> com <code>index.html</code> e <code>style.css</code> ligados pelo <code>&lt;link&gt;</code>. Abra o index.html no seu computador para conferir.</p></div>
+<script type="text/x-item" data-t="footer com fundo e texto centralizado">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const f = cs("footer"), b = cs("body"); if (!f) return "Não achei o <footer>.";
+if (f.backgroundColor === "rgba(0, 0, 0, 0)" || f.backgroundColor === b.backgroundColor) return "Dê ao footer um background-color (ex.: var(--escuro)).";
+return f.textAlign === "center" || "Centralize o texto do footer (text-align: center).";
+</script>
+<script type="text/x-item" data-t="Texto do footer legível sobre o fundo (cor definida)">
+const cs = s => { const e = doc.querySelector(s); return e ? win.getComputedStyle(e) : null; };
+const f = cs("footer"), b = cs("body"); if (!f) return "Não achei o <footer>.";
+return f.color !== b.color || "Defina a cor do texto do footer (color) para contrastar com o fundo escuro.";
+</script>
+<script type="text/x-item" data-t="Nenhuma cor repetida fora das variáveis: menos de 6 cores hex soltas">
+const c = src.css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/:root\s*\{[^}]*\}/, "");
+const n = (c.match(/#[0-9a-f]{3,8}\b/gi) || []).length;
+return n < 6 || "Você tem " + n + " cores hex soltas fora do :root. Mova as cores repetidas para variáveis.";
+</script>
+</section>
+
+<section class="et" data-title="Publicar">
+  <div class="desc"><p>Seu site é só arquivos: qualquer serviço de hospedagem estática publica de graça. Baixe os arquivos (botão <b>⬇ Baixar</b>) e escolha um caminho:</p>
+<ol>
+<li><b>Netlify Drop</b> (o mais fácil, sem conta): abra <code>app.netlify.com/drop</code> e arraste a pasta do projeto para a página. Em segundos você recebe um link <code>algo.netlify.app</code>. Para manter o link, crie a conta gratuita.</li>
+<li><b>GitHub Pages</b> (o jeito profissional): crie uma conta no GitHub, um repositório chamado <code>seu-usuario.github.io</code>, envie os arquivos (botão "Add file → Upload files") e o site fica em <code>https://seu-usuario.github.io</code>. De quebra, o repositório vira o seu portfólio de código.</li>
+<li><b>Vercel</b> (o mesmo do site da turma): com conta no GitHub, importe o repositório em <code>vercel.com/new</code> e cada atualização no GitHub publica sozinha.</li>
+</ol>
+<p><b>Depois de publicar:</b> coloque o link no seu LinkedIn e no currículo. Esse site é seu: continue melhorando a cada módulo.</p><p><b>Próximo passo:</b> no módulo de JavaScript o projeto continua: tema escuro, formulário que valida e lista de projetos gerada por código.</p></div>
+</section>
+
+</div>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const CFG = JSON.parse($('cfg').textContent);           // {tabs, keys, year}
+  const FILES = CFG.files || {};                          // padrões
+  const ETAPAS = [...document.querySelectorAll('#etapas .et')].map(s => ({
+    title: s.dataset.title, desc: s.querySelector('.desc').innerHTML,
+    itens: [...s.querySelectorAll('script[type="text/x-item"]')].map(i => ({ t: i.dataset.t, check: i.textContent }))
+  }));
+  const TABS = CFG.tabs;                                   // ex.: ["html"], ["html","css"], ["html","css","js"]
+  const KEY = t => 'proj-' + t;
+  const files = {};
+  for (const t of ['html', 'css', 'js']) { let v = null; try { v = localStorage.getItem(KEY(t)); } catch (_) {} files[t] = (v !== null && v.trim()) ? v : (FILES[t] || ''); }
+  let cur = TABS[0], curEt = 0, results = ETAPAS.map(e => e.itens.map(() => null));
+  const code = $('code'), hl = $('hl'), frame = $('frame'), tester = $('tester'), status = $('status'), list = $('list'), nav = $('nav'), mnav = $('mnav');
+
+  // ---------- destaque ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function hlCss(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function hlHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function hlJs(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|of|switch|case|break|default|return|function|new|typeof|continue|async|await|class|this)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  const HL = { html: hlHtml, css: hlCss, js: hlJs };
+  function paint() { hl.innerHTML = HL[cur](code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  let saveT = null;
+  function save() { for (const t of TABS) { try { localStorage.setItem(KEY(t), files[t]); } catch (_) {} } $('saved').textContent = 'salvo no navegador ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+  code.addEventListener('input', () => { files[cur] = code.value; paint(); clearTimeout(saveT); saveT = setTimeout(save, 400); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- abas ----------
+  const NAMES = { html: 'index.html', css: 'style.css', js: 'script.js' };
+  const tabsEl = $('tabs');
+  TABS.forEach(t => { const b = document.createElement('button'); b.className = 'tab'; b.dataset.t = t; b.textContent = NAMES[t]; b.onclick = () => showTab(t); tabsEl.appendChild(b); });
+  function showTab(t) { cur = t; code.value = files[t]; paint(); [...tabsEl.children].forEach(b => b.classList.toggle('on', b.dataset.t === t)); code.setAttribute('aria-label', 'Código ' + NAMES[t]); }
+
+  // ---------- montagem da página ----------
+  function assemble(forDownload) {
+    let h = files.html;
+    if (TABS.includes('css')) {
+      const link = /<link[^>]*href=["']\.?\/?style\.css["'][^>]*>/i;
+      if (forDownload) { if (!link.test(h)) h = h.replace(/<\/head>/i, '  <link rel="stylesheet" href="style.css">\n</head>'); }
+      else { const tag = `<style>\n${files.css.replace(/<\/style/gi, '<\\/style')}\n</style>`; h = link.test(h) ? h.replace(link, tag) : (/<\/head>/i.test(h) ? h.replace(/<\/head>/i, tag + '\n</head>') : tag + h); }
+    }
+    if (TABS.includes('js')) {
+      const sc = /<script[^>]*src=["']\.?\/?script\.js["'][^>]*>\s*<\/script>/i;
+      if (forDownload) { if (!sc.test(h)) h = h.replace(/<\/body>/i, '  <script src="script.js"><\/script>\n</body>'); }
+      else { const tag = `<script>\n${files.js.replace(/<\/script/gi, '<\\/script')}\n<\/script>`; h = sc.test(h) ? h.replace(sc, tag) : (/<\/body>/i.test(h) ? h.replace(/<\/body>/i, tag + '\n</body>') : h + tag); }
+    }
+    return h;
+  }
+  const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  function lint(src) {
+    const stack = [], msgs = [];
+    const re = /<\/?([a-zA-Z][\w-]*)[^>]*?(\/?)>/g; let m;
+    const clean = src.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '');
+    while ((m = re.exec(clean))) {
+      const tag = m[1].toLowerCase(), closing = m[0][1] === '/', self = m[2] === '/';
+      if (VOID.has(tag) || self) continue;
+      if (!closing) stack.push(tag);
+      else { const i = stack.lastIndexOf(tag); if (i === -1) msgs.push(`Tem um </${tag}> fechando sem a abertura <${tag}>.`); else { if (i !== stack.length - 1) msgs.push(`A tag <${stack[stack.length - 1]}> foi aberta depois de <${tag}>, então precisa fechar antes dela.`); stack.splice(i); } }
+    }
+    for (const t of stack) if (!['html','head','body','li','p','td','th','tr','option'].includes(t)) msgs.push(`A tag <${t}> foi aberta e não foi fechada com </${t}>.`);
+    return msgs.slice(0, 3);
+  }
+  window.__lint = lint;
+
+  // ---------- checklist ----------
+  function renderList() {
+    let total = 0, ok = 0, h = '';
+    ETAPAS.forEach((e, i) => {
+      if (!e.itens.length) return;
+      const n = e.itens.filter((_, j) => results[i][j] === true).length; total += e.itens.length; ok += n;
+      h += `<div class="etp${i === curEt ? ' on' : ''}" data-i="${i}"><div class="eth">${esc(e.title)} <span>${n}/${e.itens.length}</span></div>`;
+      e.itens.forEach((it, j) => { const r = results[i][j]; const st = r === true ? 'ok' : r === null ? 'wait' : 'no';
+        h += `<div class="it ${st}"><span class="ic">${r === true ? '✓' : r === null ? '○' : '✗'}</span><div><div class="itt">${esc(it.t)}</div>${(r && r !== true) ? `<div class="msg">${esc(r)}</div>` : ''}</div></div>`; });
+      h += '</div>';
+    });
+    list.innerHTML = h;
+    list.querySelectorAll('.etp .eth').forEach(el => el.onclick = () => showEt(+el.parentElement.dataset.i));
+    $('prog').textContent = `${ok}/${total}`; $('bar').style.width = total ? (100 * ok / total) + '%' : '0';
+    [...nav.querySelectorAll('.nav')].forEach((b, i) => { const e = ETAPAS[i]; if (e.itens.length) { const n = e.itens.filter((_, j) => results[i][j] === true).length; b.querySelector('.cnt').textContent = `${n}/${e.itens.length}`; b.classList.toggle('done', n === e.itens.length); } });
+    const done = total && ok === total;
+    $('win').hidden = !done;
+    if (results.flat().some(r => r !== null)) { status.className = 'status ' + (done ? 'ok' : 'bad'); status.textContent = done ? '🎉 Projeto concluído! Baixe os arquivos e publique.' : `${ok} de ${total} requisitos cumpridos. Veja os ✗ e continue.`; }
+    return done;
+  }
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  let runId = 0;
+  function run() {
+    runId++; const id = runId;
+    status.className = 'status'; status.textContent = 'Atualizando a prévia e conferindo…';
+    const doc = assemble(false);
+    frame.srcdoc = doc;
+    tester.onload = async () => {
+      if (id !== runId) return;
+      await new Promise(r => setTimeout(r, 120));
+      if (id !== runId) return;
+      const src = { html: files.html, css: files.css || '', js: files.js || '' };
+      for (let i = 0; i < ETAPAS.length; i++) for (let j = 0; j < ETAPAS[i].itens.length; j++) {
+        let r;
+        try { r = await new AsyncFunction('doc', 'win', 'src', ETAPAS[i].itens[j].check)(tester.contentDocument, tester.contentWindow, src); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (id !== runId) return;
+        results[i][j] = r === true ? true : (typeof r === 'string' && r ? r : 'Ainda não cumprido.');
+      }
+      renderList();
+    };
+    tester.srcdoc = doc;
+  }
+  $('run').onclick = run;
+
+  // ---------- etapas (sidebar) ----------
+  ETAPAS.forEach((e, i) => {
+    const b = document.createElement('button'); b.className = 'nav'; b.innerHTML = `<span class="n">${i + 1}</span>${esc(e.title)}<span class="cnt"></span>`; b.onclick = () => showEt(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${i + 1} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => showEt(+mnav.value);
+  function showEt(i) {
+    curEt = Math.max(0, Math.min(ETAPAS.length - 1, i)); const e = ETAPAS[curEt];
+    $('title').textContent = e.title; $('desc').innerHTML = e.desc;
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === curEt)); mnav.value = curEt;
+    $('prev').disabled = curEt === 0; $('next').disabled = curEt === ETAPAS.length - 1; $('pos').textContent = `etapa ${curEt + 1} de ${ETAPAS.length}`;
+    list.querySelectorAll('.etp').forEach(el => el.classList.toggle('on', +el.dataset.i === curEt));
+    const on = list.querySelector('.etp.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+    try { history.replaceState(null, '', '#' + (curEt + 1)); } catch (_) {}
+  }
+  $('prev').onclick = () => showEt(curEt - 1); $('next').onclick = () => showEt(curEt + 1);
+
+  // ---------- recomeçar / baixar ----------
+  let resetArmed = false;
+  $('reset').onclick = () => {
+    if (!resetArmed) { resetArmed = true; $('reset').textContent = 'Tem certeza? Clique de novo'; setTimeout(() => { resetArmed = false; $('reset').textContent = '↺ Recomeçar'; }, 3000); return; }
+    resetArmed = false; $('reset').textContent = '↺ Recomeçar';
+    for (const t of TABS) { files[t] = FILES[t] || ''; try { localStorage.removeItem(KEY(t)); } catch (_) {} }
+    results = ETAPAS.map(e => e.itens.map(() => null)); showTab(TABS[0]); renderList(); run();
+  };
+  function crc32(buf) { let c, crc = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) { c = (crc ^ buf[i]) & 0xFF; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1; crc = (crc >>> 8) ^ c; } return (crc ^ 0xFFFFFFFF) >>> 0; }
+  function zip(entries) {
+    const enc = new TextEncoder(); const parts = [], central = []; let off = 0;
+    const u16 = n => [n & 255, (n >> 8) & 255], u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+    for (const [name, text] of entries) {
+      const nm = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+      const head = new Uint8Array([0x50, 0x4B, 3, 4, ...u16(20), ...u16(0x800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...nm]);
+      parts.push(head, data);
+      central.push(new Uint8Array([0x50, 0x4B, 1, 2, ...u16(20), ...u16(20), ...u16(0x800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off), ...nm]));
+      off += head.length + data.length;
+    }
+    const cstart = off, csize = central.reduce((s, c) => s + c.length, 0);
+    const end = new Uint8Array([0x50, 0x4B, 5, 6, ...u16(0), ...u16(0), ...u16(entries.length), ...u16(entries.length), ...u32(csize), ...u32(cstart), ...u16(0)]);
+    return new Blob([...parts, ...central, end], { type: 'application/zip' });
+  }
+  function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  $('dl').onclick = () => {
+    if (TABS.length === 1) download('index.html', new Blob([files.html], { type: 'text/html' }));
+    else { const e = [['meu-portfolio/index.html', assemble(true)]]; if (TABS.includes('css')) e.push(['meu-portfolio/style.css', files.css]); if (TABS.includes('js')) e.push(['meu-portfolio/script.js', files.js]); download('meu-portfolio.zip', zip(e)); }
+  };
+
+  // ---------- fonte / início ----------
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 18;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-proj') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-proj', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  showTab(TABS[0]); renderList();
+  const h0 = parseInt((location.hash || '').slice(1), 10); showEt(h0 ? h0 - 1 : 0);
+  run();
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

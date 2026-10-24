@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS 1 · Seletores, cores e texto — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#38BDF8}
+  .nav.on{color:#7DD3FC}
+  .work{grid-template-columns:1fr 1.1fr}
+  .work>*{min-width:0}
+  .left .card,.right .card{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .left{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .left .card.ed{flex:1.5}
+  .left .card.hh{flex:1;max-height:280px}
+  pre.stagehtml{margin:0;white-space:pre-wrap;word-break:break-word;padding:14px 20px;overflow:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .85);line-height:1.5;color:#C4C8D2;flex:1;min-height:0}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#7DD3FC}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#38BDF8">C1</div>
+      <div class="t">CSS: seletores, cores e texto</div>
+      <div class="s">Escreva o CSS e veja a página mudar ao lado</div>
+      <a href="/css-01/apostila-css-01.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#38BDF8;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#css" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#38BDF8"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#38BDF8;border-color:#38BDF8">▶ Aplicar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="left">
+        <div class="card ed">
+          <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>style.css · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> aplica</span></div>
+          <div class="editor">
+            <pre id="hl" aria-hidden="true"></pre>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código CSS"></textarea>
+          </div>
+        </div>
+        <div class="card hh">
+          <div class="hd"><span>index.html · só leitura</span><span class="hint2">o HTML que o CSS vai estilizar</span></div>
+          <pre class="stagehtml" id="stagehtml"></pre>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="O básico" data-title="O que é CSS">
+  <div class="desc">HTML diz <b>o que tem</b> na página; CSS (Cascading Style Sheets) diz <b>como fica</b>: cores, fontes, tamanhos, posições. O arquivo <code>style.css</code> à esquerda está ligado ao <code>index.html</code> (só leitura, logo abaixo). Você mexe no CSS e a prévia muda.</div>
+  <div class="try"><b>Experimente:</b> troque <code>#38BDF8</code> por <code>tomato</code> e aplique de novo.</div>
+<template class="stage"><h1>Minha primeira página</h1>
+<p>Agora ela tem estilo.</p></template>
+<script type="text/x-code">
+h1 {
+  color: #38BDF8;
+}
+
+p {
+  color: gray;
+}
+</script>
+</section>
+
+<section class="ex" data-group="O básico" data-title="A regra: seletor, propriedade e valor">
+  <div class="desc">Uma <b>regra</b> CSS tem o <b>seletor</b> (quem vai mudar), e entre chaves as <b>declarações</b>: <code>propriedade: valor;</code>. O ponto e vírgula separa uma declaração da outra; esquecer ele é o erro número 1. Comentários ficam entre <code>/* */</code>.</div>
+  <div class="try"><b>Experimente:</b> apague um <code>;</code> e aplique: a verificação avisa.</div>
+<template class="stage"><h1>Greenn School</h1>
+<p>Sábados, das 7h às 11h.</p></template>
+<script type="text/x-code">
+/* seletor */
+h1 {
+  color: #F97316;      /* propriedade: valor; */
+  font-size: 40px;
+}
+
+p {
+  color: #334155;
+  font-size: 20px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="O básico" data-title="Onde o CSS mora: inline, &lt;style&gt; e arquivo">
+  <div class="desc">Tem três lugares: <b>inline</b>, no atributo <code>style</code> da tag (veja o segundo parágrafo no HTML); dentro de <code>&lt;style&gt;</code> no head; ou num <b>arquivo .css</b> ligado por <code>&lt;link rel="stylesheet" href="style.css"&gt;</code>. O arquivo separado é o jeito certo: um CSS serve para todas as páginas. O inline <b>vence</b> o arquivo, por isso o segundo parágrafo continua vermelho.</div>
+  <div class="try"><b>Experimente:</b> mude a cor do <code>p</code> no CSS: só o primeiro parágrafo obedece.</div>
+<template class="stage"><p>Este parágrafo obedece ao style.css.</p>
+<p style="color: red;">Este tem estilo inline e ignora o arquivo.</p></template>
+<script type="text/x-code">
+p {
+  color: #0EA5E9;
+  font-size: 20px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Seletores" data-title="Por tag, por classe e por id">
+  <div class="desc"><code>p</code> pega <b>todas</b> as tags p. <code>.destaque</code> (com ponto) pega quem tem <code>class="destaque"</code>, não importa a tag. <code>#aviso</code> (com cerquilha) pega o elemento com <code>id="aviso"</code>, que é único. Classe é o que você mais vai usar.</div>
+  <div class="try"><b>Experimente:</b> mude o seletor <code>.destaque</code> para <code>h2, .destaque</code> e veja o título ganhar o mesmo estilo.</div>
+<template class="stage"><h2>Avisos da turma</h2>
+<p>Aula normal no sábado.</p>
+<p class="destaque">Tragam o notebook carregado.</p>
+<p id="aviso">A prova é dia 25!</p></template>
+<script type="text/x-code">
+p {
+  color: #334155;
+}
+
+.destaque {
+  color: #0EA5E9;
+  font-weight: bold;
+}
+
+#aviso {
+  background-color: #FEF08A;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Seletores" data-title="Agrupando e descendo na árvore">
+  <div class="desc"><code>h1, h2</code> (vírgula) aplica a mesma regra a vários seletores. <code>.card p</code> (espaço) pega os <code>p</code> que estão <b>dentro</b> de <code>.card</code>, em qualquer nível. <code>.card &gt; p</code> pega só os filhos diretos. É assim que você estiliza um pedaço da página sem mexer no resto.</div>
+  <div class="try"><b>Experimente:</b> troque <code>.card p</code> por só <code>p</code> e veja o parágrafo de fora mudar também.</div>
+<template class="stage"><h1>Cursos</h1>
+<p>Escolha o seu.</p>
+<div class="card">
+  <h2>JavaScript</h2>
+  <p>Da lógica ao DOM.</p>
+</div></template>
+<script type="text/x-code">
+h1, h2 {
+  color: #0369A1;
+}
+
+.card p {
+  color: #0EA5E9;
+  font-weight: bold;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Seletores" data-title="Estados: hover, focus e outros">
+  <div class="desc">Uma <b>pseudo-classe</b> seleciona um <b>estado</b>: <code>a:hover</code> é o link com o mouse em cima, <code>input:focus</code> é o campo selecionado, <code>li:first-child</code> é o primeiro item. É o jeito de dar resposta visual sem JavaScript.</div>
+  <div class="try"><b>Experimente:</b> passe o mouse no link e clique no campo. Depois mude a cor do hover.</div>
+<template class="stage"><p><a href="#">Passe o mouse aqui</a></p>
+<p><input placeholder="Clique aqui"></p>
+<ul><li>Primeiro</li><li>Segundo</li><li>Terceiro</li></ul></template>
+<script type="text/x-code">
+a {
+  color: #0EA5E9;
+}
+
+a:hover {
+  color: #F97316;
+  text-decoration: none;
+}
+
+input:focus {
+  outline: 3px solid #38BDF8;
+}
+
+li:first-child {
+  font-weight: bold;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Cores" data-title="As formas de escrever uma cor">
+  <div class="desc">Pode ser um <b>nome</b> (<code>red</code>, <code>tomato</code>, <code>steelblue</code>), um <b>hexadecimal</b> <code>#RRGGBB</code> (dois dígitos de vermelho, verde e azul; <code>#000000</code> é preto e <code>#ffffff</code> branco), ou <code>rgb(r, g, b)</code> de 0 a 255. <code>rgba</code> e <code>#RRGGBBAA</code> têm <b>transparência</b>. <code>color</code> é a cor do texto; <code>background-color</code>, a do fundo.</div>
+  <div class="try"><b>Experimente:</b> mude o <code>0.4</code> do rgba para <code>1</code> e para <code>0.1</code>.</div>
+<template class="stage"><p class="nome">color: tomato</p>
+<p class="hex">color: #16A34A</p>
+<p class="rgb">background-color: rgb(56, 189, 248)</p>
+<p class="rgba">background-color: rgba(249, 115, 22, 0.4)</p></template>
+<script type="text/x-code">
+body {
+  background-color: #F1F5F9;
+}
+
+.nome { color: tomato; }
+.hex  { color: #16A34A; }
+.rgb  { background-color: rgb(56, 189, 248); }
+.rgba { background-color: rgba(249, 115, 22, 0.4); }
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Fontes: família, tamanho e peso">
+  <div class="desc"><code>font-family</code> é uma <b>lista</b>: o navegador usa a primeira que tiver instalada, por isso termina com uma genérica (<code>sans-serif</code>, <code>serif</code>, <code>monospace</code>). <code>font-size</code> em <code>px</code>; <code>font-weight</code> de <code>400</code> (normal) a <code>700</code> (<code>bold</code>); <code>font-style: italic</code>. Colocar a fonte no <code>body</code> faz tudo herdar.</div>
+  <div class="try"><b>Experimente:</b> troque a família do body por <code>Georgia, serif</code> e por <code>Consolas, monospace</code>.</div>
+<template class="stage"><h1>Greenn School</h1>
+<p>Aprenda a programar aos sábados.</p>
+<p class="nota">Vagas limitadas.</p></template>
+<script type="text/x-code">
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+p {
+  font-size: 18px;
+}
+
+.nota {
+  font-style: italic;
+  font-size: 14px;
+  color: gray;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Texto" data-title="Alinhamento, decoração e espaçamento">
+  <div class="desc"><code>text-align</code>: <code>left</code>, <code>center</code>, <code>right</code>, <code>justify</code>. <code>text-decoration</code>: <code>underline</code>, <code>line-through</code> ou <code>none</code> (tirar o sublinhado do link). <code>text-transform: uppercase</code> deixa em maiúsculas sem mudar o HTML. <code>line-height</code> é a altura da linha (1.6 = 160% da fonte) e <code>letter-spacing</code>, o espaço entre letras.</div>
+  <div class="try"><b>Experimente:</b> mude o <code>line-height</code> para <code>1</code> e para <code>2</code>.</div>
+<template class="stage"><h1>Programação Básica</h1>
+<p class="sub">Greenn School · turma de sábado</p>
+<p>Um texto um pouco mais longo para você ver o efeito da altura da linha. Quando as linhas respiram, ler fica muito mais fácil, principalmente no celular.</p>
+<p>Preço: <span class="antigo">R$ 199</span> <a href="#">Garanta sua vaga</a></p></template>
+<script type="text/x-code">
+h1 {
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.sub {
+  text-align: center;
+  color: gray;
+}
+
+p {
+  line-height: 1.6;
+}
+
+.antigo {
+  text-decoration: line-through;
+}
+
+a {
+  text-decoration: none;
+  color: #0EA5E9;
+  font-weight: bold;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Um HTML pronto para você estilizar como quiser.</div>
+  <div class="try"><b>Dica:</b> comece pelo <code>body</code> (fonte e cores), depois os títulos, depois os detalhes.</div>
+<template class="stage"><h1>Testes</h1>
+<p class="a">Parágrafo com classe a.</p>
+<p id="b">Parágrafo com id b.</p>
+<div class="caixa"><h2>Uma caixa</h2><p>Com texto dentro.</p></div>
+<a href="#">Um link</a></template>
+<script type="text/x-code">
+body {
+  font-family: Arial, sans-serif;
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Título azul">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Escrever sua primeira regra CSS.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie uma regra para o seletor <code>h1</code>.</li><li>Dentro dela, <code>color: #38BDF8;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>O título &quot;Bem-vindo&quot; fica azul claro</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude para <code>color: tomato;</code>.</div>
+<template class="stage"><h1>Bem-vindo</h1>
+<p>Minha página com CSS.</p></template>
+<script type="text/x-code">
+/* seu CSS aqui */
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!/h1\s*\{/.test(src)) return "Não achei a regra h1 { ... }.";
+return cs("h1").color === "rgb(56, 189, 248)" || "O h1 deveria ficar azul #38BDF8, mas está " + cs("h1").color + ".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Fundo escuro">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Mudar a cor de fundo e do texto da página inteira.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Faça uma regra para <code>body</code>.</li><li><code>background-color: #15171E;</code> (quase preto) e <code>color: white;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Página escura com texto branco</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque <code>white</code> por <code>#F0C23B</code>.</div>
+<template class="stage"><h1>Modo escuro</h1>
+<p>Os programadores adoram.</p></template>
+<script type="text/x-code">
+body {
+  
+}
+
+</script>
+<script type="text/x-check">
+const b = win.getComputedStyle(doc.body);
+if (b.backgroundColor !== "rgb(21, 23, 30)") return "O fundo do body deveria ser #15171E, mas está " + b.backgroundColor + ".";
+return b.color === "rgb(255, 255, 255)" || "O texto deveria ser branco (color: white), mas está " + b.color + ".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Só quem tem a classe">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar um seletor de classe para destacar um parágrafo.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie a regra <code>.destaque</code> (com o ponto!).</li><li>Deixe o texto vermelho (<code>red</code>) e em negrito (<code>font-weight: bold;</code>).</li><li>Os outros parágrafos não podem mudar.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Só &quot;Tragam o notebook&quot; fica vermelho e negrito</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Dê um <code>background-color: #FEF08A</code> para a classe também.</div>
+<template class="stage"><p>Aula normal no sábado.</p>
+<p class="destaque">Tragam o notebook carregado.</p>
+<p>Depois tem revisão.</p></template>
+<script type="text/x-code">
+/* seletor de classe começa com ponto */
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!/\.destaque\s*\{/.test(src)) return "Não achei a regra .destaque { ... }. Lembre do ponto antes do nome da classe.";
+const d = cs(".destaque"), o = cs("p:not(.destaque)");
+if (d.color !== "rgb(255, 0, 0)") return "O .destaque deveria ficar vermelho (red).";
+if (+d.fontWeight < 700) return "Falta font-weight: bold no .destaque.";
+return o.color !== "rgb(255, 0, 0)" || "Os outros parágrafos ficaram vermelhos também: use .destaque, não p.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Um só elemento: o id">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar o seletor de id para pintar o fundo de um aviso.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie a regra <code>#aviso</code> (com a cerquilha).</li><li><code>background-color: #FEF08A;</code> e <code>color: #713F12;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>O aviso da prova com fundo amarelo e texto marrom</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>font-weight: bold</code> no mesmo aviso.</div>
+<template class="stage"><h2>Avisos</h2>
+<p>Aula normal no sábado.</p>
+<p id="aviso">A prova é dia 25!</p></template>
+<script type="text/x-code">
+/* seletor de id começa com # */
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!/#aviso\s*\{/.test(src)) return "Não achei a regra #aviso { ... }.";
+const a = cs("#aviso");
+if (a.backgroundColor !== "rgb(254, 240, 138)") return "O fundo do #aviso deveria ser #FEF08A, mas está " + a.backgroundColor + ".";
+if (a.color !== "rgb(113, 63, 18)") return "A cor do texto deveria ser #713F12.";
+return cs("h2").backgroundColor === "rgba(0, 0, 0, 0)" || "Só o #aviso deveria ter fundo amarelo.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · A fonte do site">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Definir a fonte de toda a página pelo body.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No <code>body</code>: <code>font-family: Arial, sans-serif;</code> e <code>font-size: 18px;</code>.</li><li>No <code>h1</code>: <code>font-size: 40px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Tudo em Arial; parágrafos com 18px e o título com 40px</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque a família por <code>Georgia, serif</code>.</div>
+<template class="stage"><h1>Greenn School</h1>
+<p>Aprenda a programar aos sábados.</p>
+<p>Turmas pela manhã.</p></template>
+<script type="text/x-code">
+body {
+  
+}
+
+h1 {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!cs("p").fontFamily.toLowerCase().includes("arial")) return "O font-family do body deveria começar com Arial.";
+if (cs("p").fontSize !== "18px") return "O font-size do body deveria ser 18px (os parágrafos herdam), mas o p está com " + cs("p").fontSize + ".";
+return cs("h1").fontSize === "40px" || "O h1 deveria ter font-size: 40px, mas está com " + cs("h1").fontSize + ".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Título centralizado e em maiúsculas">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Alinhar e transformar o texto do título.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>No <code>h1</code>: <code>text-align: center;</code>, <code>text-transform: uppercase;</code> e <code>letter-spacing: 4px;</code>.</li><li>No <code>.sub</code>: <code>text-align: center;</code> e <code>color: gray;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>PROGRAMAÇÃO BÁSICA centralizado e espaçado, com o subtítulo cinza embaixo</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude para <code>text-align: right</code> nos dois.</div>
+<template class="stage"><h1>Programação Básica</h1>
+<p class="sub">Greenn School · turma de sábado</p>
+<p>Texto normal da página.</p></template>
+<script type="text/x-code">
+h1 {
+  
+}
+
+.sub {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+const h = cs("h1");
+if (h.textAlign !== "center") return "O h1 deveria ter text-align: center.";
+if (h.textTransform !== "uppercase") return "Falta text-transform: uppercase no h1.";
+if (h.letterSpacing !== "4px") return "O letter-spacing do h1 deveria ser 4px.";
+const s = cs(".sub");
+if (s.textAlign !== "center") return "O .sub também precisa de text-align: center.";
+return s.color === "rgb(128, 128, 128)" || "O .sub deveria ser gray.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Links sem sublinhado (até passar o mouse)">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Estilizar links e o estado hover.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Para <code>a</code>: <code>color: #0EA5E9;</code> e <code>text-decoration: none;</code>.</li><li>Para <code>a:hover</code>: <code>text-decoration: underline;</code> e <code>color: #F97316;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Links azuis sem sublinhado; ao passar o mouse ficam laranja e sublinhados</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> No hover, adicione <code>background-color: #FFF7ED</code>.</div>
+<template class="stage"><p>Veja o <a href="#">calendário</a> e o <a href="#">material da aula</a>.</p></template>
+<script type="text/x-code">
+a {
+  
+}
+
+/* o estado com o mouse em cima */
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+const a = cs("a");
+if (a.color !== "rgb(14, 165, 233)") return "Os links deveriam ser #0EA5E9.";
+if (!a.textDecorationLine.includes("none") && a.textDecorationLine !== "none") return "Falta text-decoration: none no a.";
+if (!/a:hover\s*\{/.test(src)) return "Falta a regra a:hover { ... }.";
+const hov = src.replace(/\/\*[\s\S]*?\*\//g, "").match(/a:hover\s*\{([^}]*)\}/)[1];
+if (!/text-decoration\s*:\s*underline/.test(hov)) return "Dentro de a:hover, coloque text-decoration: underline.";
+return /color\s*:\s*#F97316/i.test(hov) || "Dentro de a:hover, a cor deveria ser #F97316.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Cartão de perfil">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Juntar seletores, cores e texto num cartão.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>body</code>: <code>font-family: Arial, sans-serif;</code> e <code>background-color: #F1F5F9;</code>.</li><li><code>.card</code>: <code>background-color: #1F2330;</code>, <code>color: white;</code> e <code>text-align: center;</code>.</li><li><code>.cargo</code>: <code>color: #38BDF8;</code>, <code>text-transform: uppercase;</code> e <code>letter-spacing: 2px;</code>.</li><li><code>.bio</code>: <code>line-height: 1.6;</code> e <code>color: #C4C8D2;</code>.</li><li><code>.card a</code>: <code>color: #F0C23B;</code> e <code>text-decoration: none;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Um cartão escuro centralizado, cargo azul em maiúsculas, bio cinza-clara com linhas espaçadas e link amarelo sem sublinhado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Deixe o <code>h2</code> dentro do cartão com <code>font-size: 28px</code>.</div>
+<template class="stage"><div class="card">
+  <h2>Ana Souza</h2>
+  <p class="cargo">Desenvolvedora front-end</p>
+  <p class="bio">Aluna da Greenn School. Gosta de HTML, CSS e de resolver exercícios aos sábados de manhã.</p>
+  <a href="#">Ver portfólio</a>
+</div>
+<p>Texto fora do cartão.</p></template>
+<script type="text/x-code">
+body {
+  
+}
+
+.card {
+  
+}
+
+.cargo {
+  
+}
+
+.bio {
+  
+}
+
+.card a {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!cs("body").fontFamily.toLowerCase().includes("arial")) return "O body deveria ter font-family começando com Arial.";
+if (cs("body").backgroundColor !== "rgb(241, 245, 249)") return "O fundo do body deveria ser #F1F5F9.";
+const c = cs(".card");
+if (c.backgroundColor !== "rgb(31, 35, 48)") return "O .card deveria ter fundo #1F2330.";
+if (c.color !== "rgb(255, 255, 255)") return "O texto do .card deveria ser white.";
+if (c.textAlign !== "center") return "O .card precisa de text-align: center.";
+const g = cs(".cargo");
+if (g.color !== "rgb(56, 189, 248)") return "O .cargo deveria ser #38BDF8.";
+if (g.textTransform !== "uppercase" || g.letterSpacing !== "2px") return "O .cargo precisa de text-transform: uppercase e letter-spacing: 2px.";
+const b = cs(".bio");
+if (b.color !== "rgb(196, 200, 210)") return "A .bio deveria ser #C4C8D2.";
+if (Math.abs(parseFloat(b.lineHeight) / parseFloat(b.fontSize) - 1.6) > 0.05) return "A .bio precisa de line-height: 1.6.";
+const a = cs(".card a");
+if (a.color !== "rgb(240, 194, 59)") return "O link do cartão deveria ser #F0C23B.";
+if (a.textDecorationLine !== "none") return "O link do cartão precisa de text-decoration: none.";
+return cs("body > p").color !== "rgb(255, 255, 255)" || "O parágrafo fora do cartão não deveria ficar branco: use .card, não body, para a cor do texto.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    stage: s.querySelector('template.stage').innerHTML.replace(/^\n/, '').replace(/\s+$/, ''),
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de CSS ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function highlightHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last));
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Aplicar para ver o CSS na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function lint(src) {
+    const clean = src.replace(/\/\*[\s\S]*?\*\//g, ''); const msgs = [];
+    const open = (clean.match(/\{/g) || []).length, close = (clean.match(/\}/g) || []).length;
+    if (open > close) msgs.push(`Tem ${open - close} chave { aberta sem a } correspondente.`);
+    if (close > open) msgs.push(`Tem ${close - open} chave } a mais.`);
+    const blocks = clean.match(/\{[^{}]*\}/g) || [];
+    for (const b of blocks) {
+      const decls = b.slice(1, -1).split(';').map(d => d.trim()).filter(Boolean);
+      for (const d of decls) {
+        const dd = d.replace(/\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '');
+        if (!dd.includes(':')) { msgs.push(`"${d.slice(0, 30)}" está sem os dois-pontos: o formato é propriedade: valor;`); break; }
+        if (dd.split(':').length > 2) { msgs.push(`Falta um ponto e vírgula depois de "${d.split(/\n/)[0].trim().slice(0, 30)}".`); break; }
+      }
+    }
+    return [...new Set(msgs)].slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(css) { return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><style>${css.replace(/<\/style/gi, '<\\/style')}</style></head><body>${exs[cur].stage}</body></html>`; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Aplicando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">CSS aplicado na prévia acima. Mude um valor e aplique de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Aplicado, mas tem erro de sintaxe' : '✓ CSS aplicado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o resultado está certo, mas corrija a sintaxe apontada acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Corrija a sintaxe'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    $('stagehtml').innerHTML = highlightHtml(e.stage);
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-css') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-css', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

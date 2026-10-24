@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS 3 · Flexbox e Grid — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#38BDF8}
+  .nav.on{color:#7DD3FC}
+  .work{grid-template-columns:1fr 1.1fr}
+  .work>*{min-width:0}
+  .left .card,.right .card{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .left{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .left .card.ed{flex:1.5}
+  .left .card.hh{flex:1;max-height:280px}
+  pre.stagehtml{margin:0;white-space:pre-wrap;word-break:break-word;padding:14px 20px;overflow:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .85);line-height:1.5;color:#C4C8D2;flex:1;min-height:0}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#7DD3FC}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#38BDF8">C3</div>
+      <div class="t">CSS: Flexbox e Grid</div>
+      <div class="s">Escreva o CSS e veja a página mudar ao lado</div>
+      <a href="/css-03/apostila-css-03.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#38BDF8;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#css" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#38BDF8"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#38BDF8;border-color:#38BDF8">▶ Aplicar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="left">
+        <div class="card ed">
+          <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>style.css · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> aplica</span></div>
+          <div class="editor">
+            <pre id="hl" aria-hidden="true"></pre>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código CSS"></textarea>
+          </div>
+        </div>
+        <div class="card hh">
+          <div class="hd"><span>index.html · só leitura</span><span class="hint2">o HTML que o CSS vai estilizar</span></div>
+          <pre class="stagehtml" id="stagehtml"></pre>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="Flexbox" data-title="display: flex: os filhos entram em linha">
+  <div class="desc">Até agora cada div ocupa uma linha. Com <code>display: flex</code> no <b>pai</b> (o container), os <b>filhos</b> ficam lado a lado, e <code>gap</code> dá o espaço entre eles. Flexbox é a ferramenta número 1 para alinhar coisas; quem cuida do layout é sempre o container.</div>
+  <div class="try"><b>Experimente:</b> apague o <code>display: flex</code> e veja as caixas empilharem de novo.</div>
+<template class="stage"><div class="linha">
+  <div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.linha {
+  display: flex;
+  gap: 12px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="justify-content: distribuindo na horizontal">
+  <div class="desc"><code>justify-content</code> diz como sobra o espaço no <b>eixo principal</b> (a linha): <code>flex-start</code> (padrão), <code>center</code>, <code>flex-end</code>, <code>space-between</code> (primeiro e último nas pontas), <code>space-around</code> e <code>space-evenly</code>.</div>
+  <div class="try"><b>Experimente:</b> troque <code>space-between</code> por <code>space-evenly</code>.</div>
+<template class="stage"><p>center</p>
+<div class="linha a"><div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div></div>
+<p>space-between</p>
+<div class="linha b"><div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div></div>
+<p>flex-end</p>
+<div class="linha c"><div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div></div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.linha {
+  display: flex;
+  gap: 8px;
+  background-color: #E0F2FE;
+  padding: 8px;
+}
+
+.a { justify-content: center; }
+.b { justify-content: space-between; }
+.c { justify-content: flex-end; }
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="align-items: alinhando na vertical">
+  <div class="desc"><code>align-items</code> alinha no <b>eixo cruzado</b> (a altura): <code>stretch</code> (padrão: todos esticam até a altura do maior), <code>flex-start</code>, <code>center</code> e <code>flex-end</code>. Dê uma altura ao container para enxergar.</div>
+  <div class="try"><b>Experimente:</b> troque <code>center</code> por <code>stretch</code> e por <code>flex-end</code>.</div>
+<template class="stage"><div class="linha">
+  <div class="caixa">curto</div>
+  <div class="caixa alto">mais<br>alto<br>ainda</div>
+  <div class="caixa">curto</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.linha {
+  display: flex;
+  gap: 12px;
+  height: 160px;
+  background-color: #E0F2FE;
+  align-items: center;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="flex-direction e flex-wrap">
+  <div class="desc"><code>flex-direction: column</code> empilha os filhos na vertical (e aí <code>justify-content</code> passa a agir na vertical). <code>flex-wrap: wrap</code> deixa os filhos <b>quebrarem a linha</b> quando não cabem, em vez de encolher; sem ele, tudo se espreme numa linha só.</div>
+  <div class="try"><b>Experimente:</b> apague <code>flex-wrap: wrap</code> e estreite a prévia (arraste a divisória, se der) ou aumente o <code>width</code> das caixas.</div>
+<template class="stage"><div class="coluna">
+  <div class="caixa">A</div>
+  <div class="caixa">B</div>
+</div>
+<div class="quebra">
+  <div class="caixa">1</div><div class="caixa">2</div><div class="caixa">3</div><div class="caixa">4</div><div class="caixa">5</div><div class="caixa">6</div><div class="caixa">7</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 120px;
+  margin-bottom: 20px;
+}
+
+.quebra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quebra .caixa {
+  width: 100px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="flex: 1: quem cresce para preencher">
+  <div class="desc">No filho, <code>flex: 1</code> diz: <b>cresça</b> para ocupar o espaço que sobrar. Com uma barra lateral de largura fixa e o conteúdo com <code>flex: 1</code>, você tem o layout de painel clássico. Se dois filhos têm <code>flex: 1</code>, dividem igual; <code>flex: 2</code> pega o dobro.</div>
+  <div class="try"><b>Experimente:</b> dê <code>flex: 1</code> também para a <code>.lateral</code> e tire o width.</div>
+<template class="stage"><div class="painel">
+  <div class="caixa lateral">menu</div>
+  <div class="caixa principal">conteúdo (flex: 1)</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.painel {
+  display: flex;
+  gap: 12px;
+  height: 200px;
+}
+
+.lateral {
+  width: 120px;
+  background-color: #0EA5E9;
+}
+
+.principal {
+  flex: 1;
+  background-color: #BAE6FD;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="O cabeçalho com menu">
+  <div class="desc">O uso mais comum: um <code>header</code> com <code>display: flex</code> e <code>justify-content: space-between</code> joga o logo para um lado e o menu para o outro; <code>align-items: center</code> alinha na vertical. O <code>ul</code> do menu também vira flex, e <code>list-style: none</code> tira as bolinhas.</div>
+  <div class="try"><b>Experimente:</b> troque <code>space-between</code> por <code>center</code> e dê <code>gap: 40px</code> ao header.</div>
+<template class="stage"><header class="topo">
+  <strong class="logo">Greenn School</strong>
+  <ul class="menu">
+    <li><a href="#">Início</a></li>
+    <li><a href="#">Cursos</a></li>
+    <li><a href="#">Contato</a></li>
+  </ul>
+</header>
+<p>Conteúdo da página.</p></template>
+<script type="text/x-code">
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: #15171E;
+  color: #F0C23B;
+}
+
+.menu {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;
+}
+
+.menu a:hover {
+  color: #38BDF8;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Flexbox" data-title="Centralizar qualquer coisa">
+  <div class="desc">A pergunta mais feita da história do CSS: como centralizar na vertical <b>e</b> na horizontal? Flex resolve em três linhas: <code>display: flex; justify-content: center; align-items: center;</code> no container (que precisa ter altura).</div>
+  <div class="try"><b>Experimente:</b> troque <code>align-items: center</code> por <code>flex-end</code>.</div>
+<template class="stage"><div class="hero">
+  <div class="caixa">no meio de tudo</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 220px;
+  background: linear-gradient(135deg, #0EA5E9, #15171E);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Grid" data-title="display: grid: linhas e colunas">
+  <div class="desc">Flex organiza em <b>uma</b> direção; Grid organiza em <b>duas</b>: linhas e colunas ao mesmo tempo. <code>grid-template-columns: repeat(3, 1fr)</code> cria 3 colunas iguais (<code>fr</code> = fração do espaço); os filhos vão preenchendo as células sozinhos. <code>gap</code> funciona igual ao flex.</div>
+  <div class="try"><b>Experimente:</b> mude para <code>repeat(2, 1fr)</code> e para <code>100px 1fr 2fr</code>.</div>
+<template class="stage"><div class="grade">
+  <div class="caixa">1</div><div class="caixa">2</div><div class="caixa">3</div>
+  <div class="caixa">4</div><div class="caixa">5</div><div class="caixa">6</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Grid" data-title="Layout de página com áreas">
+  <div class="desc">Com <code>grid-template-areas</code> você <b>desenha</b> o layout com nomes: cada string é uma linha, cada palavra uma coluna. Depois, cada filho diz qual área ocupa com <code>grid-area</code>. Repetir o nome faz a área se esticar por várias células. É o jeito mais legível de montar uma página inteira.</div>
+  <div class="try"><b>Experimente:</b> troque a última linha por <code>"lateral rodape"</code> e veja o rodapé encolher.</div>
+<template class="stage"><div class="pagina">
+  <header class="caixa topo">header</header>
+  <aside class="caixa lateral">aside</aside>
+  <main class="caixa principal">main</main>
+  <footer class="caixa rodape">footer</footer>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.pagina {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  grid-template-areas:
+    "topo topo"
+    "lateral principal"
+    "rodape rodape";
+  gap: 10px;
+  min-height: 300px;
+}
+
+.topo      { grid-area: topo; }
+.lateral   { grid-area: lateral; background-color: #0EA5E9; }
+.principal { grid-area: principal; background-color: #BAE6FD; }
+.rodape    { grid-area: rodape; background-color: #15171E; color: white; }
+</script>
+</section>
+
+<section class="ex" data-group="Grid" data-title="Galeria que se adapta sozinha">
+  <div class="desc"><code>repeat(auto-fit, minmax(140px, 1fr))</code> quer dizer: crie quantas colunas <b>couberem</b>, cada uma com no mínimo 140px, dividindo a sobra. Estreitando a tela, as colunas diminuem de número sozinhas: uma galeria responsiva sem nenhuma media query.</div>
+  <div class="try"><b>Experimente:</b> mude <code>140px</code> para <code>250px</code> e veja menos colunas caberem.</div>
+<template class="stage"><div class="galeria">
+  <div class="caixa">foto 1</div><div class="caixa">foto 2</div><div class="caixa">foto 3</div>
+  <div class="caixa">foto 4</div><div class="caixa">foto 5</div><div class="caixa">foto 6</div>
+  <div class="caixa">foto 7</div><div class="caixa">foto 8</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.caixa {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Um container com seis caixas para você testar flex e grid.</div>
+  <div class="try"><b>Dica:</b> mude só o <code>.container</code>: é sempre o pai que manda no layout.</div>
+<template class="stage"><div class="container">
+  <div class="caixa">1</div><div class="caixa">2</div><div class="caixa">3</div>
+  <div class="caixa">4</div><div class="caixa">5</div><div class="caixa">6</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  gap: 10px;
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Três caixas em linha">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Colocar os filhos lado a lado com flex.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.linha</code>: <code>display: flex;</code> e <code>gap: 16px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>As três caixas azuis lado a lado, com 16px entre elas</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>flex-direction: column</code>.</div>
+<template class="stage"><div class="linha">
+  <div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.linha {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".linha"));
+if (c.display !== "flex") return "A .linha precisa de display: flex.";
+return c.columnGap === "16px" || "O gap deveria ser 16px, mas está " + c.columnGap + ".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Um em cada ponta">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Distribuir os itens com justify-content.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.barra</code>: <code>display: flex;</code> e <code>justify-content: space-between;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>&quot;Logo&quot; encostado na esquerda e &quot;Sair&quot; na direita</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque por <code>justify-content: center</code> com <code>gap: 30px</code>.</div>
+<template class="stage"><div class="barra">
+  <div class="caixa">Logo</div>
+  <div class="caixa">Sair</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.barra {
+  background-color: #E0F2FE;
+  padding: 8px;
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".barra"));
+if (c.display !== "flex") return "A .barra precisa de display: flex.";
+return c.justifyContent === "space-between" || "Use justify-content: space-between (está " + c.justifyContent + ").";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · No centro de tudo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Centralizar um elemento na horizontal e na vertical.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.hero</code>: <code>height: 200px;</code>, <code>background-color: #15171E;</code>,</li><li><code>display: flex;</code>, <code>justify-content: center;</code> e <code>align-items: center;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>A caixa &quot;Bem-vindo&quot; exatamente no meio da faixa escura</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude para <code>align-items: flex-start</code>.</div>
+<template class="stage"><div class="hero">
+  <div class="caixa">Bem-vindo</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.hero {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".hero"));
+if (c.height !== "200px") return "A .hero deveria ter height: 200px.";
+if (c.backgroundColor !== "rgb(21, 23, 30)") return "O fundo da .hero deveria ser #15171E.";
+if (c.display !== "flex") return "Falta display: flex na .hero.";
+if (c.justifyContent !== "center") return "Falta justify-content: center.";
+return c.alignItems === "center" || "Falta align-items: center.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Menu fixo, conteúdo que cresce">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar flex: 1 para o conteúdo ocupar o resto.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.layout</code>: <code>display: flex;</code> e <code>gap: 12px;</code>.</li><li>Na <code>.lateral</code>: <code>width: 150px;</code>.</li><li>Na <code>.conteudo</code>: <code>flex: 1;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Menu de 150px à esquerda e o conteúdo preenchendo toda a largura que sobra</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Dê <code>flex: 1</code> também para a <code>.lateral</code> (e tire o width): os dois dividem igual.</div>
+<template class="stage"><div class="layout">
+  <div class="caixa lateral">menu</div>
+  <div class="caixa conteudo">conteúdo</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.layout {
+  
+}
+
+.lateral {
+  
+}
+
+.conteudo {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (cs(".layout").display !== "flex") return "A .layout precisa de display: flex.";
+if (cs(".layout").columnGap !== "12px") return "Falta gap: 12px na .layout.";
+if (cs(".lateral").width !== "150px") return "A .lateral deveria ter width: 150px, mas está " + cs(".lateral").width + ".";
+if (cs(".conteudo").flexGrow !== "1") return "A .conteudo precisa de flex: 1.";
+return doc.querySelector(".conteudo").getBoundingClientRect().width > 300 || "O conteúdo não está crescendo: confira o display: flex no pai.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Cabeçalho com menu">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar o header clássico: logo de um lado, menu do outro.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.topo</code>: <code>display: flex;</code>, <code>justify-content: space-between;</code>, <code>align-items: center;</code>, <code>padding: 12px 20px;</code>, <code>background-color: #15171E;</code> e <code>color: #F0C23B;</code>.</li><li><code>.menu</code>: <code>display: flex;</code>, <code>gap: 20px;</code>, <code>list-style: none;</code>, <code>margin: 0;</code> e <code>padding: 0;</code>.</li><li><code>.menu a</code>: <code>color: white;</code> e <code>text-decoration: none;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Barra escura: &quot;Greenn School&quot; em amarelo à esquerda, os três links brancos em linha à direita</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça os links ficarem azuis (#38BDF8) no <code>:hover</code>.</div>
+<template class="stage"><header class="topo">
+  <strong>Greenn School</strong>
+  <ul class="menu">
+    <li><a href="#">Início</a></li>
+    <li><a href="#">Cursos</a></li>
+    <li><a href="#">Contato</a></li>
+  </ul>
+</header>
+<p>Conteúdo da página.</p></template>
+<script type="text/x-code">
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.topo {
+  
+}
+
+.menu {
+  
+}
+
+.menu a {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+const t = cs(".topo");
+if (t.display !== "flex" || t.justifyContent !== "space-between" || t.alignItems !== "center") return "O .topo precisa de display: flex, justify-content: space-between e align-items: center.";
+if (t.backgroundColor !== "rgb(21, 23, 30)" || t.color !== "rgb(240, 194, 59)") return "O .topo deveria ter fundo #15171E e color #F0C23B.";
+if (t.paddingLeft !== "20px") return "O padding do .topo deveria ser 12px 20px.";
+const m = cs(".menu");
+if (m.display !== "flex") return "O .menu (ul) precisa de display: flex.";
+if (m.columnGap !== "20px") return "Falta gap: 20px no .menu.";
+if (m.listStyleType !== "none") return "Falta list-style: none no .menu.";
+if (m.paddingLeft !== "0px" || m.marginTop !== "0px") return "Zere margin e padding do .menu.";
+const a = cs(".menu a");
+if (a.color !== "rgb(255, 255, 255)") return "Os links do menu deveriam ser white.";
+return a.textDecorationLine === "none" || "Os links precisam de text-decoration: none.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Grade de três colunas">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma grade com grid.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.grade</code>: <code>display: grid;</code>, <code>grid-template-columns: repeat(3, 1fr);</code> e <code>gap: 12px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Seis caixas em duas linhas de três colunas iguais</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude para <code>repeat(2, 1fr)</code>.</div>
+<template class="stage"><div class="grade">
+  <div class="caixa">1</div><div class="caixa">2</div><div class="caixa">3</div>
+  <div class="caixa">4</div><div class="caixa">5</div><div class="caixa">6</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.grade {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".grade"));
+if (c.display !== "grid") return "A .grade precisa de display: grid.";
+const cols = c.gridTemplateColumns.split(" ");
+if (cols.length !== 3) return "Deveriam ser 3 colunas, mas encontrei " + cols.length + ". Use grid-template-columns: repeat(3, 1fr).";
+const w = cols.map(parseFloat); if (Math.abs(w[0] - w[1]) > 1 || Math.abs(w[1] - w[2]) > 1) return "As 3 colunas deveriam ser iguais (1fr cada).";
+return c.columnGap === "12px" || "Falta gap: 12px.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Galeria que se adapta">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar auto-fit e minmax para a grade se ajustar sozinha.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Na <code>.galeria</code>: <code>display: grid;</code>, <code>gap: 10px;</code> e</li><li><code>grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>As fotos em quantas colunas de pelo menos 150px couberem</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude 150px para 300px e veja as colunas diminuírem.</div>
+<template class="stage"><div class="galeria">
+  <div class="caixa">foto 1</div><div class="caixa">foto 2</div><div class="caixa">foto 3</div>
+  <div class="caixa">foto 4</div><div class="caixa">foto 5</div><div class="caixa">foto 6</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.galeria {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".galeria"));
+if (c.display !== "grid") return "A .galeria precisa de display: grid.";
+if (!/auto-fit|auto-fill/.test(src)) return "Use repeat(auto-fit, ...) nas colunas.";
+if (!/minmax\(\s*150px/.test(src)) return "Use minmax(150px, 1fr) dentro do repeat.";
+const n = c.gridTemplateColumns.split(" ").length;
+if (n < 2) return "A grade está com uma coluna só: confira o grid-template-columns.";
+return c.columnGap === "10px" || "Falta gap: 10px.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Página inteira com grid">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar header, menu lateral, conteúdo e rodapé com áreas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.pagina</code>: <code>display: grid;</code>, <code>grid-template-columns: 160px 1fr;</code>, <code>gap: 10px;</code> e</li><li><code>grid-template-areas: "topo topo" "lateral principal" "rodape rodape";</code></li><li>Dê a cada bloco seu <code>grid-area</code>: <code>.topo</code> → topo, <code>.lateral</code> → lateral, <code>.principal</code> → principal, <code>.rodape</code> → rodape.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Header no topo ocupando as 2 colunas, menu de 160px à esquerda, conteúdo à direita e rodapé embaixo ocupando tudo</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque a última linha das áreas por <code>"lateral rodape"</code>.</div>
+<template class="stage"><div class="pagina">
+  <header class="caixa topo">Greenn School</header>
+  <aside class="caixa lateral">menu</aside>
+  <main class="caixa principal">conteúdo</main>
+  <footer class="caixa rodape">© 2026</footer>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.pagina {
+  
+}
+
+.topo {
+  
+}
+
+.lateral {
+  background-color: #0EA5E9;
+  
+}
+
+.principal {
+  background-color: #BAE6FD;
+  min-height: 150px;
+  
+}
+
+.rodape {
+  background-color: #15171E;
+  color: white;
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+const r = s => doc.querySelector(s).getBoundingClientRect();
+if (cs(".pagina").display !== "grid") return "A .pagina precisa de display: grid.";
+const cols = cs(".pagina").gridTemplateColumns.split(" ");
+if (cols.length !== 2 || cols[0] !== "160px") return "As colunas deveriam ser 160px 1fr.";
+if (!/grid-template-areas/.test(src)) return "Falta o grid-template-areas na .pagina.";
+for (const [c, a] of [[".topo","topo"],[".lateral","lateral"],[".principal","principal"],[".rodape","rodape"]]) { if (!cs(c).gridArea.startsWith(a)) return "O " + c + " precisa de grid-area: " + a + "."; }
+const t = r(".topo"), l = r(".lateral"), p = r(".principal"), f = r(".rodape");
+if (t.width < 400) return "O header deveria ocupar as duas colunas: \"topo topo\".";
+if (!(l.left < p.left && Math.abs(l.top - p.top) < 2)) return "O menu lateral deveria ficar à esquerda do conteúdo, na mesma linha.";
+return (f.top >= p.bottom - 1 && f.width > 400) || "O rodapé deveria ficar embaixo, ocupando as duas colunas.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    stage: s.querySelector('template.stage').innerHTML.replace(/^\n/, '').replace(/\s+$/, ''),
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de CSS ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function highlightHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last));
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Aplicar para ver o CSS na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function lint(src) {
+    const clean = src.replace(/\/\*[\s\S]*?\*\//g, ''); const msgs = [];
+    const open = (clean.match(/\{/g) || []).length, close = (clean.match(/\}/g) || []).length;
+    if (open > close) msgs.push(`Tem ${open - close} chave { aberta sem a } correspondente.`);
+    if (close > open) msgs.push(`Tem ${close - open} chave } a mais.`);
+    const blocks = clean.match(/\{[^{}]*\}/g) || [];
+    for (const b of blocks) {
+      const decls = b.slice(1, -1).split(';').map(d => d.trim()).filter(Boolean);
+      for (const d of decls) {
+        const dd = d.replace(/\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '');
+        if (!dd.includes(':')) { msgs.push(`"${d.slice(0, 30)}" está sem os dois-pontos: o formato é propriedade: valor;`); break; }
+        if (dd.split(':').length > 2) { msgs.push(`Falta um ponto e vírgula depois de "${d.split(/\n/)[0].trim().slice(0, 30)}".`); break; }
+      }
+    }
+    return [...new Set(msgs)].slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(css) { return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><style>${css.replace(/<\/style/gi, '<\\/style')}</style></head><body>${exs[cur].stage}</body></html>`; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Aplicando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">CSS aplicado na prévia acima. Mude um valor e aplique de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Aplicado, mas tem erro de sintaxe' : '✓ CSS aplicado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o resultado está certo, mas corrija a sintaxe apontada acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Corrija a sintaxe'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    $('stagehtml').innerHTML = highlightHtml(e.stage);
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-css') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-css', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

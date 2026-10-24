@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portfólio de Ana Souza, desenvolvedora front-end em formação.">
+  <title>Ana Souza · Portfólio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="container">
+      <h1>Ana Souza</h1>
+      <p class="tagline">Desenvolvedora front-end em formação</p>
+      <button id="tema" type="button">🌙 Tema escuro</button>
+      <nav>
+        <ul class="menu">
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#habilidades">Habilidades</a></li>
+          <li><a href="#projetos">Projetos</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="sobre">
+      <h2>Sobre mim</h2>
+      <img src="/img/greenn.svg" alt="Foto de Ana Souza" class="foto" width="120">
+      <p>Olá! Sou a Ana, estudante de programação na Greenn School. Comecei pelo HTML e CSS e hoje estou aprendendo JavaScript para criar páginas que reagem ao usuário.</p>
+      <p>Gosto de transformar ideias em telas simples e bonitas. Meu objetivo é trabalhar como desenvolvedora front-end.</p>
+    </section>
+
+    <section id="habilidades">
+      <h2>Habilidades</h2>
+      <ul class="lista-habilidades">
+        <li>HTML semântico</li>
+        <li>CSS: Flexbox, Grid e responsivo</li>
+        <li>JavaScript e DOM</li>
+        <li>Git e GitHub (aprendendo)</li>
+      </ul>
+    </section>
+
+    <section id="projetos">
+      <h2>Projetos</h2>
+      <div id="lista-projetos" class="cards"></div>
+    </section>
+
+    <section id="contato">
+      <h2>Contato</h2>
+      <form id="form-contato">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="mensagem">Mensagem</label>
+        <textarea id="mensagem" name="mensagem" rows="4"></textarea>
+
+        <button type="submit" class="botao">Enviar</button>
+      </form>
+      <p id="mensagem"></p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>© <span id="ano"></span> Ana Souza · feito na Greenn School</p>
+    <p><a href="https://www.linkedin.com" target="_blank">LinkedIn</a> · <a href="https://github.com" target="_blank">GitHub</a></p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>

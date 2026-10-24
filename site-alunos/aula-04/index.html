@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 4 · Funções — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">04</div>
+      <div class="t">Funções</div>
+      <div class="s">Playground — rode os exemplos e treine nos exercícios</div><a href="/aula-04/apostila-aula-04.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F0C23B;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a><a href="/" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><span>Saída (console)</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+        <div class="out" id="out"><div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EXEMPLOS =====================
+  Para criar um novo exemplo, copie um bloco <section class="ex"> abaixo.
+  data-group = grupo no menu | data-title = título | .desc = explicação | .try = desafio
+====================================================== -->
+<div id="examples" hidden>
+<section class="ex" data-group="Funções" data-title="O que é uma função">
+  <div class="desc">Uma função é um <b>bloco de código com nome</b>: você escreve uma vez (<b>declara</b>) e usa quantas vezes quiser (<b>chama</b>). Pense numa receita de bolo. Declarar não executa nada: só roda quando você chama com <code>()</code>.</div>
+  <div class="try"><b>Experimente:</b> apague as duas chamadas <code>saudar();</code> e execute: nada aparece!</div>
+<script type="text/x-code">
+function saudar() {
+  console.log("Olá, turma!");
+}
+
+saudar();
+saudar();
+</script>
+</section>
+
+<section class="ex" data-group="Funções" data-title="Parâmetros e argumentos">
+  <div class="desc"><b>Parâmetro</b> é o nome que a função usa para a informação que recebe (<code>nome</code>). <b>Argumento</b> é o valor que você manda na chamada (<code>"Ana"</code>). Com vários parâmetros, a ordem importa.</div>
+  <div class="try"><b>Experimente:</b> chame <code>saudar</code> com o seu nome e inverta a ordem em <code>apresentar(20, "Bia")</code>.</div>
+<script type="text/x-code">
+function saudar(nome) {
+  console.log(`Olá, ${nome}!`);
+}
+saudar("Ana");
+saudar("Caio");
+
+function apresentar(nome, idade) {
+  console.log(`${nome} tem ${idade} anos`);
+}
+apresentar("Bia", 20);
+</script>
+</section>
+
+<section class="ex" data-group="return" data-title="return: a função devolve um valor">
+  <div class="desc">Com <code>return</code>, a função <b>devolve</b> um resultado para quem chamou. Esse valor pode ser guardado numa variável, usado numa conta ou mostrado depois.</div>
+  <div class="try"><b>Experimente:</b> crie <code>const total = somar(somar(1, 2), 3)</code> e mostre o total.</div>
+<script type="text/x-code">
+function somar(a, b) {
+  return a + b;
+}
+
+const resultado = somar(3, 5);
+console.log(resultado);
+console.log(somar(10, 20) * 2);
+</script>
+</section>
+
+<section class="ex" data-group="return" data-title="return x console.log">
+  <div class="desc"><code>console.log</code> só <b>mostra</b> na tela; a função devolve <code>undefined</code>. <code>return</code> <b>devolve</b> o valor, mas não mostra nada sozinho. Quer as duas coisas? Use <code>return</code> na função e <code>console.log</code> na chamada.</div>
+  <div class="try"><b>Experimente:</b> tente fazer <code>x + 1</code> e <code>y + 1</code>. Qual funciona?</div>
+<script type="text/x-code">
+function dobroMostra(n) {
+  console.log(n * 2);
+}
+function dobroDevolve(n) {
+  return n * 2;
+}
+
+const x = dobroMostra(5);
+const y = dobroDevolve(5);
+console.log("x =", x);
+console.log("y =", y);
+</script>
+</section>
+
+<section class="ex" data-group="return" data-title="return encerra a função">
+  <div class="desc">Assim que o JavaScript encontra um <code>return</code>, a função <b>termina</b>. Nada depois dele roda. Isso permite usar vários <code>return</code> com <code>if</code>.</div>
+  <div class="try"><b>Experimente:</b> teste <code>situacao</code> com as notas 10, 5 e 0.</div>
+<script type="text/x-code">
+function testar() {
+  return "fim";
+  console.log("isso nunca aparece");
+}
+console.log(testar());
+
+function situacao(nota) {
+  if (nota >= 7) return "Aprovado";
+  if (nota >= 5) return "Recuperação";
+  return "Reprovado";
+}
+console.log(situacao(8), situacao(6), situacao(3));
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Valor padrão">
+  <div class="desc">Se o argumento não for enviado, o parâmetro usa o <b>valor padrão</b> definido com <code>=</code>.</div>
+  <div class="try"><b>Experimente:</b> mude o padrão para 15% e chame sem o segundo argumento.</div>
+<script type="text/x-code">
+function aplicarDesconto(valor, porcentagem = 10) {
+  return valor - valor * porcentagem / 100;
+}
+
+console.log(aplicarDesconto(100));
+console.log(aplicarDesconto(100, 25));
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Arrow functions">
+  <div class="desc">Outra forma de escrever função, guardada numa variável. Com <b>uma linha só</b>, dá para tirar as chaves e o <code>return</code> fica automático.</div>
+  <div class="try"><b>Experimente:</b> crie <code>const quadrado = (n) =&gt; n * n</code> e mostre <code>quadrado(9)</code>.</div>
+<script type="text/x-code">
+function dobro(n) {
+  return n * 2;
+}
+
+const dobro2 = (n) => {
+  return n * 2;
+};
+
+const dobro3 = (n) => n * 2;
+
+console.log(dobro(4), dobro2(4), dobro3(4));
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="O forEach da Aula 3, finalmente explicado">
+  <div class="desc">Lembra do <code>(fruta) =&gt; { }</code> do <code>forEach</code>? É uma arrow function! A gente <b>entrega uma função</b> para o forEach, e ele chama essa função uma vez para cada item.</div>
+  <div class="try"><b>Experimente:</b> crie outra função e passe para o forEach no lugar de <code>mostrar</code>.</div>
+<script type="text/x-code">
+const mostrar = (fruta) => {
+  console.log("Eu gosto de " + fruta);
+};
+
+const frutas = ["maçã", "banana", "uva"];
+frutas.forEach(mostrar);
+
+// é a mesma coisa que:
+frutas.forEach((fruta) => console.log("de novo: " + fruta));
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Escopo: onde a variável existe">
+  <div class="desc">Uma variável criada <b>dentro</b> da função só existe lá dentro. Fora dela, o JavaScript não conhece esse nome.</div>
+  <div class="try"><b>Experimente:</b> apague o <code>//</code> da última linha e veja o erro.</div>
+<script type="text/x-code">
+function calcular() {
+  const segredo = 42;
+  console.log("dentro:", segredo);
+}
+
+calcular();
+// console.log(segredo);
+</script>
+</section>
+
+<section class="ex" data-group="Mais recursos" data-title="Função com laço dentro">
+  <div class="desc">Dentro de uma função cabe tudo o que já vimos: <code>if</code>, laços, arrays. Aqui a função recebe uma lista e devolve a soma.</div>
+  <div class="try"><b>Experimente:</b> crie <code>mediaLista(lista)</code> usando <code>somarLista</code> dentro dela.</div>
+<script type="text/x-code">
+function somarLista(lista) {
+  let total = 0;
+  for (const n of lista) {
+    total += n;
+  }
+  return total;
+}
+
+console.log(somarLista([1, 2, 3, 4]));
+console.log(somarLista([10, 20]));
+</script>
+</section>
+
+<section class="ex" data-group="Tipos de função" data-title="As 4 formas de função (e o PHP)">
+  <div class="desc"><b>Declaração</b> (<code>function nome()</code>), <b>expressão</b> (função anônima numa variável), <b>arrow</b> (<code>=&gt;</code>) e <b>callback</b> (função entregue a outra função). No PHP: <code>function nome()</code>, <code>$f = function()</code>, <code>fn() =&gt;</code> e <code>array_map(fn...)</code>.</div>
+  <div class="try"><b>Experimente:</b> crie as 4 versões de uma função <code>quadrado</code>.</div>
+<script type="text/x-code">
+// 1. Declaração
+function dobro1(n) {
+  return n * 2;
+}
+
+// 2. Expressão (anônima numa variável)
+const dobro2 = function (n) {
+  return n * 2;
+};
+
+// 3. Arrow function
+const dobro3 = (n) => n * 2;
+
+console.log(dobro1(5), dobro2(5), dobro3(5));
+
+// 4. Callback: função entregue ao forEach
+[1, 2, 3].forEach((n) => console.log("callback:", dobro3(n)));
+</script>
+</section>
+
+<section class="ex" data-group="Tipos de função" data-title="Declaração x arrow: quem pode ser chamada antes?">
+  <div class="desc">A <b>declaração</b> pode ser chamada <b>antes</b> de aparecer no código (o JavaScript "levanta" ela para o topo: <i>hoisting</i>). Expressão e arrow function <b>não</b>: só existem depois da linha onde foram criadas.</div>
+  <div class="try"><b>Experimente:</b> tire o <code>//</code> da última chamada e veja o erro.</div>
+<script type="text/x-code">
+console.log(triplo(3));   // funciona!
+
+function triplo(n) {
+  return n * 3;
+}
+
+const quadrado = (n) => n * n;
+console.log(quadrado(3)); // funciona: depois da criação
+
+// Antes da criação daria erro:
+// console.log(cubo(2));
+const cubo = (n) => n * n * n;
+</script>
+</section>
+
+<section class="ex" data-group="Tipos de função" data-title="E os tipos, como o int do PHP?">
+  <div class="desc">No PHP existe <code>function somar(int $a, int $b): int</code>. <b>O JavaScript não confere tipos</b>: <code>somar("2", 3)</code> vira <code>"23"</code> sem reclamar. Para chegar perto: comentário <b>JSDoc</b> (o VS Code mostra a dica), conferir com <b>typeof</b> dentro da função ou usar <b>TypeScript</b>, o "JavaScript com tipos".</div>
+  <div class="try"><b>Experimente:</b> chame <code>somarSeguro(true, 1)</code> e <code>somar(true, 1)</code>.</div>
+<script type="text/x-code">
+function somar(a, b) {
+  return a + b;
+}
+console.log(somar(2, 3));     // 5
+console.log(somar("2", 3));   // "23" -> ninguém reclamou!
+
+/**
+ * Soma dois números.
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+function somarSeguro(a, b) {
+  if (typeof a !== "number" || typeof b !== "number") {
+    return "Erro: envie dois números";
+  }
+  return a + b;
+}
+console.log(somarSeguro(2, 3));
+console.log(somarSeguro("2", 3));
+</script>
+</section>
+
+<section class="ex" data-group="Revisão com funções" data-title="Operadores + else if (Aula 2)">
+  <div class="desc">Uma função que usa <b>operadores aritméticos</b> (<code>/</code>, <code>**</code>) e <b>else if</b> para classificar o IMC.</div>
+  <div class="try"><b>Experimente:</b> teste com <code>classificarIMC(95, 1.75)</code>.</div>
+<script type="text/x-code">
+function classificarIMC(peso, altura) {
+  const imc = peso / (altura ** 2);
+  if (imc < 18.5) return "Abaixo do peso";
+  else if (imc < 25) return "Peso normal";
+  else if (imc < 30) return "Sobrepeso";
+  return "Obesidade";
+}
+
+console.log(classificarIMC(70, 1.75));
+console.log(classificarIMC(50, 1.75));
+</script>
+</section>
+
+<section class="ex" data-group="Revisão com funções" data-title="switch (Aula 2)">
+  <div class="desc">Uma função com <b>switch</b>: cada <code>case</code> já faz <code>return</code>, então nem precisa de <code>break</code>.</div>
+  <div class="try"><b>Experimente:</b> complete os dias de 2 a 6.</div>
+<script type="text/x-code">
+function nomeDoDia(numero) {
+  switch (numero) {
+    case 1: return "Domingo";
+    case 7: return "Sábado";
+    default: return "Dia útil";
+  }
+}
+
+console.log(nomeDoDia(1));
+console.log(nomeDoDia(4));
+console.log(nomeDoDia(7));
+</script>
+</section>
+
+<section class="ex" data-group="Revisão com funções" data-title="Truthy/falsy + ternário (Aula 2)">
+  <div class="desc">Texto vazio é <b>falsy</b>, então <code>email ? ... : ...</code> já testa se foi preenchido, tudo numa linha com o <b>ternário</b>.</div>
+  <div class="try"><b>Experimente:</b> passe <code>" "</code> (um espaço). O que acontece?</div>
+<script type="text/x-code">
+function validarEmail(email) {
+  return email ? `Cadastro com ${email}` : "Preencha o e-mail";
+}
+
+console.log(validarEmail(""));
+console.log(validarEmail("ana@email.com"));
+</script>
+</section>
+
+<section class="ex" data-group="Revisão com funções" data-title="while e for (Aula 3)">
+  <div class="desc">Funções que <b>repetem</b>: a contagem usa <b>while</b> e a tabuada usa <b>for</b>. Repare que elas não têm <code>return</code>: só mostram na tela.</div>
+  <div class="try"><b>Experimente:</b> chame <code>tabuada(9)</code> e <code>contagemRegressiva(5)</code>.</div>
+<script type="text/x-code">
+function contagemRegressiva(de) {
+  let i = de;
+  while (i >= 1) {
+    console.log(i);
+    i--;
+  }
+  console.log("Fogo!");
+}
+
+function tabuada(n) {
+  for (let i = 1; i <= 5; i++) {
+    console.log(`${n} x ${i} = ${n * i}`);
+  }
+}
+
+contagemRegressiva(3);
+tabuada(7);
+</script>
+</section>
+
+<section class="ex" data-group="Revisão com funções" data-title="Arrays, for...of e forEach (Aula 3)">
+  <div class="desc">Funções que <b>recebem um array</b>: uma calcula a média com <b>for...of</b>, a outra devolve um <b>novo array</b> só com os aprovados, usando <b>forEach</b>, <b>if</b> e <b>push</b>.</div>
+  <div class="try"><b>Experimente:</b> crie <code>filtrarReprovados(notas)</code>.</div>
+<script type="text/x-code">
+function calcularMedia(notas) {
+  let soma = 0;
+  for (const nota of notas) {
+    soma += nota;
+  }
+  return soma / notas.length;
+}
+
+function filtrarAprovados(notas) {
+  const aprovados = [];
+  notas.forEach((nota) => {
+    if (nota >= 7) aprovados.push(nota);
+  });
+  return aprovados;
+}
+
+const notas = [9, 4, 7, 5, 10];
+console.log("Média:", calcularMedia(notas).toFixed(1));
+console.log("Aprovados:", filtrarAprovados(notas));
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Espaço para testar o que a turma quiser.</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para mostrar qualquer valor aqui na saída.</div>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Saudação" data-expect='["Olá, Ana!"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que cumprimenta uma pessoa pelo nome.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function saudar(nome) { ... }</code>.</li><li>Dentro, mostre <code>`Olá, ${nome}!`</code>.</li><li>Depois da função, <b>chame</b>: <code>saudar("Ana");</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Olá, Ana!</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Chame de novo com o seu nome.</div>
+<script type="text/x-code">
+// function saudar(nome) {
+//   ...
+// }
+
+// saudar("Ana");
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Dobro" data-expect='["14"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que devolve o dobro de um número.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function dobro(n)</code>.</li><li>Dentro, use <code>return n * 2;</code> (não use console.log aqui!).</li><li>Fora da função, mostre <code>console.log(dobro(7));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>14</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre <code>dobro(dobro(3))</code>: deve dar 12.</div>
+<script type="text/x-code">
+// function dobro(n) {
+//   return ...
+// }
+
+// console.log(dobro(7));
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Soma" data-expect='["8"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que soma dois números.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function somar(a, b)</code> com dois parâmetros.</li><li>Devolva <code>a + b</code> com return.</li><li>Mostre <code>console.log(somar(3, 5));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>8</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use a função duas vezes: <code>somar(somar(1, 2), 3)</code>.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Área do retângulo" data-expect='["Área: 15"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Calcular a área de um retângulo com uma função.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function area(largura, altura)</code>.</li><li>Devolva <code>largura * altura</code>.</li><li>Mostre <code>`Área: ${area(5, 3)}`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Área: 15</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Calcule a área de um quadrado de lado 4.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · É par?" data-expect='["true false"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que diz se um número é par.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function ehPar(n)</code>.</li><li>Devolva <code>n % 2 === 0</code> — a comparação já é true ou false!</li><li>Mostre <code>console.log(ehPar(4), ehPar(7));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>true false</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Crie também <code>ehImpar(n)</code> usando <code>!ehPar(n)</code>.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Maior de dois" data-expect='["30"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que devolve o maior de dois números.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function maior(a, b)</code>.</li><li>Se <code>a &gt; b</code>, <code>return a;</code>. Senão, <code>return b;</code></li><li>Mostre <code>console.log(maior(12, 30));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>30</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Faça a mesma função em uma linha com o ternário.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Conversor de temperatura" data-expect='["25°C = 77°F"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Converter graus Celsius para Fahrenheit.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function celsiusParaFahrenheit(c)</code>.</li><li>Devolva <code>c * 9 / 5 + 32</code>.</li><li>Mostre <code>`25°C = ${celsiusParaFahrenheit(25)}°F`</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>25°C = 77°F</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Converta 0°C (deve dar 32°F) e 100°C (212°F).</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Situação do aluno" data-expect='["Aprovado", "Recuperação", "Reprovado"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que devolve a situação do aluno pela nota.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function situacao(nota)</code>.</li><li>Nota 7 ou mais: <code>return "Aprovado"</code>. Nota 5 ou mais: <code>return "Recuperação"</code>. Senão: <code>return "Reprovado"</code>.</li><li>Mostre <code>situacao(8)</code>, <code>situacao(6)</code> e <code>situacao(3)</code>, um <code>console.log</code> para cada.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>Aprovado<br>Recuperação<br>Reprovado</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Use a função dentro de um forEach com a lista <code>[9, 4, 7]</code>.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 09 · Desconto com valor padrão" data-expect='["90", "75"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Calcular desconto, com 10% como padrão.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function aplicarDesconto(valor, porcentagem = 10)</code>.</li><li>Devolva <code>valor - valor * porcentagem / 100</code>.</li><li>Mostre <code>aplicarDesconto(100)</code> e depois <code>aplicarDesconto(100, 25)</code>.</li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>90<br>75</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Chame com <code>aplicarDesconto(50)</code>: deve dar 45.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 10 · Arrow function" data-expect='["15"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Escrever uma função curta com arrow function.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Crie <code>const triplo = (n) =&gt; n * 3;</code></li><li>Mostre <code>console.log(triplo(5));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>15</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Reescreva o exercício 2 (dobro) como arrow function.</div>
+<script type="text/x-code">
+// const triplo = ...
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 11 · Somar lista" data-expect='["10"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que soma todos os números de uma lista.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function somarLista(lista)</code>.</li><li>Dentro, crie <code>let total = 0;</code> e some cada item com <code>for...of</code>.</li><li>Depois do laço, <code>return total;</code></li><li>Mostre <code>console.log(somarLista([1, 2, 3, 4]));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>10</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Crie <code>mediaLista(lista)</code> que usa <code>somarLista</code> e divide pelo length.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 12 · Desafio: contar vogais" data-expect='["3"]'>
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar uma função que conta as vogais de um texto.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Declare <code>function contarVogais(texto)</code>.</li><li>Crie um contador e percorra o texto com <code>for...of</code>.</li><li>Se <code>"aeiou".includes(letra)</code>, aumente o contador.</li><li>Devolva o contador e mostre <code>console.log(contarVogais("javascript"));</code></li></ol></div><div class="expbox"><p class="lbl">Saída esperada</p><pre>3</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Teste com o seu nome.</div>
+<script type="text/x-code">
+// seu código aqui
+</script>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Carrega exemplos ----------
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group,
+    title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML,
+    tryit: s.querySelector('.try') ? s.querySelector('.try').innerHTML : '',
+    expect: s.dataset.expect ? JSON.parse(s.dataset.expect) : null,
+    code: s.querySelector('script').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n'
+  }));
+  const edits = exs.map(e => e.code);   // guarda o que foi editado em cada exemplo
+  let cur = 0;
+
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status');
+
+  // ---------- Menu ----------
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title));
+    b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- Destaque de sintaxe ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src){
+    let h = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint(){ hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart, en = code.selectionEnd;
+      code.setRangeText('  ', s, en, 'end'); code.dispatchEvent(new Event('input'));
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- Mostrar exemplo ----------
+  function show(i){
+    cur = Math.max(0, Math.min(exs.length - 1, i));
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title;
+    $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur;
+    $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); try { history.replaceState(null, '', '#' + (cur + 1)); } catch(_){}
+  }
+
+  // ---------- Saída ----------
+  const MAX_LINES = 300; let lines = 0, hidden = 0, got = [];
+  function clearOut(){ out.innerHTML = '<div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; hidden = 0; got = []; }
+  function addLine(text, cls){
+    if (lines === 0) out.innerHTML = '';
+    if (!cls) got.push(String(text).trim());
+    if (lines >= MAX_LINES && !cls) { hidden++; return; }
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip' && cls !== 'win') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+
+  // Dicas em português para erros comuns
+  function dica(msg){
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/Illegal break|Illegal continue|continue statement/.test(msg)) return 'Dica: break e continue só funcionam dentro de for, for...of e while. No forEach eles não funcionam: ele sempre percorre a lista inteira.';
+    if (/before initialization/.test(msg)) return 'Dica: a variável foi usada antes de ser criada. Mova a declaração para cima.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+
+  // ---------- Execução em Worker (protege contra loop infinito) ----------
+  const workerSrc = `
+    const fmt = v => typeof v === 'string' ? v
+      : v === undefined ? 'undefined'
+      : typeof v === 'function' ? '[função]'
+      : (typeof v === 'object' && v !== null) ? (()=>{ try { return JSON.stringify(v, null, 1).replace(/\\n\\s*/g,' '); } catch(e){ return String(v); } })()
+      : String(v);
+    self.onmessage = e => {
+      const send = (t, a) => postMessage({ t, x: a.map(fmt).join(' ') });
+      const console = { log:(...a)=>send('log',a), info:(...a)=>send('log',a), warn:(...a)=>send('log',a), error:(...a)=>send('err',a) };
+      try { const r = new Function('console', e.data)(console); postMessage({ t:'done', r: r === undefined ? null : fmt(r) }); }
+      catch (err) { postMessage({ t:'error', x: err.name + ': ' + err.message }); postMessage({ t:'done' }); }
+    };`;
+  let workerURL = null;
+  try { workerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })); } catch(_) {}
+  let worker = null, timer = null, t0 = 0, lastRet = null;
+
+  function finish(ok, msg){
+    clearTimeout(timer); timer = null;
+    if (worker) { worker.terminate(); worker = null; }
+    if (hidden) addLine(`… mais ${hidden} linha(s) não mostrada(s)`, 'tip');
+    if (lines === 0 && ok) out.innerHTML = '<div class="empty">(O código rodou, mas não mostrou nada. Faltou um console.log?)</div>';
+    const retHint = ok && lastRet !== null && got.length === 0;
+    if (retHint) addLine(`Seu código calculou "${lastRet}", mas o return não mostra nada na tela. Para aparecer aqui na saída, troque o return por console.log(...).`, 'tip');
+    const exp = exs[cur].expect;
+    if (ok && exp) {
+      let k = 0; for (const g of got) { if (k < exp.length && g === exp[k]) k++; }
+      if (k === exp.length) { addLine('🎉 Correto! A saída bate com a esperada. Agora faça o "teste também" lá em cima.', 'win'); msg = '✓ Exercício resolvido!'; }
+      else if (retHint) { ok = false; msg = '✗ Quase! Use console.log em vez de return'; }
+      else if (got.length === 0) { addLine('Nada apareceu na saída. Se você usou return, falta mostrar o resultado: por exemplo console.log(dobro(7)) em vez de só dobro(7).', 'tip'); ok = false; msg = '✗ Nada foi mostrado: faltou um console.log?'; }
+      else { addLine('Ainda não bateu. Compare com a "Saída esperada" lá em cima: cada letra, espaço e acento conta. Esperado: ' + exp.slice(0, 4).join(' | ') + (exp.length > 4 ? ' …' : ''), 'tip'); ok = false; msg = '✗ Ainda não: confira a saída esperada'; }
+    }
+    status.className = 'status ' + (ok ? 'ok' : 'bad'); status.textContent = msg;
+  }
+
+  function run(){
+    if (worker) worker.terminate();
+    clearOut(); out.innerHTML = ''; lines = 0; lastRet = null;
+    status.className = 'status'; status.textContent = 'Executando…';
+    t0 = performance.now();
+    const src = code.value;
+    let w = null;
+    try { if (workerURL) w = new Worker(workerURL); } catch(_) { w = null; }
+    if (!w) return runInline(src);
+    worker = w;
+    worker.onmessage = ({ data }) => {
+      if (data.t === 'log') addLine(data.x);
+      else if (data.t === 'err') addLine(data.x, 'err');
+      else if (data.t === 'error') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+      else if (data.t === 'done' && timer) { lastRet = data.r; } if (data.t === 'done' && timer) finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`);
+    };
+    worker.onerror = ev => { ev.preventDefault(); addLine(ev.message || 'Erro', 'err'); const d = dica(ev.message || ''); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); };
+    timer = setTimeout(() => {
+      addLine('⏱ Execução interrompida depois de 2 segundos: parece um loop infinito! A condição do while nunca ficou false.', 'tip');
+      finish(false, '✗ Loop infinito interrompido');
+    }, 2000);
+    worker.postMessage(src);
+  }
+
+  // Plano B (navegadores que bloqueiam Worker em arquivo local): roda direto, com limite de linhas
+  function runInline(src){
+    let count = 0;
+    const fmt = v => typeof v === 'string' ? v : (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v);
+    const fake = { log: (...a) => { if (++count > 2000) throw new Error('LOOP'); addLine(a.map(fmt).join(' ')); } };
+    fake.info = fake.warn = fake.log; fake.error = (...a) => addLine(a.map(fmt).join(' '), 'err');
+    timer = 1;
+    try { const r = new Function('console', src)(fake); lastRet = r === undefined ? null : fmt(r); finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`); }
+    catch (err) {
+      if (err.message === 'LOOP') { addLine('⏱ Execução interrompida: parece um loop infinito!', 'tip'); finish(false, '✗ Loop infinito interrompido'); }
+      else { addLine(err.name + ': ' + err.message, 'err'); const d = dica(err.message); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+    }
+  }
+
+  // ---------- Botões ----------
+  $('run').onclick = run;
+  $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; code.value = edits[cur]; paint(); clearOut(); };
+  $('prev').onclick = () => show(cur - 1);
+  $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement;
+  const defFs = window.innerWidth < 1000 ? 16 : 22;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs') || defFs; } catch(_){}
+  const setFs = v => { fs = Math.max(14, Math.min(40, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs', fs); } catch(_){} };
+  setFs(fs);
+  $('bigger').onclick = () => setFs(fs + 2);
+  $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === code) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  const start = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

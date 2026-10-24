@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greenn School · Programação</title>
+<style>
+  :root{--bg:#15171E;--panel:#1F2330;--panel2:#262B3A;--line:#323849;--ink:#EDEAE0;--muted:#9AA0AE;--acc:#F0C23B;
+        --html:#F97316;--css:#38BDF8;--js:#F0C23B;--laravel:#F43F5E}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:56px 24px 72px}
+  .eyebrow{color:var(--acc);font-weight:700;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+  h1{font-size:clamp(34px,5.5vw,58px);line-height:1.05;margin:12px 0 10px}
+  p.lead{color:#C4C8D2;font-size:19px;line-height:1.5;margin:0 0 40px;max-width:620px}
+  /* módulos */
+  .mods{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px}
+  .mod{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px;cursor:pointer;text-align:left;color:inherit;font:inherit;transition:border-color .15s,transform .15s;position:relative}
+  .mod:hover{transform:translateY(-2px)}
+  .mod .ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#15171E;margin-bottom:12px;font-family:"JetBrains Mono",Consolas,monospace}
+  .mod .n{font-size:19px;font-weight:600}
+  .mod .d{color:var(--muted);font-size:14px;margin-top:4px;line-height:1.4}
+  .mod .tag{position:absolute;top:14px;right:14px;font-size:11px;letter-spacing:1px;text-transform:uppercase;background:var(--panel2);color:var(--muted);padding:4px 8px;border-radius:6px}
+  .mod.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c) inset}
+  .mod.soon{opacity:.75}
+  /* conteúdo do módulo */
+  .panel{display:none}
+  .panel.on{display:block}
+  .ph{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+  .ph h2{margin:0;font-size:26px}
+  .ph .count{color:var(--muted);font-size:14px}
+  .sec{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:26px 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  a.card{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+  a.card:hover{border-color:var(--c);transform:translateY(-2px)}
+  .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--c);font-size:34px;font-weight:700;line-height:1}
+  .t{font-size:20px;font-weight:600}
+  .dd{color:var(--muted);font-size:14px;line-height:1.5}
+  .go{margin-top:6px;color:var(--c);font-weight:600;font-size:14px;display:flex;gap:14px;flex-wrap:wrap}
+  .go span{color:var(--muted);font-weight:400}
+  .soonbox{background:var(--panel);border:1px dashed var(--line);border-radius:16px;padding:28px;color:#C4C8D2;line-height:1.6}
+  .soonbox b{color:var(--ink)}
+  .soonbox ul{margin:10px 0 0;padding-left:20px;color:var(--muted)}
+  footer{margin-top:56px;color:#5C6376;font-size:14px}
+  @media (max-width:760px){.mods{grid-template-columns:repeat(2,1fr)} .mod .n{font-size:16px} .mod .d{display:none} .wrap{padding:36px 16px 56px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Greenn School · Programação</div>
+  <h1>Treine no navegador, sem instalar nada</h1>
+  <p class="lead">Escolha um módulo, abra a aula, rode os exemplos, mude o código e resolva os exercícios com correção automática. Cada aula tem a apostila em PDF, e cada módulo termina com um projeto: o seu portfólio, pronto para publicar.</p>
+
+  <div class="mods" id="mods"></div>
+  <div id="panels"></div>
+
+  <footer>Dica: nos playgrounds, aperte Ctrl + Enter para executar o código.</footer>
+</div>
+
+<script>
+const MODULOS = [
+  { id: "html", nome: "HTML", sigla: "<>", cor: "var(--html)", desc: "A estrutura das páginas", pronto: true,
+    secoes: [
+      { titulo: "Aulas", aulas: [
+        { slug: "html-01", num: "H1", t: "A estrutura de uma página", d: "O que é HTML, o esqueleto (doctype, html, head, body), tags e aninhamento, títulos, parágrafos, br e hr, negrito e itálico, comentários, div e span.", ex: "9 exemplos + 8 exercícios", pdf: "apostila-html-01.pdf" },
+        { slug: "html-02", num: "H2", t: "Listas, links e imagens", d: "ul, ol e listas aninhadas, atributos, links (href, target, mailto, âncoras internas), imagens com src e alt, figure e figcaption.", ex: "10 exemplos + 8 exercícios", pdf: "apostila-html-02.pdf" },
+        { slug: "html-03", num: "H3", t: "Tabelas e formulários", d: "table, tr, th e td, thead e tbody, colspan e rowspan; form, input e seus tipos, label, textarea, select, required, fieldset.", ex: "10 exemplos + 8 exercícios", pdf: "apostila-html-03.pdf" },
+        { slug: "html-04", num: "H4", t: "Semântica e a página completa", d: "header, nav, main, section, article, aside e footer; id e class; o head completo (viewport, description); vídeo, áudio e iframe.", ex: "9 exemplos + 8 exercícios", pdf: "apostila-html-04.pdf" },
+      ]},
+      { titulo: "Projeto do módulo", aulas: [
+        { slug: "html-projeto", num: "P", t: "Meu portfólio: a estrutura", d: "Seu site pessoal em HTML: cabeçalho com menu, sobre mim, habilidades, projetos, contato e rodapé. Checklist ao vivo, trabalho salvo no navegador, download do arquivo e guia para publicar de graça.", ex: "7 etapas + publicação", pdf: "roteiro-projeto-html.pdf", pdfLabel: "roteiro em PDF", go: "Abrir o projeto →" },
+      ]},
+    ] },
+  { id: "css", nome: "CSS", sigla: "{}", cor: "var(--css)", desc: "O visual das páginas", pronto: true,
+    secoes: [
+      { titulo: "Aulas", aulas: [
+        { slug: "css-01", num: "C1", t: "Seletores, cores e texto", d: "O que é CSS, a regra (seletor, propriedade, valor), onde o CSS mora, seletores de tag, classe e id, agrupamento e descendentes, hover, cores (nome, hex, rgb), fontes, alinhamento e espaçamento.", ex: "10 exemplos + 8 exercícios", pdf: "apostila-css-01.pdf" },
+        { slug: "css-02", num: "C2", t: "Box model: margin, padding e border", d: "Todo elemento é uma caixa: width e height, padding, border e border-radius, margin e margin auto, box-sizing, display block/inline/inline-block/none, sombra, gradiente e o container da página.", ex: "10 exemplos + 8 exercícios", pdf: "apostila-css-02.pdf" },
+        { slug: "css-03", num: "C3", t: "Flexbox e Grid", d: "display flex, justify-content, align-items, direction e wrap, flex: 1, o header com menu, centralizar qualquer coisa; grid com colunas, áreas nomeadas e galeria com auto-fit.", ex: "11 exemplos + 8 exercícios", pdf: "apostila-css-03.pdf" },
+        { slug: "css-04", num: "C4", t: "Responsivo, transições e o site completo", d: "Unidades (rem, %, vw), media queries e mobile first, imagem e menu responsivos, transition e transform, position relative/absolute/fixed/sticky, variáveis CSS e o site inteiro estilizado.", ex: "11 exemplos + 8 exercícios", pdf: "apostila-css-04.pdf" },
+      ]},
+      { titulo: "Projeto do módulo", aulas: [
+        { slug: "css-projeto", num: "P", t: "Meu portfólio: o visual", d: "O mesmo site ganha paleta com variáveis, cabeçalho e menu, container, cartões de projeto, formulário bonito, versão para celular e rodapé. Continua do projeto de HTML.", ex: "7 etapas + publicação", pdf: "roteiro-projeto-css.pdf", pdfLabel: "roteiro em PDF", go: "Abrir o projeto →" },
+      ]},
+    ] },
+  { id: "javascript", nome: "JavaScript", sigla: "JS", cor: "var(--js)", desc: "A lógica e a interação", pronto: true,
+    secoes: [
+      { titulo: "Aulas", aulas: [
+        { slug: "aula-01", num: "01", t: "Variáveis, objetos e métodos de array", d: "Variáveis a fundo (let, const, tipos), objetos, arrays de objetos, map, filter, find, reduce, desestruturação, spread, JSON, ?. e ??.", ex: "19 exemplos + 12 exercícios", pdf: "apostila-aula-01.pdf" },
+        { slug: "aula-02", num: "02", t: "Condicionais e while", d: "if, else, else if, && e ||, ternário, switch, truthy/falsy e while.", ex: "12 exemplos + 12 exercícios", pdf: "apostila-aula-02.pdf" },
+        { slug: "aula-03", num: "03", t: "Arrays e laços", d: "O que é um array, while, for e suas três partes, for...of, forEach, break, continue e laço aninhado.", ex: "18 exemplos + 14 exercícios", pdf: "apostila-aula-03.pdf" },
+        { slug: "aula-04", num: "04", t: "Funções", d: "Declarar e chamar, parâmetros, return x console.log, arrow functions, escopo, tipos de função (paralelo com PHP) e revisão.", ex: "19 exemplos + 12 exercícios", pdf: "apostila-aula-04.pdf" },
+        { slug: "aula-05", num: "05", t: "DOM: manipulando a página", d: "Selecionar, acessar, modificar e reagir: querySelector, textContent, classList, style, navegação pela árvore e eventos, com prévia da página ao vivo.", ex: "14 exemplos + 12 exercícios", pdf: "apostila-aula-05.pdf" },
+        { slug: "aula-06", num: "06", t: "JavaScript assíncrono e APIs", d: "setTimeout e setInterval, callbacks, Promises, async/await, Promise.all, o que é uma API e JSON, e fetch consumindo APIs de verdade: CEP (ViaCEP), usuários, Pokémon, feriados e bancos (BrasilAPI), clima, dólar e GitHub.", ex: "20 exemplos + 16 exercícios", pdf: "apostila-aula-06.pdf" },
+      ]},
+      { titulo: "Bônus", aulas: [
+        { slug: "aula-bonus-formularios", num: "B", t: "Formulários", d: "submit e preventDefault, lendo campos (value, checked, select), validação, eventos input e change, FormData e cadastro que vira lista. Com prévia da página.", ex: "11 exemplos + 10 exercícios", pdf: "apostila-aula-bonus-formularios.pdf" },
+      ]},
+      { titulo: "Projeto do módulo", aulas: [
+        { slug: "js-projeto", num: "P", t: "Meu portfólio: a interação", d: "Ano automático, tema escuro, lista de projetos gerada de um array de objetos e formulário que valida e responde. O site completo, pronto para publicar e colocar no LinkedIn.", ex: "5 etapas + publicação", pdf: "roteiro-projeto-js.pdf", pdfLabel: "roteiro em PDF", go: "Abrir o projeto →" },
+      ]},
+    ] },
+  { id: "laravel", nome: "Laravel", sigla: "La", cor: "var(--laravel)", desc: "PHP no back-end", pronto: true,
+    secoes: [
+      { titulo: "Aulas", aulas: [
+        { slug: "php-01", num: "L1", t: "PHP: o básico", d: "O que é PHP e onde roda, variáveis com $, dd() e dump() para depurar, strings, números, if/else, arrays e foreach, arrays associativos, for/while, funções com tipos e PHP gerando HTML. PHP de verdade rodando no navegador, com paralelo com o JavaScript.", ex: "12 exemplos + 10 exercícios", pdf: "apostila-php-01.pdf" },
+      ]},
+    ],
+    emBreve: ["L2 · PHP: classes, objetos e organização do código", "L3 · Laravel: a estrutura, rotas e views com Blade", "L4 · Controllers, formulários e validação", "L5 · Banco de dados: migrations e Eloquent", "L6 · API REST consumida pelo JavaScript + projeto final"] },
+];
+
+const mods = document.getElementById("mods"), panels = document.getElementById("panels");
+MODULOS.forEach((m) => {
+  const b = document.createElement("button"); b.className = "mod" + (m.pronto ? "" : " soon"); b.style.setProperty("--c", m.cor); b.dataset.id = m.id;
+  b.innerHTML = `<div class="ic" style="background:${m.cor}">${m.sigla}</div><div class="n">${m.nome}</div><div class="d">${m.desc}</div>` + (m.pronto ? "" : `<span class="tag">em breve</span>`);
+  b.onclick = () => abrir(m.id); mods.appendChild(b);
+
+  const p = document.createElement("section"); p.className = "panel"; p.id = "panel-" + m.id; p.style.setProperty("--c", m.cor);
+  if (m.pronto) {
+    const total = m.secoes.filter((sec) => !/projeto/i.test(sec.titulo)).reduce((s, sec) => s + sec.aulas.length, 0);
+    const temProj = m.secoes.some((sec) => /projeto/i.test(sec.titulo));
+    let h = `<div class="ph"><h2>${m.nome}</h2><span class="count">${total} aula${total === 1 ? "" : "s"}${temProj ? " + projeto final" : ""}</span></div>`;
+    m.secoes.forEach((sec) => {
+      h += `<div class="sec">${sec.titulo}</div><div class="grid">` + sec.aulas.map((a) => `
+        <a class="card" href="/${a.slug}/">
+          <div class="num">${a.num}</div>
+          <div class="t">${a.t}</div>
+          <div class="dd">${a.d}</div>
+          <div class="go">${a.go || "Abrir playground →"} <span>${a.ex} · ${a.pdfLabel || "apostila em PDF"}</span></div>
+        </a>`).join("") + `</div>`;
+    });
+    if (m.emBreve) h += `<div class="sec">Próximas aulas</div><div class="soonbox"><b>Em preparação.</b> O que vem por aí:<ul>${m.emBreve.map((x) => `<li>${x}</li>`).join("")}</ul></div>`;
+    p.innerHTML = h;
+  } else {
+    p.innerHTML = `<div class="ph"><h2>${m.nome}</h2><span class="count">em breve</span></div>
+      <div class="soonbox"><b>Este módulo ainda está sendo preparado.</b> O que vai ter:<ul>${m.emBreve.map((x) => `<li>${x}</li>`).join("")}</ul></div>`;
+  }
+  panels.appendChild(p);
+});
+
+function abrir(id) {
+  if (!MODULOS.some((m) => m.id === id)) id = "javascript";
+  document.querySelectorAll(".mod").forEach((b) => b.classList.toggle("on", b.dataset.id === id));
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === "panel-" + id));
+  try { history.replaceState(null, "", "#" + id); } catch (_) {}
+}
+abrir((location.hash || "").slice(1) || "javascript");
+</script>
+</body>
+</html>

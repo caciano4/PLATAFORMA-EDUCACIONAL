@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS 4 · Responsivo e acabamento — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#38BDF8}
+  .nav.on{color:#7DD3FC}
+  .work{grid-template-columns:1fr 1.1fr}
+  .work>*{min-width:0}
+  .left .card,.right .card{min-width:0}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .sel{color:#7DD3FC} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .left{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .left .card.ed{flex:1.5}
+  .left .card.hh{flex:1;max-height:280px}
+  pre.stagehtml{margin:0;white-space:pre-wrap;word-break:break-word;padding:14px 20px;overflow:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .85);line-height:1.5;color:#C4C8D2;flex:1;min-height:0}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#7DD3FC}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#38BDF8">C4</div>
+      <div class="t">CSS: responsivo, transições e o site completo</div>
+      <div class="s">Escreva o CSS e veja a página mudar ao lado</div>
+      <a href="/css-04/apostila-css-04.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#38BDF8;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#css" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#38BDF8"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#38BDF8;border-color:#38BDF8">▶ Aplicar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="left">
+        <div class="card ed">
+          <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>style.css · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> aplica</span></div>
+          <div class="editor">
+            <pre id="hl" aria-hidden="true"></pre>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código CSS"></textarea>
+          </div>
+        </div>
+        <div class="card hh">
+          <div class="hd"><span>index.html · só leitura</span><span class="hint2">o HTML que o CSS vai estilizar</span></div>
+          <pre class="stagehtml" id="stagehtml"></pre>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="Unidades" data-title="px, %, rem, vw e vh">
+  <div class="desc"><code>px</code> é fixo. <code>%</code> é relativo ao <b>pai</b>. <code>rem</code> é relativo ao tamanho de fonte da raiz (16px por padrão: <code>2rem</code> = 32px), e é a unidade preferida para fontes e espaços, porque acompanha a configuração de acessibilidade do usuário. <code>vw</code>/<code>vh</code> são % da largura/altura da <b>tela</b>: <code>100vh</code> é a tela inteira.</div>
+  <div class="try"><b>Experimente:</b> mude o <code>font-size</code> do <code>html</code> para <code>20px</code> e veja tudo que usa rem crescer junto.</div>
+<template class="stage"><h1>Título em 2rem</h1>
+<p>Parágrafo em 1.125rem com margem em rem.</p>
+<div class="caixa metade">width: 50%</div>
+<div class="caixa tela">height: 30vh</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+html {
+  font-size: 16px;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+p {
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.metade {
+  width: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.tela {
+  height: 30vh;
+  background-color: #F97316;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Responsivo" data-title="A media query">
+  <div class="desc"><code>@media (max-width: 500px) { ... }</code> aplica as regras de dentro <b>só quando</b> a tela tem até 500px: é assim que o mesmo site fica diferente no celular. A largura em que o layout muda é o <b>breakpoint</b>. Num site de verdade, isso só funciona com o <code>&lt;meta name="viewport"&gt;</code> no head (aula H4).</div>
+  <div class="try"><b>Experimente:</b> estreite e alargue a janela do navegador: a prévia muda de cor no breakpoint. Depois mude 500px para 900px.</div>
+<template class="stage"><div class="caixa aviso">Alargue ou estreite a janela.</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.aviso {
+  padding: 40px;
+  text-align: center;
+}
+
+.aviso::after {
+  content: " Estou no modo computador.";
+}
+
+@media (max-width: 500px) {
+  .aviso {
+    background-color: #F97316;
+    color: white;
+  }
+  .aviso::after {
+    content: " Estou no modo celular!";
+  }
+}
+</script>
+</section>
+
+<section class="ex" data-group="Responsivo" data-title="Colunas que viram pilha">
+  <div class="desc">O layout responsivo mais comum: no computador, colunas lado a lado com flex; no celular, <code>flex-direction: column</code> empilha. A regra de dentro da media query <b>vence</b> a de fora porque vem depois (é o <b>cascading</b> do nome CSS).</div>
+  <div class="try"><b>Experimente:</b> estreite a janela até as colunas empilharem. Depois troque <code>column</code> por <code>column-reverse</code>.</div>
+<template class="stage"><div class="colunas">
+  <div class="caixa">Coluna 1</div>
+  <div class="caixa">Coluna 2</div>
+  <div class="caixa">Coluna 3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.colunas {
+  display: flex;
+  gap: 12px;
+}
+
+.colunas .caixa {
+  flex: 1;
+}
+
+@media (max-width: 500px) {
+  .colunas {
+    flex-direction: column;
+  }
+}
+</script>
+</section>
+
+<section class="ex" data-group="Responsivo" data-title="Mobile first: min-width">
+  <div class="desc">O jeito recomendado é o contrário: escrever primeiro o CSS do <b>celular</b> (simples, uma coluna) e usar <code>@media (min-width: 700px)</code> para <b>adicionar</b> colunas nas telas maiores. Dá menos código e o celular, que é a maioria dos acessos, carrega o CSS mais simples.</div>
+  <div class="try"><b>Experimente:</b> adicione mais um breakpoint: <code>@media (min-width: 1000px)</code> com 4 colunas.</div>
+<template class="stage"><div class="cards">
+  <div class="caixa">Card 1</div>
+  <div class="caixa">Card 2</div>
+  <div class="caixa">Card 3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+/* celular: uma coluna */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* a partir de 700px: três colunas */
+@media (min-width: 700px) {
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</script>
+</section>
+
+<section class="ex" data-group="Responsivo" data-title="Imagem que cabe e menu que some">
+  <div class="desc">Duas receitas de todo site: <code>img { max-width: 100%; height: auto; }</code> faz a imagem nunca estourar a largura do pai. E para o menu: no celular, esconder os links (<code>display: none</code>) e mostrar o botão ☰ (que o JavaScript abre); no computador, o contrário.</div>
+  <div class="try"><b>Experimente:</b> estreite a janela e veja o menu virar ☰. Mude o breakpoint para 300px.</div>
+<template class="stage"><header class="topo">
+  <strong>Greenn</strong>
+  <nav class="links"><a href="#">Início</a> <a href="#">Cursos</a> <a href="#">Contato</a></nav>
+  <button class="hamburguer">☰</button>
+</header>
+<div class="moldura">
+  <img src="/img/greenn.svg" alt="Logo" class="logo">
+</div></template>
+<script type="text/x-code">
+body { margin: 0; font-family: Arial, sans-serif; }
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: #15171E;
+  color: #F0C23B;
+}
+
+.links a { color: white; margin-left: 16px; text-decoration: none; }
+
+.hamburguer {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: 0;
+  color: white;
+}
+
+.moldura {
+  width: 40%;
+  padding: 12px;
+  border: 2px dashed #94A3B8;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 500px) {
+  .links { display: none; }
+  .hamburguer { display: block; }
+}
+</script>
+</section>
+
+<section class="ex" data-group="Interação" data-title="transition: animando o hover">
+  <div class="desc"><code>transition: propriedade duração</code> faz a mudança de estado ser <b>suave</b> em vez de instantânea. Com <code>transform: scale(1.05)</code> o botão cresce ao passar o mouse; <code>translateY(-4px)</code> levanta o cartão; <code>cursor: pointer</code> mostra a mãozinha. Pequeno detalhe, enorme diferença de sensação.</div>
+  <div class="try"><b>Experimente:</b> mude <code>0.3s</code> para <code>2s</code>, e troque <code>scale(1.05)</code> por <code>rotate(3deg)</code>.</div>
+<template class="stage"><button class="botao">Passe o mouse</button>
+<div class="card">
+  <h3>Cartão que levanta</h3>
+  <p>Passe o mouse aqui também.</p>
+</div></template>
+<script type="text/x-code">
+body { font-family: Arial, sans-serif; background-color: #F1F5F9; padding: 20px; }
+
+.botao {
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 8px;
+  background-color: #0EA5E9;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.botao:hover {
+  background-color: #F97316;
+  transform: scale(1.05);
+}
+
+.card {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Posição" data-title="position: relative e absolute">
+  <div class="desc"><code>position: absolute</code> tira o elemento do fluxo e o posiciona com <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code> em relação ao <b>ancestral mais próximo que tenha position</b> (por isso o pai leva <code>position: relative</code>). É o jeito de pôr um selo no canto de um cartão, um badge num ícone, um botão de fechar num modal.</div>
+  <div class="try"><b>Experimente:</b> apague o <code>position: relative</code> do <code>.card</code> e veja o selo fugir para o canto da página.</div>
+<template class="stage"><div class="card">
+  <span class="selo">NOVO</span>
+  <h3>Curso de CSS</h3>
+  <p>Quatro aulas, do seletor ao site completo.</p>
+</div></template>
+<script type="text/x-code">
+body { font-family: Arial, sans-serif; padding: 30px; }
+
+.card {
+  position: relative;
+  width: 260px;
+  padding: 20px;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+}
+
+.selo {
+  position: absolute;
+  top: -12px;
+  right: 12px;
+  padding: 4px 10px;
+  background-color: #F97316;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 999px;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Posição" data-title="fixed e sticky">
+  <div class="desc"><code>position: fixed</code> prende o elemento na <b>tela</b>: não sai do lugar quando a página rola (botão de WhatsApp no canto). <code>position: sticky</code> rola normalmente até encostar no <code>top</code> indicado, e aí <b>gruda</b> (cabeçalhos que ficam visíveis). <code>z-index</code> decide quem fica por cima.</div>
+  <div class="try"><b>Experimente:</b> role a prévia. Depois troque <code>sticky</code> por <code>static</code> e role de novo.</div>
+<template class="stage"><header class="topo">Cabeçalho grudento</header>
+<p>Role a prévia para baixo.</p>
+<p>Linha 2</p><p>Linha 3</p><p>Linha 4</p><p>Linha 5</p><p>Linha 6</p><p>Linha 7</p><p>Linha 8</p><p>Linha 9</p><p>Linha 10</p><p>Linha 11</p><p>Linha 12</p><p>Linha 13</p><p>Linha 14</p><p>Linha 15</p><p>Fim.</p>
+<a href="#" class="zap">💬</a></template>
+<script type="text/x-code">
+body { margin: 0; font-family: Arial, sans-serif; }
+p { padding: 0 20px; }
+
+.topo {
+  position: sticky;
+  top: 0;
+  padding: 14px 20px;
+  background-color: #15171E;
+  color: #F0C23B;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.zap {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+</script>
+</section>
+
+<section class="ex" data-group="Acabamento" data-title="Variáveis CSS">
+  <div class="desc">Declare valores uma vez em <code>:root</code> (<code>--nome: valor</code>) e use com <code>var(--nome)</code>. Trocar a cor do site inteiro vira mudar <b>uma</b> linha. É assim que se faz tema claro/escuro: redefinir as variáveis dentro de uma classe ou media query.</div>
+  <div class="try"><b>Experimente:</b> mude <code>--principal</code> para <code>#16A34A</code> e veja tudo acompanhar.</div>
+<template class="stage"><header class="topo">Greenn School</header>
+<main>
+  <h1>Tema com variáveis</h1>
+  <p>Mude uma variável e tudo acompanha.</p>
+  <a href="#" class="botao">Ação</a>
+</main></template>
+<script type="text/x-code">
+:root {
+  --principal: #38BDF8;
+  --escuro: #15171E;
+  --texto: #334155;
+  --raio: 10px;
+}
+
+body { margin: 0; font-family: Arial, sans-serif; color: var(--texto); }
+
+.topo {
+  background-color: var(--escuro);
+  color: var(--principal);
+  padding: 14px 20px;
+  font-weight: bold;
+}
+
+main { padding: 20px; }
+
+h1 { color: var(--principal); }
+
+.botao {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--principal);
+  color: var(--escuro);
+  border-radius: var(--raio);
+  text-decoration: none;
+  font-weight: bold;
+}
+</script>
+</section>
+
+<section class="ex" data-group="Projeto" data-title="O site completo">
+  <div class="desc">O site que você montou na última aula de HTML, agora com visual: variáveis, container centralizado, header flex, cards em grid, hover com transição e media query para o celular. Leia o CSS de cima para baixo: você conhece cada linha.</div>
+  <div class="try"><b>Experimente:</b> estreite a janela para ver a versão celular. Depois troque a paleta nas variáveis.</div>
+<template class="stage"><header class="topo">
+  <div class="container barra">
+    <strong class="logo">Greenn School</strong>
+    <nav class="menu"><a href="#cursos">Cursos</a><a href="#contato">Contato</a></nav>
+  </div>
+</header>
+<main class="container">
+  <section class="hero">
+    <h1>Aprenda a programar aos sábados</h1>
+    <p>HTML, CSS e JavaScript do zero, com exercícios corrigidos na hora.</p>
+    <a href="#cursos" class="botao">Ver cursos</a>
+  </section>
+  <section id="cursos">
+    <h2>Nossos cursos</h2>
+    <div class="cards">
+      <article class="card"><h3>HTML</h3><p>A estrutura das páginas.</p></article>
+      <article class="card"><h3>CSS</h3><p>O visual das páginas.</p></article>
+      <article class="card"><h3>JavaScript</h3><p>A lógica e a interação.</p></article>
+    </div>
+  </section>
+</main>
+<footer id="contato" class="rodape">contato@greenn.com.br · © 2026</footer></template>
+<script type="text/x-code">
+:root {
+  --principal: #38BDF8;
+  --escuro: #15171E;
+  --fundo: #F1F5F9;
+  --texto: #334155;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: var(--fundo);
+  color: var(--texto);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* header */
+.topo { background-color: var(--escuro); }
+.barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+}
+.logo { color: #F0C23B; font-size: 18px; }
+.menu a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  transition: color 0.2s;
+}
+.menu a:hover { color: var(--principal); }
+
+/* destaque */
+.hero {
+  text-align: center;
+  padding: 40px 0;
+}
+.hero h1 { font-size: 2rem; color: var(--escuro); margin: 0 0 10px; }
+.botao {
+  display: inline-block;
+  padding: 12px 28px;
+  background-color: var(--principal);
+  color: var(--escuro);
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+.botao:hover { transform: scale(1.05); }
+
+/* cards */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-4px); }
+.card h3 { margin-top: 0; color: var(--principal); }
+
+.rodape {
+  margin-top: 40px;
+  padding: 20px;
+  text-align: center;
+  background-color: var(--escuro);
+  color: #9AA0AE;
+}
+
+/* a partir de 700px: cards em 3 colunas */
+@media (min-width: 700px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .hero h1 { font-size: 2.5rem; }
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">A mesma página do site completo, com o CSS zerado: estilize do seu jeito.</div>
+  <div class="try"><b>Dica:</b> comece pelas variáveis e pelo body; depois header, cards e, por último, a media query.</div>
+<template class="stage"><header class="topo">
+  <div class="container barra">
+    <strong class="logo">Greenn School</strong>
+    <nav class="menu"><a href="#cursos">Cursos</a><a href="#contato">Contato</a></nav>
+  </div>
+</header>
+<main class="container">
+  <section class="hero">
+    <h1>Aprenda a programar aos sábados</h1>
+    <a href="#cursos" class="botao">Ver cursos</a>
+  </section>
+  <div class="cards">
+    <article class="card"><h3>HTML</h3><p>A estrutura.</p></article>
+    <article class="card"><h3>CSS</h3><p>O visual.</p></article>
+    <article class="card"><h3>JavaScript</h3><p>A lógica.</p></article>
+  </div>
+</main>
+<footer class="rodape">© 2026</footer></template>
+<script type="text/x-code">
+:root {
+  --principal: #38BDF8;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Tamanhos em rem e %">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Usar unidades relativas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>h1</code> com <code>font-size: 2rem;</code>.</li><li><code>.caixa</code> com <code>width: 50%;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Título com 32px (2 × 16) e a caixa com metade da largura</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>html { font-size: 20px; }</code> e veja o título crescer para 40px.</div>
+<template class="stage"><h1>Título</h1>
+<div class="caixa">metade da largura</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!/2rem/.test(src)) return "Use font-size: 2rem no h1.";
+if (cs("h1").fontSize !== "32px") return "O h1 deveria ficar com 32px (2rem), mas está " + cs("h1").fontSize + ".";
+const c = doc.querySelector(".caixa").getBoundingClientRect().width, p = doc.body.getBoundingClientRect().width;
+return Math.abs(c - p / 2) < 2 || "A .caixa deveria ter width: 50%.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Muda de cor no celular">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Escrever sua primeira media query.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.aviso</code> com <code>background-color: #38BDF8;</code> e <code>padding: 30px;</code>.</li><li>Uma <code>@media (max-width: 500px)</code> em que <code>.aviso</code> tem <code>background-color: #F97316;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Azul em telas largas; laranja quando a janela tem até 500px</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Estreite a janela do navegador para ver a troca. Depois mude o breakpoint para 800px.</div>
+<template class="stage"><div class="aviso">Estreite a janela.</div></template>
+<script type="text/x-code">
+.aviso {
+  
+}
+
+/* a media query vai aqui */
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".aviso"));
+if (c.paddingTop !== "30px") return "Falta padding: 30px no .aviso.";
+const clean = src.replace(/\/\*[\s\S]*?\*\//g, "");
+const m = clean.match(/@media\s*\(\s*max-width\s*:\s*500px\s*\)\s*\{([\s\S]*)\}/);
+if (!m) return "Falta a @media (max-width: 500px) { ... }.";
+if (!/\.aviso\s*\{[^}]*background-color\s*:\s*#F97316/i.test(m[1])) return "Dentro da media query, .aviso precisa de background-color: #F97316.";
+return c.backgroundColor === "rgb(56, 189, 248)" || "Fora da media query, o .aviso deveria ser #38BDF8 (o corretor testa numa tela de 600px).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Colunas que empilham">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Fazer um layout de colunas virar pilha no celular.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.colunas</code> com <code>display: flex;</code> e <code>gap: 12px;</code>; <code>.colunas .caixa</code> com <code>flex: 1;</code>.</li><li>Em <code>@media (max-width: 500px)</code>, <code>.colunas</code> com <code>flex-direction: column;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Três colunas iguais; abaixo de 500px, uma embaixo da outra</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Estreite a janela para ver. Depois use <code>column-reverse</code>.</div>
+<template class="stage"><div class="colunas">
+  <div class="caixa">1</div>
+  <div class="caixa">2</div>
+  <div class="caixa">3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.colunas {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (cs(".colunas").display !== "flex") return "A .colunas precisa de display: flex.";
+if (cs(".colunas").columnGap !== "12px") return "Falta gap: 12px.";
+if (cs(".colunas .caixa").flexGrow !== "1") return "As caixas precisam de flex: 1 (.colunas .caixa).";
+const m = src.replace(/\/\*[\s\S]*?\*\//g, "").match(/@media\s*\(\s*max-width\s*:\s*500px\s*\)\s*\{([\s\S]*)\}/);
+if (!m) return "Falta a @media (max-width: 500px).";
+return /flex-direction\s*:\s*column/.test(m[1]) || "Dentro da media query, .colunas precisa de flex-direction: column.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · Mobile first">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Começar pelo celular e adicionar colunas nas telas grandes.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.cards</code> com <code>display: grid;</code>, <code>grid-template-columns: 1fr;</code> e <code>gap: 12px;</code>.</li><li>Em <code>@media (min-width: 700px)</code>, <code>.cards</code> com <code>grid-template-columns: repeat(3, 1fr);</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Uma coluna; a partir de 700px de largura, três</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um <code>@media (min-width: 1000px)</code> com 4 colunas.</div>
+<template class="stage"><div class="cards">
+  <div class="caixa">Card 1</div>
+  <div class="caixa">Card 2</div>
+  <div class="caixa">Card 3</div>
+</div></template>
+<script type="text/x-code">
+.caixa {
+  background-color: #38BDF8;
+  color: #0C2A3A;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+/* celular primeiro */
+.cards {
+  
+}
+
+/* telas grandes */
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".cards"));
+if (c.display !== "grid") return "A .cards precisa de display: grid.";
+if (c.gridTemplateColumns.split(" ").length !== 1) return "Fora da media query, deveria ser 1 coluna (grid-template-columns: 1fr). O corretor testa com 600px.";
+if (c.columnGap !== "12px") return "Falta gap: 12px.";
+const m = src.replace(/\/\*[\s\S]*?\*\//g, "").match(/@media\s*\(\s*min-width\s*:\s*700px\s*\)\s*\{([\s\S]*)\}/);
+if (!m) return "Falta a @media (min-width: 700px).";
+return /repeat\(\s*3\s*,\s*1fr\s*\)/.test(m[1]) || "Dentro da media query, use grid-template-columns: repeat(3, 1fr).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Botão com transição">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Dar resposta suave ao hover.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.botao</code>: <code>background-color: #0EA5E9;</code>, <code>color: white;</code>, <code>padding: 12px 24px;</code>, <code>border: 0;</code>, <code>border-radius: 8px;</code>, <code>cursor: pointer;</code> e <code>transition: background-color 0.3s;</code>.</li><li><code>.botao:hover</code>: <code>background-color: #F97316;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Botão azul que vira laranja suavemente ao passar o mouse</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>transform: scale(1.1)</code> no hover (e <code>transform 0.3s</code> na transition).</div>
+<template class="stage"><button class="botao">Matricular</button></template>
+<script type="text/x-code">
+.botao {
+  
+}
+
+</script>
+<script type="text/x-check">
+const c = win.getComputedStyle(doc.querySelector(".botao"));
+if (c.backgroundColor !== "rgb(14, 165, 233)") return "O .botao deveria ter fundo #0EA5E9.";
+if (c.color !== "rgb(255, 255, 255)") return "O texto do botão deveria ser white.";
+if (c.borderTopLeftRadius !== "8px" || c.borderTopWidth !== "0px") return "Falta border: 0 e border-radius: 8px.";
+if (c.cursor !== "pointer") return "Falta cursor: pointer.";
+if (!c.transitionProperty.includes("background-color") || parseFloat(c.transitionDuration) < 0.29) return "Falta transition: background-color 0.3s.";
+const h = src.replace(/\/\*[\s\S]*?\*\//g, "").match(/\.botao:hover\s*\{([^}]*)\}/);
+if (!h) return "Falta a regra .botao:hover { ... }.";
+return /background-color\s*:\s*#F97316/i.test(h[1]) || "No hover, o fundo deveria ser #F97316.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Selo no canto do cartão">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Posicionar um elemento em relação ao pai.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>.card</code> com <code>position: relative;</code>, <code>padding: 20px;</code> e <code>border: 1px solid #CBD5E1;</code>.</li><li><code>.selo</code> com <code>position: absolute;</code>, <code>top: 10px;</code>, <code>right: 10px;</code>, <code>background-color: #F97316;</code>, <code>color: white;</code> e <code>padding: 4px 10px;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>O selo &quot;NOVO&quot; colado no canto superior direito do cartão</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque <code>right: 10px</code> por <code>left: 10px</code>.</div>
+<template class="stage"><div class="card">
+  <span class="selo">NOVO</span>
+  <h3>Curso de CSS</h3>
+  <p>Quatro aulas.</p>
+</div></template>
+<script type="text/x-code">
+body { font-family: Arial, sans-serif; }
+
+.card {
+  
+}
+
+.selo {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (cs(".card").position !== "relative") return "O .card precisa de position: relative.";
+const s = cs(".selo");
+if (s.position !== "absolute") return "O .selo precisa de position: absolute.";
+if (s.top !== "10px" || s.right !== "10px") return "O .selo precisa de top: 10px e right: 10px.";
+if (s.backgroundColor !== "rgb(249, 115, 22)" || s.color !== "rgb(255, 255, 255)") return "O .selo deveria ser laranja #F97316 com texto white.";
+const c = doc.querySelector(".card").getBoundingClientRect(), r = doc.querySelector(".selo").getBoundingClientRect();
+return (Math.abs(c.right - r.right - 10) < 3 && Math.abs(r.top - c.top - 10) < 3) || "O selo não está no canto do cartão: confira o position: relative no .card.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Tema com variáveis">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Centralizar as cores do site em variáveis.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Em <code>:root</code>: <code>--principal: #38BDF8;</code> e <code>--escuro: #15171E;</code>.</li><li><code>.topo</code> com <code>background-color: var(--escuro);</code> e <code>color: var(--principal);</code>.</li><li><code>h1</code> com <code>color: var(--principal);</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Barra escura com texto azul e título azul, tudo vindo das variáveis</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mude <code>--principal</code> para <code>#16A34A</code>: barra e título mudam juntos.</div>
+<template class="stage"><header class="topo">Greenn School</header>
+<h1>Tema com variáveis</h1>
+<p>Mude uma variável e tudo acompanha.</p></template>
+<script type="text/x-code">
+:root {
+  
+}
+
+body { margin: 0; font-family: Arial, sans-serif; }
+
+.topo {
+  padding: 14px 20px;
+  font-weight: bold;
+  
+}
+
+h1 {
+  
+}
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (!/--principal\s*:/.test(src) || !/--escuro\s*:/.test(src)) return "Declare --principal e --escuro dentro de :root { }.";
+if ((src.match(/var\(--/g) || []).length < 3) return "Use var(--principal) e var(--escuro) nas regras, em vez de repetir as cores.";
+if (cs(".topo").backgroundColor !== "rgb(21, 23, 30)") return "O fundo do .topo deveria ser var(--escuro) = #15171E.";
+if (cs(".topo").color !== "rgb(56, 189, 248)") return "O texto do .topo deveria ser var(--principal).";
+return cs("h1").color === "rgb(56, 189, 248)" || "O h1 deveria usar color: var(--principal).";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · O site responsivo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Juntar tudo: container, header flex, cards em grid, hover e media query.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>* { box-sizing: border-box; }</code>; <code>body</code> com <code>margin: 0;</code>, <code>font-family: Arial, sans-serif;</code> e <code>background-color: #F1F5F9;</code>.</li><li><code>.container</code> com <code>max-width: 900px;</code>, <code>margin: 0 auto;</code> e <code>padding: 0 20px;</code>.</li><li><code>.topo</code> com <code>background-color: #15171E;</code>; <code>.barra</code> com <code>display: flex;</code>, <code>justify-content: space-between;</code>, <code>align-items: center;</code> e <code>height: 60px;</code>; <code>.logo</code> com <code>color: #F0C23B;</code>; <code>.menu a</code> com <code>color: white;</code>, <code>text-decoration: none;</code> e <code>margin-left: 20px;</code>.</li><li><code>.cards</code> com <code>display: grid;</code>, <code>grid-template-columns: 1fr;</code> e <code>gap: 16px;</code>; <code>.card</code> com <code>background-color: white;</code>, <code>padding: 20px;</code>, <code>border-radius: 12px;</code> e <code>transition: transform 0.2s;</code>; <code>.card:hover</code> com <code>transform: translateY(-4px);</code>.</li><li><code>@media (min-width: 700px)</code>: <code>.cards</code> com <code>grid-template-columns: repeat(3, 1fr);</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Header escuro com logo e menu nas pontas, conteúdo centralizado, cards brancos que levantam no hover; três colunas a partir de 700px</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Estreite a janela para ver a versão celular. Depois troque as cores por variáveis em :root.</div>
+<template class="stage"><header class="topo">
+  <div class="container barra">
+    <strong class="logo">Greenn School</strong>
+    <nav class="menu"><a href="#">Cursos</a><a href="#">Contato</a></nav>
+  </div>
+</header>
+<main class="container">
+  <h1>Nossos cursos</h1>
+  <div class="cards">
+    <article class="card"><h3>HTML</h3><p>A estrutura das páginas.</p></article>
+    <article class="card"><h3>CSS</h3><p>O visual das páginas.</p></article>
+    <article class="card"><h3>JavaScript</h3><p>A lógica e a interação.</p></article>
+  </div>
+</main></template>
+<script type="text/x-code">
+* {
+  
+}
+
+body {
+  
+}
+
+.container {
+  
+}
+
+/* header */
+.topo {
+  
+}
+
+.barra {
+  
+}
+
+.logo {
+  
+}
+
+.menu a {
+  
+}
+
+/* cards */
+.cards {
+  
+}
+
+.card {
+  
+}
+
+.card:hover {
+  
+}
+
+/* telas grandes */
+
+</script>
+<script type="text/x-check">
+const cs = s => win.getComputedStyle(doc.querySelector(s));
+if (cs(".card").boxSizing !== "border-box") return "Falta * { box-sizing: border-box; }.";
+const b = cs("body");
+if (b.marginTop !== "0px" || b.backgroundColor !== "rgb(241, 245, 249)") return "O body precisa de margin: 0 e background-color: #F1F5F9.";
+const c = cs("main.container");
+if (c.maxWidth !== "900px" || c.paddingLeft !== "20px") return "O .container precisa de max-width: 900px e padding: 0 20px.";
+if (cs(".topo").backgroundColor !== "rgb(21, 23, 30)") return "O .topo deveria ter fundo #15171E.";
+const br = cs(".barra");
+if (br.display !== "flex" || br.justifyContent !== "space-between" || br.alignItems !== "center" || br.height !== "60px") return "A .barra precisa de display: flex, justify-content: space-between, align-items: center e height: 60px.";
+if (cs(".logo").color !== "rgb(240, 194, 59)") return "O .logo deveria ser #F0C23B.";
+const a = cs(".menu a");
+if (a.color !== "rgb(255, 255, 255)" || a.textDecorationLine !== "none" || a.marginLeft !== "20px") return "Os links do .menu precisam de color: white, text-decoration: none e margin-left: 20px.";
+const g = cs(".cards");
+if (g.display !== "grid" || g.gridTemplateColumns.split(" ").length !== 1 || g.columnGap !== "16px") return "A .cards precisa de display: grid, grid-template-columns: 1fr e gap: 16px (1 coluna fora da media query).";
+const k = cs(".card");
+if (k.backgroundColor !== "rgb(255, 255, 255)" || k.paddingTop !== "20px" || k.borderTopLeftRadius !== "12px") return "O .card precisa de fundo white, padding: 20px e border-radius: 12px.";
+if (!k.transitionProperty.includes("transform")) return "Falta transition: transform 0.2s no .card.";
+const clean = src.replace(/\/\*[\s\S]*?\*\//g, "");
+const h = clean.match(/\.card:hover\s*\{([^}]*)\}/);
+if (!h || !/translateY\(\s*-4px\s*\)/.test(h[1])) return "O .card:hover precisa de transform: translateY(-4px).";
+const m = clean.match(/@media\s*\(\s*min-width\s*:\s*700px\s*\)\s*\{([\s\S]*)\}/);
+if (!m) return "Falta a @media (min-width: 700px).";
+return /repeat\(\s*3\s*,\s*1fr\s*\)/.test(m[1]) || "Dentro da media query, .cards precisa de grid-template-columns: repeat(3, 1fr).";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    stage: s.querySelector('template.stage').innerHTML.replace(/^\n/, '').replace(/\s+$/, ''),
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de CSS ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(\/\*[\s\S]*?\*\/)|(@[\w-]+[^{;]*)|([^{}\/]+?)(?=\s*\{)|([\w-]+)(\s*:\s*)([^;{}]+)(;?)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="k">${esc(m[2])}</span>`;
+      else if (m[3] !== undefined) h += `<span class="sel">${esc(m[3])}</span>`;
+      else h += `<span class="a">${esc(m[4])}</span>${esc(m[5])}<span class="s">${esc(m[6])}</span>${esc(m[7])}`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function highlightHtml(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else { const attrs = m[4].replace(/([\w-]+)(=)("[^"]*")?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>=${v ? `<span class="s">${esc(v)}</span>` : ''}`); h += `<span class="k">${esc(m[2])}${esc(m[3])}</span>${attrs}<span class="k">${esc(m[5])}</span>`; }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last));
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Aplicar para ver o CSS na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  function lint(src) {
+    const clean = src.replace(/\/\*[\s\S]*?\*\//g, ''); const msgs = [];
+    const open = (clean.match(/\{/g) || []).length, close = (clean.match(/\}/g) || []).length;
+    if (open > close) msgs.push(`Tem ${open - close} chave { aberta sem a } correspondente.`);
+    if (close > open) msgs.push(`Tem ${close - open} chave } a mais.`);
+    const blocks = clean.match(/\{[^{}]*\}/g) || [];
+    for (const b of blocks) {
+      const decls = b.slice(1, -1).split(';').map(d => d.trim()).filter(Boolean);
+      for (const d of decls) {
+        const dd = d.replace(/\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '');
+        if (!dd.includes(':')) { msgs.push(`"${d.slice(0, 30)}" está sem os dois-pontos: o formato é propriedade: valor;`); break; }
+        if (dd.split(':').length > 2) { msgs.push(`Falta um ponto e vírgula depois de "${d.split(/\n/)[0].trim().slice(0, 30)}".`); break; }
+      }
+    }
+    return [...new Set(msgs)].slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(css) { return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><style>${css.replace(/<\/style/gi, '<\\/style')}</style></head><body>${exs[cur].stage}</body></html>`; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Aplicando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">CSS aplicado na prévia acima. Mude um valor e aplique de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Aplicado, mas tem erro de sintaxe' : '✓ CSS aplicado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o resultado está certo, mas corrija a sintaxe apontada acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Corrija a sintaxe'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    $('stagehtml').innerHTML = highlightHtml(e.stage);
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-css') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-css', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

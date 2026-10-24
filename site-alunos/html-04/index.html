@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML 4 · Semântica — Greenn School</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  .task{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+  .task .obj{margin:0}
+  .task-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .lbl{margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  .expbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .expbox pre{margin:0;font-family:"JetBrains Mono",Consolas,monospace;font-size:calc(var(--fs) * .72);color:var(--ok);white-space:pre-wrap;max-height:180px;overflow:auto}
+  .out .ln.win{color:var(--ok);background:rgba(127,209,139,.08);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  @media (max-width:1000px){.task-cols{grid-template-columns:1fr}}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+
+  :root{--acc:#F97316}
+  .nav.on{color:#FDBA74}
+  .work{grid-template-columns:1fr 1.1fr}
+  .right{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right .card.page{flex:2}
+  .right .card.cons{flex:0 0 auto;max-height:260px}
+  iframe.stage{flex:1;width:100%;border:0;background:#fff;min-height:0}
+  .card.page.max{position:fixed;inset:0;z-index:100;border-radius:0;border:0;max-height:none}
+  .card.page.max .hd{padding:12px 20px}
+  .card.page .hd .pv{display:flex;align-items:center;gap:10px}
+  #pw{font-family:"JetBrains Mono",Consolas,monospace;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0}
+  #max{padding:4px 10px;font-size:12px}
+  .hint2{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted)}
+  .k{color:#F97316} .a{color:#F0C23B} .s{color:#A8D5A2} .c{color:#7E879B;font-style:italic}
+  .out .ln{padding:8px 20px;border-bottom:1px solid #262A37;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8);line-height:1.45}
+  .out .ln.err{color:var(--err)} .out .ln.tip{color:var(--acc)} .out .ln.win{color:var(--ok)}
+  .desc code,.try code{color:#FDBA74}
+  @media (max-width:1000px){ iframe.stage{min-height:280px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num" style="color:#F97316">H4</div>
+      <div class="t">HTML: semântica e a página completa</div>
+      <div class="s">Escreva o HTML e veja a página ao lado</div>
+      <a href="/html-04/apostila-html-04.pdf" target="_blank" style="display:inline-block;margin-top:12px;font-size:13px;color:#15171E;background:#F97316;font-weight:600;padding:6px 12px;border-radius:8px;text-decoration:none">⬇ Apostila em PDF</a>
+      <a href="/#html" style="display:block;margin-top:10px;font-size:13px;color:#9AA0AE">← todas as aulas</a>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp" style="background:#F97316"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run" style="background:#F97316;border-color:#F97316">▶ Visualizar</button>
+      </div>
+    </div>
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>index.html · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> visualiza</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código HTML"></textarea>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card page">
+          <div class="hd"><span>Como fica no navegador</span><span class="pv"><span class="hint2" id="pw"></span><button class="btn" id="max" title="Maximizar a prévia (Esc fecha)">⛶ Maximizar</button></span></div>
+          <iframe class="stage" id="frame" title="Prévia da página"></iframe>
+        </div>
+        <div class="card cons">
+          <div class="hd"><span>Verificação</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+          <div class="out" id="out"></div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+<iframe id="tester" title="corretor" style="position:absolute;left:-9999px;top:0;width:600px;height:400px;border:0" aria-hidden="true" tabindex="-1"></iframe>
+<div id="examples" hidden>
+<section class="ex" data-group="Semântica" data-title="Por que não usar div para tudo?">
+  <div class="desc">Um site feito só de <code>&lt;div&gt;</code> funciona, mas ninguém sabe o que é cada parte: nem o Google, nem o leitor de tela, nem o colega que vai dar manutenção. As tags <b>semânticas</b> dizem o <b>papel</b> de cada bloco. Visualmente são iguais a uma div; a diferença é o significado.</div>
+  <div class="try"><b>Experimente:</b> compare os dois blocos na prévia: idênticos. A diferença está no código.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Semântica</title>
+</head>
+<body>
+  <!-- Sem semântica -->
+  <div>
+    <div>Meu blog</div>
+    <div>Post 1</div>
+    <div>© 2026</div>
+  </div>
+  <hr>
+  <!-- Com semântica -->
+  <header>Meu blog</header>
+  <main>
+    <article>Post 1</article>
+  </main>
+  <footer>© 2026</footer>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Semântica" data-title="header, nav, main e footer">
+  <div class="desc"><code>&lt;header&gt;</code>: topo (logo, título). <code>&lt;nav&gt;</code>: o menu de navegação. <code>&lt;main&gt;</code>: o conteúdo principal (só <b>um</b> por página). <code>&lt;footer&gt;</code>: rodapé. É o esqueleto de quase todo site.</div>
+  <div class="try"><b>Experimente:</b> coloque o nav dentro do header.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Esqueleto</title>
+</head>
+<body>
+  <header>
+    <h1>Greenn School</h1>
+  </header>
+  <nav>
+    <a href="#">Início</a> |
+    <a href="#">Cursos</a> |
+    <a href="#">Contato</a>
+  </nav>
+  <main>
+    <h2>Bem-vindo</h2>
+    <p>Conteúdo principal da página.</p>
+  </main>
+  <footer>
+    <p>© 2026 Greenn School</p>
+  </footer>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Semântica" data-title="section, article e aside">
+  <div class="desc"><code>&lt;section&gt;</code>: uma seção com tema próprio (geralmente com título). <code>&lt;article&gt;</code>: conteúdo que faz sentido sozinho (um post, uma notícia, um produto). <code>&lt;aside&gt;</code>: conteúdo lateral/relacionado (uma caixa "veja também").</div>
+  <div class="try"><b>Experimente:</b> adicione um segundo article dentro da section.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blocos</title>
+</head>
+<body>
+  <main>
+    <section>
+      <h2>Últimas notícias</h2>
+      <article>
+        <h3>Nova turma de JavaScript</h3>
+        <p>Inscrições abertas até sexta.</p>
+      </article>
+    </section>
+    <aside>
+      <h3>Veja também</h3>
+      <p>Curso de HTML e CSS.</p>
+    </aside>
+  </main>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Semântica" data-title="id e class: dando nome aos elementos">
+  <div class="desc"><code>id</code> identifica <b>um</b> elemento (único na página); <code>class</code> marca um <b>grupo</b> (vários elementos podem ter a mesma, e um elemento pode ter várias, separadas por espaço). É por eles que o CSS e o JavaScript encontram as coisas.</div>
+  <div class="try"><b>Experimente:</b> dê a classe <code>destaque</code> para o segundo card também.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>id e class</title>
+</head>
+<body>
+  <h1 id="titulo-principal">Cursos</h1>
+  <div class="card destaque">
+    <h3>JavaScript</h3>
+  </div>
+  <div class="card">
+    <h3>HTML e CSS</h3>
+  </div>
+  <div class="card">
+    <h3>Laravel</h3>
+  </div>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Head e mídia" data-title="O head completo: meta viewport e descrição">
+  <div class="desc"><code>&lt;meta name="viewport"&gt;</code> faz a página se ajustar ao celular (sem ele, o site aparece minúsculo). <code>&lt;meta name="description"&gt;</code> é o texto que o Google mostra no resultado. <code>&lt;link rel="icon"&gt;</code> é o ícone da aba.</div>
+  <div class="try"><b>Experimente:</b> mude a description. Ela não aparece na página, mas o Google lê.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Curso de programação básica: HTML, CSS e JavaScript.">
+  <link rel="icon" href="/img/greenn.svg">
+  <title>Greenn School</title>
+</head>
+<body>
+  <h1>Greenn School</h1>
+  <p>O head desta página está completo.</p>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Head e mídia" data-title="Vídeo e áudio">
+  <div class="desc"><code>&lt;video&gt;</code> e <code>&lt;audio&gt;</code> tocam mídia sem plugin. <code>controls</code> mostra os botões, <code>autoplay</code> e <code>loop</code> fazem o que o nome diz. Dentro, um texto de fallback para navegadores antigos.</div>
+  <div class="try"><b>Experimente:</b> adicione <code>loop</code> ao vídeo.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mídia</title>
+</head>
+<body>
+  <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls width="320">
+    Seu navegador não suporta vídeo.
+  </video>
+  <br><br>
+  <audio src="https://www.w3schools.com/html/horse.mp3" controls>
+    Seu navegador não suporta áudio.
+  </audio>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Head e mídia" data-title="iframe: uma página dentro da outra">
+  <div class="desc"><code>&lt;iframe&gt;</code> embute outra página: um mapa, um vídeo do YouTube, um formulário externo. É assim que a prévia deste playground funciona!</div>
+  <div class="try"><b>Experimente:</b> troque o src por <code>https://www.openstreetmap.org/export/embed.html</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iframe</title>
+</head>
+<body>
+  <h2>Onde fica a Greenn</h2>
+  <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-34.90,-8.07,-34.87,-8.05" width="400" height="250"></iframe>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Página completa" data-title="Um site inteiro com semântica">
+  <div class="desc">Juntando tudo: head completo, header com nav, main com section e articles, aside e footer. Repare que, mesmo sem CSS, a estrutura já faz sentido ao ler.</div>
+  <div class="try"><b>Experimente:</b> adicione um terceiro article com uma imagem.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Greenn School</title>
+</head>
+<body>
+  <header>
+    <img src="/img/greenn.svg" alt="Logo da Greenn School" width="60">
+    <h1>Greenn School</h1>
+    <nav>
+      <a href="#cursos">Cursos</a> |
+      <a href="#contato">Contato</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="cursos">
+      <h2>Nossos cursos</h2>
+      <article class="card">
+        <h3>JavaScript</h3>
+        <p>Da lógica ao DOM.</p>
+      </article>
+      <article class="card">
+        <h3>HTML e CSS</h3>
+        <p>Estrutura e visual.</p>
+      </article>
+    </section>
+    <aside>
+      <h3>Horário</h3>
+      <p>Sábados, das 7h às 11h.</p>
+    </aside>
+  </main>
+
+  <footer id="contato">
+    <p>contato@greenn.com.br · © 2026</p>
+  </footer>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">O esqueleto semântico para testar.</div>
+  <div class="try"><b>Dica:</b> só um <code>&lt;main&gt;</code> por página.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Área livre</title>
+</head>
+<body>
+  <header><h1>Título</h1></header>
+  <main><p>Conteúdo</p></main>
+  <footer><p>Rodapé</p></footer>
+</body>
+</html>
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 01 · Esqueleto semântico">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar a estrutura básica de um site com as tags certas.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>&lt;header&gt;</code> com um <code>&lt;h1&gt;</code> <code>Meu site</code>.</li><li><code>&lt;main&gt;</code> com um parágrafo.</li><li><code>&lt;footer&gt;</code> com <code>© 2026</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Topo, conteúdo e rodapé, cada um na tag certa</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um <code>&lt;nav&gt;</code> dentro do header.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Esqueleto</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const h = doc.querySelector("header h1"); if (!h || h.textContent.trim() !== "Meu site") return "Falta o <header> com o <h1> \"Meu site\" dentro.";
+if (!doc.querySelector("main p")) return "Falta o <main> com um <p> dentro.";
+const f = doc.querySelector("footer"); return (f && f.textContent.includes("2026")) || "Falta o <footer> com \"© 2026\".";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 02 · Menu de navegação">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Criar o menu dentro de nav, como lista de links.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;nav&gt;</code> com uma <code>&lt;ul&gt;</code>.</li><li>Três <code>&lt;li&gt;</code>, cada um com um <code>&lt;a&gt;</code>: <code>Início</code> (<code>#</code>), <code>Sobre</code> (<code>#sobre</code>) e <code>Contato</code> (<code>#contato</code>).</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Lista de 3 links dentro do nav</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Coloque o nav dentro do header.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Menu</title>
+</head>
+<body>
+  <header>
+    <h1>Meu site</h1>
+    <!-- nav aqui -->
+  </header>
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const n = doc.querySelector("nav"); if (!n) return "Falta a tag <nav>.";
+const a = [...n.querySelectorAll("ul > li > a")];
+if (a.length !== 3) return "O nav precisa de uma <ul> com 3 <li>, cada um com um <a>.";
+const hrefs = a.map(x => x.getAttribute("href"));
+return hrefs.includes("#sobre") && hrefs.includes("#contato") || "Os links precisam apontar para #, #sobre e #contato.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 03 · Seção com artigos">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Organizar notícias em section e article.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Dentro do <code>&lt;main&gt;</code>, uma <code>&lt;section&gt;</code> com um <code>&lt;h2&gt;</code> <code>Notícias</code>.</li><li>Dentro dela, dois <code>&lt;article&gt;</code>, cada um com um <code>&lt;h3&gt;</code> e um <code>&lt;p&gt;</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Section &quot;Notícias&quot; com 2 artigos</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione um <code>&lt;aside&gt;</code> ao lado da section.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notícias</title>
+</head>
+<body>
+  <main>
+    <!-- seu HTML aqui -->
+  </main>
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const s = doc.querySelector("main > section"); if (!s) return "Falta a <section> dentro do <main>.";
+if (!s.querySelector("h2") || s.querySelector("h2").textContent.trim() !== "Notícias") return "A section precisa do <h2> \"Notícias\".";
+const arts = [...s.querySelectorAll("article")];
+if (arts.length < 2) return "Precisa de pelo menos dois <article> dentro da section.";
+return arts.every(a => a.querySelector("h3") && a.querySelector("p")) || "Cada <article> precisa de um <h3> e um <p>.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 04 · id e class">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Marcar elementos para o CSS e o JavaScript encontrarem.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;h1&gt;</code> com <code>id="titulo"</code>.</li><li>Três <code>&lt;div&gt;</code> com <code>class="card"</code>; o primeiro também com a classe <code>destaque</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>h1#titulo e 3 .card (o 1º também .destaque)</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Dê um id diferente para cada card.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marcações</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+if (!doc.getElementById("titulo") || doc.getElementById("titulo").tagName !== "H1") return "Falta o <h1 id=\"titulo\">.";
+const c = [...doc.querySelectorAll("div.card")]; if (c.length !== 3) return "Precisa de exatamente 3 <div class=\"card\">.";
+if (!c[0].classList.contains("destaque")) return "O primeiro card precisa ter as duas classes: class=\"card destaque\".";
+return doc.querySelectorAll(".destaque").length === 1 || "Só o primeiro card deve ter a classe destaque.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 05 · Head completo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Preparar o head para celular e para o Google.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li><code>&lt;meta charset="UTF-8"&gt;</code>.</li><li><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code>.</li><li><code>&lt;meta name="description" content="..."&gt;</code> com qualquer texto.</li><li><code>&lt;title&gt;</code> <code>Portfólio</code>.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Head com charset, viewport, description e title</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione o ícone da aba com <code>&lt;link rel="icon"&gt;</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- seu HTML aqui -->
+</head>
+<body>
+  <h1>Portfólio</h1>
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const h = doc.head;
+if (!h.querySelector("meta[charset]")) return "Falta <meta charset=\"UTF-8\">.";
+const v = h.querySelector("meta[name=viewport]"); if (!v || !/width=device-width/.test(v.content)) return "Falta a meta viewport com width=device-width.";
+const d = h.querySelector("meta[name=description]"); if (!d || !d.content.trim()) return "Falta a meta description com algum texto no content.";
+return (h.querySelector("title") && h.querySelector("title").textContent.trim() === "Portfólio") || "Falta o <title> Portfólio.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 06 · Vídeo com controles">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Embutir um vídeo com botões de play.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Uma <code>&lt;video&gt;</code> com <code>src="https://www.w3schools.com/html/mov_bbb.mp4"</code>.</li><li>Os atributos <code>controls</code> e <code>width="320"</code>.</li><li>Um texto de fallback dentro da tag.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Player de vídeo de 320px com controles</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Adicione <code>muted autoplay</code>.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vídeo</title>
+</head>
+<body>
+  <h2>Aula gravada</h2>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const v = doc.querySelector("video"); if (!v) return "Falta a tag <video>.";
+if (!(v.getAttribute("src") || "").includes("mov_bbb.mp4")) return "O src deveria ser https://www.w3schools.com/html/mov_bbb.mp4.";
+if (!v.hasAttribute("controls")) return "Falta o atributo controls.";
+if (v.getAttribute("width") !== "320") return "Defina width=\"320\".";
+return v.textContent.trim().length > 0 || "Coloque um texto de fallback dentro de <video>...</video>.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 07 · Mapa embutido">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Colocar um mapa na página com iframe.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Um <code>&lt;iframe&gt;</code> com <code>src="https://www.openstreetmap.org/export/embed.html"</code>.</li><li><code>width="400"</code> e <code>height="250"</code>.</li><li>Um <code>title="Mapa"</code> (acessibilidade).</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Mapa de 400×250 dentro da página</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Troque o src por um vídeo do YouTube (botão Compartilhar → Incorporar).</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mapa</title>
+</head>
+<body>
+  <h2>Como chegar</h2>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const f = doc.querySelector("iframe"); if (!f) return "Falta a tag <iframe>.";
+if (!(f.getAttribute("src") || "").startsWith("https://www.openstreetmap.org/export/embed.html")) return "O src deveria começar com https://www.openstreetmap.org/export/embed.html.";
+if (f.getAttribute("width") !== "400" || f.getAttribute("height") !== "250") return "Defina width=\"400\" e height=\"250\".";
+return f.getAttribute("title") === "Mapa" || "Adicione title=\"Mapa\" ao iframe.";
+</script>
+</section>
+
+<section class="ex" data-group="Exercícios" data-title="Ex 08 · Desafio: o site completo">
+  <div class="desc"><div class="task"><p class="obj">🎯 <b>Objetivo:</b> Montar uma página inteira com tudo do módulo de HTML.</p><div class="task-cols"><div><p class="lbl">O que fazer</p><ol class="steps"><li>Head com charset, viewport e title.</li><li><code>&lt;header&gt;</code> com a <code>&lt;img&gt;</code> do logo (com alt), um <code>&lt;h1&gt;</code> e um <code>&lt;nav&gt;</code> com uma <code>&lt;ul&gt;</code> de 2+ links.</li><li><code>&lt;main&gt;</code> com uma <code>&lt;section id="cursos"&gt;</code> contendo um <code>&lt;h2&gt;</code> e 2+ <code>&lt;article class="card"&gt;</code> com <code>&lt;h3&gt;</code>.</li><li>Na section, uma <code>&lt;table&gt;</code> de horários com <code>&lt;th&gt;</code>.</li><li>Um <code>&lt;form&gt;</code> de contato com input de e-mail <code>required</code> e botão submit.</li><li><code>&lt;footer&gt;</code> com o ano.</li></ol></div><div class="expbox"><p class="lbl">Resultado esperado</p><pre>Um site de verdade: cabeçalho com menu, cursos em cards, tabela, formulário e rodapé</pre></div></div></div></div>
+  <div class="try"><b>Depois de acertar, teste também:</b> Mostre para alguém e peça para achar cada parte só lendo o código.</div>
+<script type="text/x-code">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Greenn School</title>
+</head>
+<body>
+  <!-- seu HTML aqui -->
+
+</body>
+</html>
+</script>
+<script type="text/x-check">
+const H = doc.head; if (!H.querySelector("meta[charset]") || !H.querySelector("meta[name=viewport]") || !H.querySelector("title")) return "O head precisa de charset, viewport e title.";
+const hd = doc.querySelector("header"); if (!hd) return "Falta o <header>.";
+const img = hd.querySelector("img"); if (!img || !img.getAttribute("alt")) return "O header precisa de uma <img> com alt.";
+if (!hd.querySelector("h1")) return "O header precisa de um <h1>.";
+if (hd.querySelectorAll("nav ul li a").length < 2) return "O header precisa de um <nav> com <ul> de pelo menos 2 links.";
+const s = doc.querySelector("main section#cursos"); if (!s) return "Falta a <section id=\"cursos\"> dentro do <main>.";
+if (!s.querySelector("h2")) return "A section precisa de um <h2>.";
+const arts = [...s.querySelectorAll("article.card")]; if (arts.length < 2 || !arts.every(a => a.querySelector("h3"))) return "Precisa de 2+ <article class=\"card\"> com <h3> na section.";
+if (!s.querySelector("table th")) return "Falta a <table> de horários com <th> dentro da section.";
+const f = doc.querySelector("form"); if (!f) return "Falta o <form> de contato.";
+const em = f.querySelector("input[type=email]"); if (!em || !em.required) return "O form precisa de um input type=\"email\" required.";
+if (!f.querySelector("button[type=submit]")) return "O form precisa de um <button type=\"submit\">.";
+const ft = doc.querySelector("footer"); return (ft && /20\d\d/.test(ft.textContent)) || "Falta o <footer> com o ano.";
+</script>
+</section>
+
+</div>
+<script>
+(function(){
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group, title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML, tryit: s.querySelector('.try').innerHTML,
+    code: s.querySelector('script[type="text/x-code"]').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n',
+    check: (s.querySelector('script[type="text/x-check"]') || {}).textContent || null
+  }));
+  const edits = exs.map(e => e.code);
+  let cur = 0;
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status'), frame = $('frame'), tester = $('tester');
+
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title)); b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- destaque de HTML ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function highlight(src) {
+    let h = '', last = 0, m;
+    const re = /(<!--[\s\S]*?-->)|(<!DOCTYPE[^>]*>)|(<\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?>)/g;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      if (m[1]) h += `<span class="c">${esc(m[1])}</span>`;
+      else if (m[2]) h += `<span class="c">${esc(m[2])}</span>`;
+      else {
+        const attrs = m[5].replace(/([\w-]+)(=)("[^"]*"|'[^']*'|[^\s>]+)?/g, (a, n, eq, v) => `<span class="a">${esc(n)}</span>${eq ? '=' : ''}${v ? `<span class="s">${esc(v)}</span>` : ''}`);
+        h += `<span class="k">${esc(m[3])}${esc(m[4])}</span>${attrs}<span class="k">${esc(m[6])}</span>`;
+      }
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint() { hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end'); code.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- painel de resultado ----------
+  function clearOut() { out.innerHTML = '<div class="empty">Clique em ▶ Visualizar para renderizar o HTML na prévia.</div>'; status.textContent = ''; status.className = 'status'; }
+  function addLine(text, cls) {
+    if (out.querySelector('.empty')) out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'ln ' + (cls || 'tip');
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+  // diagnóstico simples de tags não fechadas
+  const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr','!doctype']);
+  function lint(src) {
+    const stack = [], msgs = [];
+    const re = /<\/?([a-zA-Z][\w-]*)[^>]*?(\/?)>/g; let m;
+    const clean = src.replace(/<!--[\s\S]*?-->/g, '');
+    while ((m = re.exec(clean))) {
+      const tag = m[1].toLowerCase(), closing = m[0][1] === '/', self = m[2] === '/';
+      if (VOID.has(tag) || self) continue;
+      if (!closing) stack.push(tag);
+      else { const i = stack.lastIndexOf(tag); if (i === -1) msgs.push(`Tem um </${tag}> fechando sem a abertura <${tag}>.`); else { if (i !== stack.length - 1) msgs.push(`A tag <${stack[stack.length - 1]}> foi aberta depois de <${tag}>, então precisa fechar antes dela.`); stack.splice(i); } }
+    }
+    for (const t of stack) if (!['html','head','body','li','p','td','th','tr','option'].includes(t)) msgs.push(`A tag <${t}> foi aberta e não foi fechada com </${t}>.`);
+    return msgs.slice(0, 3);
+  }
+  let runId = 0;
+  function buildDoc(src) { return src; }
+  function run() {
+    runId++; const id = runId; const e = exs[cur];
+    clearOut(); out.innerHTML = '';
+    status.className = 'status'; status.textContent = 'Renderizando…';
+    const problems = lint(code.value);
+    problems.forEach(p => addLine('⚠️ ' + p, 'err'));
+    frame.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        if (!e.check) {
+          if (!out.children.length) out.innerHTML = '<div class="empty">Página renderizada acima. Mude o HTML e visualize de novo.</div>';
+          status.className = problems.length ? 'status bad' : 'status ok'; status.textContent = problems.length ? '✗ Renderizado, mas tem tag sem fechar' : '✓ Renderizado'; return;
+        }
+        runCheck(id, e, problems);
+      }, 60);
+    };
+    frame.srcdoc = buildDoc(code.value);
+  }
+  function runCheck(id, e, problems) {
+    tester.onload = () => {
+      if (id !== runId) return;
+      setTimeout(() => {
+        if (id !== runId) return;
+        let r;
+        try { r = new Function('doc', 'win', 'src', e.check)(tester.contentDocument, tester.contentWindow, code.value); }
+        catch (err) { r = 'O corretor não conseguiu testar: ' + err.message; }
+        if (r === true && !problems.length) { addLine('🎉 Correto! A página está do jeito esperado. Agora faça o "teste também" lá em cima.', 'win'); status.className = 'status ok'; status.textContent = '✓ Exercício resolvido!'; }
+        else if (r === true) { addLine('Quase: o conteúdo está certo, mas feche as tags apontadas acima.', 'tip'); status.className = 'status bad'; status.textContent = '✗ Feche as tags'; }
+        else { addLine('Ainda não: ' + r, 'tip'); status.className = 'status bad'; status.textContent = '✗ Ainda não: veja a dica'; }
+      }, 60);
+    };
+    tester.srcdoc = buildDoc(code.value);
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(exs.length - 1, i)); runId++;
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title; $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur; $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); frame.onload = null; frame.srcdoc = buildDoc(edits[cur]);
+    try { history.replaceState(null, '', '#' + (cur + 1)); } catch (_) {}
+  }
+  $('run').onclick = run; $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; show(cur); };
+  $('prev').onclick = () => show(cur - 1); $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement; const defFs = window.innerWidth < 1000 ? 15 : 19;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs-html') || defFs; } catch (_) {}
+  const setFs = v => { fs = Math.max(13, Math.min(36, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs-html', fs); } catch (_) {} };
+  setFs(fs); $('bigger').onclick = () => setFs(fs + 2); $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => { if (document.activeElement === code) return; if (e.key === 'ArrowRight') show(cur + 1); if (e.key === 'ArrowLeft') show(cur - 1); });
+  const start = parseInt((location.hash || '').slice(1), 10); show(isNaN(start) ? 0 : start - 1);
+
+  // ---------- maximizar a prévia ----------
+  (function(){
+    const card = frame.closest('.card'), mx = document.getElementById('max'), pw = document.getElementById('pw');
+    if (!card || !mx) return;
+    const upd = () => { if (pw) pw.textContent = frame.clientWidth + ' px'; };
+    const set = on => { card.classList.toggle('max', on); mx.textContent = on ? '✕ Fechar' : '⛶ Maximizar'; setTimeout(upd, 50); };
+    mx.onclick = () => set(!card.classList.contains('max'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && card.classList.contains('max')) set(false); });
+    window.addEventListener('resize', upd); setTimeout(upd, 300);
+  })();
+})();
+</script>
+</body>
+</html>

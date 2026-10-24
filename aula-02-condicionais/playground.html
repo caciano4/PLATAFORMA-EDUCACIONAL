@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 2 · Condicionais e while — Playground</title>
+<style>
+  :root{
+    --bg:#15171E; --panel:#1F2330; --panel2:#262B3A; --line:#323849;
+    --ink:#EDEAE0; --muted:#9AA0AE; --acc:#F0C23B; --ok:#7FD18B; --err:#FF7A7A;
+    --str:#A8D5A2; --kw:#F0C23B; --num:#F4A77A; --com:#7E879B; --bool:#8FC7FF;
+    --fs:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+  /* Sidebar */
+  aside{background:#11131A;border-right:1px solid var(--line);overflow-y:auto;padding:24px 0}
+  .brand{padding:0 24px 20px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .brand .num{font-family:"JetBrains Mono",Consolas,monospace;color:var(--acc);font-size:40px;font-weight:700;line-height:1}
+  .brand .t{font-size:20px;font-weight:600;margin-top:8px}
+  .brand .s{font-size:14px;color:var(--muted);margin-top:4px}
+  .grp{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+  .nav{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:9px 24px;cursor:pointer;border-left:3px solid transparent}
+  .nav:hover{background:#1A1D26}
+  .nav.on{background:#1F2330;border-left-color:var(--acc);color:var(--acc);font-weight:600}
+  .nav .n{font-family:Consolas,monospace;color:var(--muted);margin-right:8px;font-size:14px}
+  /* Main */
+  main{display:flex;flex-direction:column;min-width:0;padding:28px 36px;gap:18px;overflow:hidden}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .eyebrow{display:inline-block;background:var(--acc);color:var(--bg);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:6px}
+  h1{margin:10px 0 6px;font-size:calc(var(--fs) * 1.6);line-height:1.15}
+  .desc{color:#C4C8D2;font-size:calc(var(--fs) * .82);line-height:1.5;max-width:1100px}
+  .desc code,.try code{font-family:"JetBrains Mono",Consolas,monospace;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .try{margin-top:10px;font-size:calc(var(--fs) * .72);color:var(--muted)}
+  .try b{color:var(--ink)}
+  .tools{display:flex;gap:8px;flex-shrink:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.run{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700;font-size:17px;padding:12px 22px}
+  .btn.run:hover{filter:brightness(1.08)}
+  .work{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .card .hd .dots{display:flex;gap:6px}
+  .card .hd .dots i{width:10px;height:10px;border-radius:50%;background:#3A4052;display:block}
+  .hint{text-transform:none;letter-spacing:0;font-size:13px}
+  /* Editor (textarea sobre pre com cores) */
+  .editor{position:relative;flex:1;min-height:0}
+  .editor pre,.editor textarea{position:absolute;inset:0;margin:0;padding:18px 20px;font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace;font-size:var(--fs);line-height:1.55;white-space:pre;overflow:auto;tab-size:2;border:0}
+  .editor pre{color:#E6E8EE;pointer-events:none}
+  .editor textarea{background:transparent;color:transparent;caret-color:var(--acc);resize:none;outline:none}
+  .editor textarea::selection{background:rgba(240,194,59,.28);color:transparent}
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--com);font-style:italic} .d{color:var(--num)} .b{color:var(--bool)}
+  /* Saída */
+  .out{flex:1;overflow:auto;padding:14px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:var(--fs);line-height:1.5}
+  .out .ln{display:flex;gap:14px;padding:3px 20px;border-bottom:1px solid #262A37;animation:in .18s ease-out both}
+  .out .ln .i{color:#555C6E;min-width:2ch;text-align:right;user-select:none}
+  .out .ln.err{color:var(--err);background:rgba(255,122,122,.07)}
+  .out .ln.tip{color:var(--acc);font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .out .empty{color:#5C6376;padding:6px 20px;font-family:"Segoe UI",Roboto,sans-serif;font-size:calc(var(--fs) * .8)}
+  .status{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);min-height:40px}
+  .status.ok{color:var(--ok)} .status.bad{color:var(--err)}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:var(--ink)}
+  #mnav{display:none}
+  @media (max-width:1000px){
+    #mnav{display:block;width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;margin-bottom:6px}
+    .hint{display:none}
+    .tools{flex-wrap:wrap}
+    .app{grid-template-columns:1fr;height:auto}
+    aside{display:none}
+    main{padding:18px 16px;overflow:visible}
+    .work{grid-template-columns:1fr}
+    .editor{min-height:320px}.out{min-height:200px}
+    .top{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <div class="num">02</div>
+      <div class="t">Condicionais e while</div>
+      <div class="s">Playground — rode cada exemplo ao vivo</div>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <select id="mnav" aria-label="Escolher exemplo"></select>
+    <div class="top">
+      <div>
+        <span class="eyebrow" id="grp"></span>
+        <h1 id="title"></h1>
+        <div class="desc" id="desc"></div>
+        <div class="try" id="try"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="smaller" title="Diminuir fonte">A−</button>
+        <button class="btn" id="bigger" title="Aumentar fonte (projetor)">A+</button>
+        <button class="btn" id="reset" title="Voltar ao código original">↺ Restaurar</button>
+        <button class="btn run" id="run">▶ Executar</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="card">
+        <div class="hd"><span class="dots"><i></i><i></i><i></i></span><span>código · pode editar</span><span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> executa</span></div>
+        <div class="editor">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><span>Saída (console)</span><button class="btn" id="clear" style="padding:4px 10px;font-size:12px">limpar</button></div>
+        <div class="out" id="out"><div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="prev">← Anterior</button>
+      <span id="pos"></span>
+      <button class="btn" id="next">Próximo →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EXEMPLOS =====================
+  Para criar um novo exemplo, copie um bloco <section class="ex"> abaixo.
+  data-group = grupo no menu | data-title = título | .desc = explicação | .try = desafio
+====================================================== -->
+<div id="examples" hidden>
+
+<section class="ex" data-group="if / else" data-title="if: se for verdade, faça">
+  <div class="desc">O bloco entre <code>{ }</code> só roda se a condição for <code>true</code>. Se for <code>false</code>, o JavaScript pula o bloco.</div>
+  <div class="try"><b>Experimente:</b> troque a idade para <code>15</code> e execute de novo.</div>
+<script type="text/x-code">
+const idade = 20;
+
+if (idade >= 18) {
+  console.log("Maior de idade");
+}
+
+console.log("Fim do programa");
+</script>
+</section>
+
+<section class="ex" data-group="if / else" data-title="if / else: um caminho ou outro">
+  <div class="desc">O <code>else</code> é o plano B. Sempre <b>um</b> dos dois blocos roda, nunca os dois.</div>
+  <div class="try"><b>Experimente:</b> mude o saldo para <code>100</code>. Qual mensagem aparece agora?</div>
+<script type="text/x-code">
+const saldo = 50;
+const preco = 80;
+
+if (saldo >= preco) {
+  console.log("Compra aprovada");
+} else {
+  console.log("Saldo insuficiente");
+}
+</script>
+</section>
+
+<section class="ex" data-group="if / else" data-title="else if: várias possibilidades">
+  <div class="desc">O JavaScript testa de <b>cima para baixo</b> e para na <b>primeira</b> condição verdadeira. O <code>else</code> final pega todo o resto.</div>
+  <div class="try"><b>Experimente:</b> teste com as notas <code>9</code>, <code>6</code> e <code>3</code>.</div>
+<script type="text/x-code">
+const nota = 6;
+
+if (nota >= 7) {
+  console.log("Aprovado");
+} else if (nota >= 5) {
+  console.log("Recuperação");
+} else {
+  console.log("Reprovado");
+}
+</script>
+</section>
+
+<section class="ex" data-group="if / else" data-title="Cuidado: a ordem importa">
+  <div class="desc">Aqui as condições estão na ordem <b>errada</b>. Quem tirou 9 deveria ser aprovado, mas o JavaScript para na primeira condição verdadeira.</div>
+  <div class="try"><b>Experimente:</b> conserte a ordem das condições para o 9 aparecer como Aprovado.</div>
+<script type="text/x-code">
+const nota = 9;
+
+if (nota >= 5) {
+  console.log("Recuperação");
+} else if (nota >= 7) {
+  console.log("Aprovado");
+}
+</script>
+</section>
+
+<section class="ex" data-group="Lógica no if" data-title="Condições combinadas: &&, || e !">
+  <div class="desc"><code>&amp;&amp;</code>: as duas precisam ser true. <code>||</code>: basta uma ser true. <code>!</code>: inverte o valor.</div>
+  <div class="try"><b>Experimente:</b> troque <code>temCNH</code> para <code>false</code> e <code>dia</code> para <code>"terça"</code>.</div>
+<script type="text/x-code">
+const idade = 20;
+const temCNH = true;
+const dia = "sábado";
+const logado = false;
+
+if (idade >= 18 && temCNH) {
+  console.log("Pode dirigir");
+} else {
+  console.log("Não pode dirigir");
+}
+
+if (dia === "sábado" || dia === "domingo") {
+  console.log("Fim de semana!");
+} else {
+  console.log("Dia útil");
+}
+
+if (!logado) {
+  console.log("Faça login para continuar");
+}
+</script>
+</section>
+
+<section class="ex" data-group="Lógica no if" data-title="Ternário: if/else em uma linha">
+  <div class="desc">Leia assim: <code>condição ? valor se true : valor se false</code>. Serve para <b>escolher um valor</b>.</div>
+  <div class="try"><b>Experimente:</b> mude <code>numero</code> para <code>8</code> e <code>idade</code> para <code>12</code>.</div>
+<script type="text/x-code">
+const idade = 20;
+const numero = 7;
+
+const status = idade >= 18 ? "Maior" : "Menor";
+console.log("Status:", status);
+
+console.log(`${numero} é ${numero % 2 === 0 ? "par" : "ímpar"}`);
+</script>
+</section>
+
+<section class="ex" data-group="switch" data-title="switch: muitos valores fixos">
+  <div class="desc">Compara <b>uma variável</b> com vários valores. O <code>default</code> funciona como o "senão".</div>
+  <div class="try"><b>Experimente:</b> teste <code>diaSemana</code> com <code>1</code>, <code>3</code> e <code>9</code>.</div>
+<script type="text/x-code">
+const diaSemana = 2;
+
+switch (diaSemana) {
+  case 1:
+    console.log("Domingo");
+    break;
+  case 2:
+    console.log("Segunda");
+    break;
+  case 3:
+    console.log("Terça");
+    break;
+  default:
+    console.log("Outro dia");
+}
+</script>
+</section>
+
+<section class="ex" data-group="switch" data-title="switch sem break (o erro clássico)">
+  <div class="desc">Sem o <code>break</code>, depois de achar o case certo o JavaScript <b>continua executando</b> os próximos.</div>
+  <div class="try"><b>Experimente:</b> coloque os <code>break</code> de volta e execute de novo.</div>
+<script type="text/x-code">
+const diaSemana = 1;
+
+switch (diaSemana) {
+  case 1:
+    console.log("Domingo");
+  case 2:
+    console.log("Segunda");
+  case 3:
+    console.log("Terça");
+  default:
+    console.log("Outro dia");
+}
+</script>
+</section>
+
+<section class="ex" data-group="Truthy e falsy" data-title="Truthy e falsy">
+  <div class="desc">Só 6 valores contam como false no if: <code>false</code>, <code>0</code>, <code>""</code>, <code>null</code>, <code>undefined</code> e <code>NaN</code>. Todo o resto é truthy.</div>
+  <div class="try"><b>Experimente:</b> coloque seu nome entre as aspas de <code>nome</code>.</div>
+<script type="text/x-code">
+const nome = "";
+
+if (nome) {
+  console.log(`Olá, ${nome}`);
+} else {
+  console.log("Nome não informado");
+}
+
+if (0) console.log("0 não aparece");
+if ("0") console.log('"0" aparece: é um texto com algo dentro');
+if (" ") console.log('" " também aparece: tem um espaço');
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="while: repetindo enquanto for true">
+  <div class="desc">O <code>while</code> é um <b>if que se repete</b>: testa a condição e, enquanto for true, roda o bloco e volta a testar.</div>
+  <div class="try"><b>Experimente:</b> faça contar até <code>10</code>. Depois, faça contar de 2 em 2 (troque <code>contador++</code> por <code>contador += 2</code>).</div>
+<script type="text/x-code">
+let contador = 1;
+
+while (contador <= 3) {
+  console.log("Volta " + contador);
+  contador++;
+}
+
+console.log("Fim!");
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="while com if dentro: sacando dinheiro">
+  <div class="desc">A condição pode depender de uma conta. Aqui sacamos R$ 30 enquanto houver saldo, e usamos um <code>if</code> dentro do loop.</div>
+  <div class="try"><b>Experimente:</b> mude o saldo inicial para <code>250</code> e o valor do saque para <code>50</code>.</div>
+<script type="text/x-code">
+let saldo = 100;
+let saques = 0;
+
+while (saldo >= 30) {
+  saldo -= 30;
+  saques++;
+  console.log(`Saque ${saques}: sobrou R$ ${saldo}`);
+
+  if (saldo < 30) {
+    console.log("Saldo insuficiente para outro saque");
+  }
+}
+
+console.log(`Total de saques: ${saques}`);
+</script>
+</section>
+
+<section class="ex" data-group="while" data-title="Cuidado: loop infinito">
+  <div class="desc">Se a condição <b>nunca</b> virar false, o programa não para. Este playground interrompe sozinho depois de 2 segundos (no terminal, use <code>Ctrl + C</code>).</div>
+  <div class="try"><b>Experimente:</b> execute, veja o problema e depois adicione <code>i++</code> dentro do bloco.</div>
+<script type="text/x-code">
+let i = 1;
+
+while (i <= 3) {
+  console.log(i);
+  // esqueceu o i++ !
+}
+</script>
+</section>
+
+<section class="ex" data-group="Livre" data-title="Área livre">
+  <div class="desc">Espaço para testar o que a turma quiser, ou resolver os exercícios ao vivo.</div>
+  <div class="try"><b>Dica:</b> use <code>console.log()</code> para mostrar qualquer valor aqui na saída.</div>
+<script type="text/x-code">
+// Escreva seu código aqui
+
+</script>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Carrega exemplos ----------
+  const exs = [...document.querySelectorAll('#examples .ex')].map(s => ({
+    group: s.dataset.group,
+    title: s.dataset.title,
+    desc: s.querySelector('.desc').innerHTML,
+    tryit: s.querySelector('.try') ? s.querySelector('.try').innerHTML : '',
+    code: s.querySelector('script').textContent.replace(/^\n/, '').replace(/\s+$/, '') + '\n'
+  }));
+  const edits = exs.map(e => e.code);   // guarda o que foi editado em cada exemplo
+  let cur = 0;
+
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), out = $('out'), status = $('status');
+
+  // ---------- Menu ----------
+  const nav = $('nav'), mnav = $('mnav'); let lastG = null;
+  exs.forEach((e, i) => {
+    if (e.group !== lastG) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = e.group; nav.appendChild(g); lastG = e.group; }
+    const b = document.createElement('button'); b.className = 'nav';
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span>`;
+    b.appendChild(document.createTextNode(e.title));
+    b.onclick = () => show(i); nav.appendChild(b);
+    const o = document.createElement('option'); o.value = i; o.textContent = `${String(i + 1).padStart(2, '0')} · ${e.group} · ${e.title}`; mnav.appendChild(o);
+  });
+  mnav.onchange = () => show(+mnav.value);
+
+  // ---------- Destaque de sintaxe ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?|'(?:[^'\\\n]|\\.)*'?|`(?:[^`\\]|\\.)*`?)|\b(const|let|var|if|else|while|do|for|switch|case|break|default|return|function|new|typeof|continue)\b|\b(true|false|null|undefined|NaN)\b|\b(\d+(?:\.\d+)?)\b/g;
+  function highlight(src){
+    let h = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))) {
+      h += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'b' : 'd';
+      h += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return h + esc(src.slice(last)) + '\n';
+  }
+  function paint(){ hl.innerHTML = highlight(code.value); hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; }
+  code.addEventListener('input', () => { edits[cur] = code.value; paint(); });
+  code.addEventListener('scroll', () => { hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft; });
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart, en = code.selectionEnd;
+      code.setRangeText('  ', s, en, 'end'); code.dispatchEvent(new Event('input'));
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+
+  // ---------- Mostrar exemplo ----------
+  function show(i){
+    cur = Math.max(0, Math.min(exs.length - 1, i));
+    const e = exs[cur];
+    $('grp').textContent = e.group; $('title').textContent = e.title;
+    $('desc').innerHTML = e.desc; $('try').innerHTML = e.tryit;
+    code.value = edits[cur]; code.scrollTop = 0; paint();
+    [...nav.querySelectorAll('.nav')].forEach((b, j) => b.classList.toggle('on', j === cur));
+    mnav.value = cur;
+    $('pos').textContent = `${cur + 1} de ${exs.length}`;
+    $('prev').disabled = cur === 0; $('next').disabled = cur === exs.length - 1;
+    clearOut(); try { history.replaceState(null, '', '#' + (cur + 1)); } catch(_){}
+  }
+
+  // ---------- Saída ----------
+  const MAX_LINES = 300; let lines = 0, hidden = 0, got = [];
+  function clearOut(){ out.innerHTML = '<div class="empty">Clique em ▶ Executar para ver o resultado aqui.</div>'; status.textContent = ''; status.className = 'status'; lines = 0; hidden = 0; got = []; }
+  function addLine(text, cls){
+    if (lines === 0) out.innerHTML = '';
+    if (!cls) got.push(String(text).trim());
+    if (lines >= MAX_LINES && !cls) { hidden++; return; }
+    lines++;
+    const d = document.createElement('div'); d.className = 'ln' + (cls ? ' ' + cls : '');
+    if (cls !== 'tip') { const n = document.createElement('span'); n.className = 'i'; n.textContent = cls === 'err' ? '!' : lines; d.appendChild(n); }
+    const t = document.createElement('span'); t.textContent = text; d.appendChild(t);
+    out.appendChild(d); out.scrollTop = out.scrollHeight;
+  }
+
+  // Dicas em português para erros comuns
+  function dica(msg){
+    if (/Assignment to constant/.test(msg)) return 'Dica: você tentou mudar o valor de uma const. Use let se o valor precisa mudar.';
+    if (/is not defined/.test(msg)) return 'Dica: essa variável não existe. Confira se o nome está escrito igual (maiúsculas contam!).';
+    if (/Unexpected token|Unexpected end|missing \)|Invalid or unexpected/.test(msg)) return 'Dica: erro de digitação. Confira parênteses ( ), chaves { } e aspas.';
+    if (/before initialization/.test(msg)) return 'Dica: a variável foi usada antes de ser criada. Mova a declaração para cima.';
+    if (/has already been declared/.test(msg)) return 'Dica: essa variável já foi criada. Não use let/const duas vezes com o mesmo nome.';
+    return '';
+  }
+
+  // ---------- Execução em Worker (protege contra loop infinito) ----------
+  const workerSrc = `
+    const fmt = v => typeof v === 'string' ? v
+      : v === undefined ? 'undefined'
+      : typeof v === 'function' ? '[função]'
+      : (typeof v === 'object' && v !== null) ? (()=>{ try { return JSON.stringify(v, null, 1).replace(/\\n\\s*/g,' '); } catch(e){ return String(v); } })()
+      : String(v);
+    self.onmessage = e => {
+      const send = (t, a) => postMessage({ t, x: a.map(fmt).join(' ') });
+      const console = { log:(...a)=>send('log',a), info:(...a)=>send('log',a), warn:(...a)=>send('log',a), error:(...a)=>send('err',a) };
+      try { const r = new Function('console', e.data)(console); postMessage({ t:'done', r: r === undefined ? null : fmt(r) }); }
+      catch (err) { postMessage({ t:'error', x: err.name + ': ' + err.message }); postMessage({ t:'done' }); }
+    };`;
+  let workerURL = null;
+  try { workerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })); } catch(_) {}
+  let worker = null, timer = null, t0 = 0, lastRet = null;
+
+  function finish(ok, msg){
+    clearTimeout(timer); timer = null;
+    if (worker) { worker.terminate(); worker = null; }
+    if (hidden) addLine(`… mais ${hidden} linha(s) não mostrada(s)`, 'tip');
+    if (lines === 0 && ok) out.innerHTML = '<div class="empty">(O código rodou, mas não mostrou nada. Faltou um console.log?)</div>';
+    const retHint = ok && lastRet !== null && got.length === 0;
+    if (retHint) addLine(`Seu código calculou "${lastRet}", mas o return não mostra nada na tela. Para aparecer aqui na saída, troque o return por console.log(...).`, 'tip');
+    status.className = 'status ' + (ok ? 'ok' : 'bad'); status.textContent = msg;
+  }
+
+  function run(){
+    if (worker) worker.terminate();
+    clearOut(); out.innerHTML = ''; lines = 0; lastRet = null;
+    status.className = 'status'; status.textContent = 'Executando…';
+    t0 = performance.now();
+    const src = code.value;
+    let w = null;
+    try { if (workerURL) w = new Worker(workerURL); } catch(_) { w = null; }
+    if (!w) return runInline(src);
+    worker = w;
+    worker.onmessage = ({ data }) => {
+      if (data.t === 'log') addLine(data.x);
+      else if (data.t === 'err') addLine(data.x, 'err');
+      else if (data.t === 'error') { addLine(data.x, 'err'); const d = dica(data.x); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+      else if (data.t === 'done' && timer) { lastRet = data.r; } if (data.t === 'done' && timer) finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`);
+    };
+    worker.onerror = ev => { ev.preventDefault(); addLine(ev.message || 'Erro', 'err'); const d = dica(ev.message || ''); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); };
+    timer = setTimeout(() => {
+      addLine('⏱ Execução interrompida depois de 2 segundos: parece um loop infinito! A condição do while nunca ficou false.', 'tip');
+      finish(false, '✗ Loop infinito interrompido');
+    }, 2000);
+    worker.postMessage(src);
+  }
+
+  // Plano B (navegadores que bloqueiam Worker em arquivo local): roda direto, com limite de linhas
+  function runInline(src){
+    let count = 0;
+    const fmt = v => typeof v === 'string' ? v : (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v);
+    const fake = { log: (...a) => { if (++count > 2000) throw new Error('LOOP'); addLine(a.map(fmt).join(' ')); } };
+    fake.info = fake.warn = fake.log; fake.error = (...a) => addLine(a.map(fmt).join(' '), 'err');
+    timer = 1;
+    try { const r = new Function('console', src)(fake); lastRet = r === undefined ? null : fmt(r); finish(true, `✓ Executado em ${Math.round(performance.now() - t0)} ms`); }
+    catch (err) {
+      if (err.message === 'LOOP') { addLine('⏱ Execução interrompida: parece um loop infinito!', 'tip'); finish(false, '✗ Loop infinito interrompido'); }
+      else { addLine(err.name + ': ' + err.message, 'err'); const d = dica(err.message); if (d) addLine(d, 'tip'); finish(false, '✗ O código tem um erro'); }
+    }
+  }
+
+  // ---------- Botões ----------
+  $('run').onclick = run;
+  $('clear').onclick = clearOut;
+  $('reset').onclick = () => { edits[cur] = exs[cur].code; code.value = edits[cur]; paint(); clearOut(); };
+  $('prev').onclick = () => show(cur - 1);
+  $('next').onclick = () => show(cur + 1);
+  const root = document.documentElement;
+  const defFs = window.innerWidth < 1000 ? 16 : 22;
+  let fs = defFs; try { fs = +localStorage.getItem('pg-fs') || defFs; } catch(_){}
+  const setFs = v => { fs = Math.max(14, Math.min(40, v)); root.style.setProperty('--fs', fs + 'px'); try { localStorage.setItem('pg-fs', fs); } catch(_){} };
+  setFs(fs);
+  $('bigger').onclick = () => setFs(fs + 2);
+  $('smaller').onclick = () => setFs(fs - 2);
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === code) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  const start = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
